@@ -634,11 +634,21 @@
       { task: "Land Owners", m1: "Matt Prevett", m2: "Tracey Gascoyne", m3: "Ben Wass" }
     ];
 
-    let actualSalesData = JSON.parse(localStorage.getItem('sif27_actuals_v14')) || defaultActualSales;
-    let budgetData = JSON.parse(localStorage.getItem('sif27_budget_v14')) || defaultBudget;
-    let targetData = JSON.parse(localStorage.getItem('sif27_targets_v14')) || defaultTargets;
-    let planData = JSON.parse(localStorage.getItem('sif27_plan_v14')) || defaultPlan;
-    let rolesData = JSON.parse(localStorage.getItem('sif27_roles_v14')) || defaultRoles;
+    // Safe LocalStorage Loaders with Fallback
+    function loadStorage(key, fallback) {
+      try {
+        const item = localStorage.getItem(key);
+        return item ? JSON.parse(item) : fallback;
+      } catch (e) {
+        return fallback;
+      }
+    }
+
+    let actualSalesData = loadStorage('sif27_actuals_v15', defaultActualSales);
+    let budgetData = loadStorage('sif27_budget_v15', defaultBudget);
+    let targetData = loadStorage('sif27_targets_v15', defaultTargets);
+    let planData = loadStorage('sif27_plan_v15', defaultPlan);
+    let rolesData = loadStorage('sif27_roles_v15', defaultRoles);
 
     function formatGBP(num) {
       return '£' + (num || 0).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -647,8 +657,10 @@
     function openTab(tabName) {
       document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      document.getElementById('tab-' + tabName).classList.add('active');
-      document.getElementById('btn-' + tabName).classList.add('active');
+      const targetTab = document.getElementById('tab-' + tabName);
+      const targetBtn = document.getElementById('btn-' + tabName);
+      if (targetTab) targetTab.classList.add('active');
+      if (targetBtn) targetBtn.classList.add('active');
     }
 
     function switchUser(user) {
@@ -656,217 +668,239 @@
     }
 
     function buildTables() {
-      // 1. ACTUAL REVENUE
-      const totalActualRevenue = (actualSalesData.friRev || 0) + (actualSalesData.satRev || 0) + (actualSalesData.wkndRev || 0) + (actualSalesData.barRev || 0);
+      try {
+        // 1. ACTUAL REVENUE
+        const totalActualRevenue = (actualSalesData.friRev || 0) + (actualSalesData.satRev || 0) + (actualSalesData.wkndRev || 0) + (actualSalesData.barRev || 0);
 
-      document.getElementById('dashActualRevenue').innerText = formatGBP(totalActualRevenue);
-      document.getElementById('dashTicketCounts').innerHTML = `
-        🎟️ <strong>Actual Sold Breakdown:</strong><br>
-        • Friday: <strong>${actualSalesData.friQty || 0}</strong> (${formatGBP(actualSalesData.friRev)})<br>
-        • Saturday: <strong>${actualSalesData.satQty || 0}</strong> (${formatGBP(actualSalesData.satRev)})<br>
-        • Weekend: <strong>${actualSalesData.wkndQty || 0}</strong> (${formatGBP(actualSalesData.wkndRev)})<br>
-        • Bar Spend: <strong>${formatGBP(actualSalesData.barRev)}</strong>
-      `;
+        const dashActualRevEl = document.getElementById('dashActualRevenue');
+        if (dashActualRevEl) dashActualRevEl.innerText = formatGBP(totalActualRevenue);
 
-      const actualTableBody = document.getElementById('actualSalesBody');
-      if (actualTableBody) {
-        actualTableBody.innerHTML = `
-          <tr><td>Friday Ticket Sales</td><td style="text-align:center; font-weight:bold;">${actualSalesData.friQty || 0}</td><td style="text-align:right; font-weight:bold; color:var(--accent-green);">${formatGBP(actualSalesData.friRev)}</td></tr>
-          <tr><td>Saturday Ticket Sales</td><td style="text-align:center; font-weight:bold;">${actualSalesData.satQty || 0}</td><td style="text-align:right; font-weight:bold; color:var(--accent-green);">${formatGBP(actualSalesData.satRev)}</td></tr>
-          <tr><td>Weekend Ticket Sales</td><td style="text-align:center; font-weight:bold;">${actualSalesData.wkndQty || 0}</td><td style="text-align:right; font-weight:bold; color:var(--accent-green);">${formatGBP(actualSalesData.wkndRev)}</td></tr>
-          <tr><td>Bar Revenue Spend</td><td style="text-align:center; color:var(--text-muted);">-</td><td style="text-align:right; font-weight:bold; color:var(--accent-green);">${formatGBP(actualSalesData.barRev)}</td></tr>
-          <tr style="font-weight:bold; background:#f1f5f9;"><td style="color:var(--accent-rose);">Total Actual Revenue Raised</td><td style="text-align:center; color:var(--accent-blue);">${(actualSalesData.friQty||0)+(actualSalesData.satQty||0)+(actualSalesData.wkndQty||0)} tickets</td><td style="text-align:right; color:var(--accent-green); font-size:13px;">${formatGBP(totalActualRevenue)}</td></tr>
-        `;
-      }
+        const dashTicketCountsEl = document.getElementById('dashTicketCounts');
+        if (dashTicketCountsEl) {
+          dashTicketCountsEl.innerHTML = `
+            🎟️ <strong>Actual Sold Breakdown:</strong><br>
+            • Friday: <strong>${actualSalesData.friQty || 0}</strong> (${formatGBP(actualSalesData.friRev)})<br>
+            • Saturday: <strong>${actualSalesData.satQty || 0}</strong> (${formatGBP(actualSalesData.satRev)})<br>
+            • Weekend: <strong>${actualSalesData.wkndQty || 0}</strong> (${formatGBP(actualSalesData.wkndRev)})<br>
+            • Bar Spend: <strong>${formatGBP(actualSalesData.barRev)}</strong>
+          `;
+        }
 
-      // 2. PROJECT TASK WORKLOAD CALCULATIONS (Linked to Tab 4 with Full Names)
-      const leadMap = {
-        "JD": "James Dunn",
-        "MP": "Matt Prevett",
-        "BW": "Ben Wass",
-        "DW": "Darren Wallond",
-        "TG": "Tracey Gascoyne",
-        "MC": "Mel Chapman"
-      };
+        const actualTableBody = document.getElementById('actualSalesBody');
+        if (actualTableBody) {
+          actualTableBody.innerHTML = `
+            <tr><td>Friday Ticket Sales</td><td style="text-align:center; font-weight:bold;">${actualSalesData.friQty || 0}</td><td style="text-align:right; font-weight:bold; color:var(--accent-green);">${formatGBP(actualSalesData.friRev)}</td></tr>
+            <tr><td>Saturday Ticket Sales</td><td style="text-align:center; font-weight:bold;">${actualSalesData.satQty || 0}</td><td style="text-align:right; font-weight:bold; color:var(--accent-green);">${formatGBP(actualSalesData.satRev)}</td></tr>
+            <tr><td>Weekend Ticket Sales</td><td style="text-align:center; font-weight:bold;">${actualSalesData.wkndQty || 0}</td><td style="text-align:right; font-weight:bold; color:var(--accent-green);">${formatGBP(actualSalesData.wkndRev)}</td></tr>
+            <tr><td>Bar Revenue Spend</td><td style="text-align:center; color:var(--text-muted);">-</td><td style="text-align:right; font-weight:bold; color:var(--accent-green);">${formatGBP(actualSalesData.barRev)}</td></tr>
+            <tr style="font-weight:bold; background:#f1f5f9;"><td style="color:var(--accent-rose);">Total Actual Revenue Raised</td><td style="text-align:center; color:var(--accent-blue);">${(actualSalesData.friQty||0)+(actualSalesData.satQty||0)+(actualSalesData.wkndQty||0)} tickets</td><td style="text-align:right; color:var(--accent-green); font-size:13px;">${formatGBP(totalActualRevenue)}</td></tr>
+          `;
+        }
 
-      let totalTasks = 0, completedTasks = 0;
-      let outstandingTasks = 0;
-      const leadOutstandingCounts = {
-        "James Dunn": 0,
-        "Matt Prevett": 0,
-        "Ben Wass": 0,
-        "Darren Wallond": 0,
-        "Tracey Gascoyne": 0,
-        "Mel Chapman": 0
-      };
+        // 2. PROJECT TASK WORKLOAD CALCULATIONS (Linked to Tab 4 with Full Names)
+        const leadMap = {
+          "JD": "James Dunn",
+          "MP": "Matt Prevett",
+          "BW": "Ben Wass",
+          "DW": "Darren Wallond",
+          "TG": "Tracey Gascoyne",
+          "MC": "Mel Chapman"
+        };
 
-      planData.forEach(r => {
-        if (!r.section) {
-          totalTasks++;
-          const hasUpdate = r.update && r.update.trim() !== "";
-          if (hasUpdate) {
-            completedTasks++;
-          } else {
-            outstandingTasks++;
-            const rawLead = (r.p1 || "").trim();
-            const fullName = leadMap[rawLead] || rawLead;
-            if (leadOutstandingCounts[fullName] !== undefined) {
-              leadOutstandingCounts[fullName]++;
-            } else if (fullName) {
-              leadOutstandingCounts[fullName] = 1;
+        let totalTasks = 0, completedTasks = 0;
+        let outstandingTasks = 0;
+        const leadOutstandingCounts = {
+          "James Dunn": 0,
+          "Matt Prevett": 0,
+          "Ben Wass": 0,
+          "Darren Wallond": 0,
+          "Tracey Gascoyne": 0,
+          "Mel Chapman": 0
+        };
+
+        planData.forEach(r => {
+          if (!r.section) {
+            totalTasks++;
+            const hasUpdate = r.update && r.update.trim() !== "";
+            if (hasUpdate) {
+              completedTasks++;
+            } else {
+              outstandingTasks++;
+              const rawLead = (r.p1 || "").trim();
+              const fullName = leadMap[rawLead] || rawLead;
+              if (leadOutstandingCounts[fullName] !== undefined) {
+                leadOutstandingCounts[fullName]++;
+              } else if (fullName) {
+                leadOutstandingCounts[fullName] = 1;
+              }
             }
           }
+        });
+
+        const projTotalTasksEl = document.getElementById('projTotalTasks');
+        if (projTotalTasksEl) projTotalTasksEl.innerText = `${outstandingTasks} Tasks Pending (${totalTasks} Total)`;
+        
+        const progressPct = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+        const projProgressRateEl = document.getElementById('projProgressRate');
+        if (projProgressRateEl) projProgressRateEl.innerText = `${progressPct}% (${completedTasks}/${totalTasks} Completed)`;
+
+        let leadHtml = '';
+        for (const [name, count] of Object.entries(leadOutstandingCounts)) {
+          leadHtml += `<tr>
+            <td style="font-weight:bold; color:var(--accent-purple);">${name}</td>
+            <td style="text-align:center; font-weight:bold; color:${count > 0 ? 'var(--accent-rose)' : 'var(--text-muted)'};">${count} Outstanding</td>
+            <td style="text-align:right;"><span class="badge" style="${count > 0 ? 'background:#ffe4e6; color:#9f1239; border-color:#fecdd3;' : ''}">${count > 0 ? 'Action Needed' : 'Up to Date'}</span></td>
+          </tr>`;
         }
-      });
+        const leadWorkloadBodyEl = document.getElementById('leadWorkloadBody');
+        if (leadWorkloadBodyEl) leadWorkloadBodyEl.innerHTML = leadHtml;
 
-      document.getElementById('projTotalTasks').innerText = `${outstandingTasks} Tasks Pending (${totalTasks} Total)`;
-      const progressPct = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
-      document.getElementById('projProgressRate').innerText = `${progressPct}% (${completedTasks}/${totalTasks} Completed)`;
-
-      let leadHtml = '';
-      for (const [name, count] of Object.entries(leadOutstandingCounts)) {
-        leadHtml += `<tr>
-          <td style="font-weight:bold; color:var(--accent-purple);">${name}</td>
-          <td style="text-align:center; font-weight:bold; color:${count > 0 ? 'var(--accent-rose)' : 'var(--text-muted)'};">${count} Outstanding</td>
-          <td style="text-align:right;"><span class="badge" style="${count > 0 ? 'background:#ffe4e6; color:#9f1239; border-color:#fecdd3;' : ''}">${count > 0 ? 'Action Needed' : 'Up to Date'}</span></td>
-        </tr>`;
-      }
-      document.getElementById('leadWorkloadBody').innerHTML = leadHtml;
-
-      // FORECAST CALCULATIONS
-      let friTicketTotal = 0, satTicketTotal = 0;
-      targetData.forEach(row => {
-        const itemTotal = (row.qty || 0) * (row.price || 0);
-        if (row.day.includes("Friday")) friTicketTotal += itemTotal;
-        else if (row.day.includes("Saturday")) satTicketTotal += itemTotal;
-      });
-
-      const vendorSponsorTotal = 17500;
-      const friBarForecast = 17100;
-      const satBarForecast = 104000;
-      const totalBarForecast = friBarForecast + satBarForecast;
-      const totalIncomeForecast = friTicketTotal + satTicketTotal + totalBarForecast + vendorSponsorTotal;
-
-      let bNetTotal = 0, bVatTotal = 0, bIncTotal = 0, bSpentTotal = 0;
-      budgetData.forEach(row => {
-        const vatAmt = row.vat === 'YES' ? row.net * 0.2 : 0;
-        bNetTotal += row.net;
-        bVatTotal += vatAmt;
-        bIncTotal += (row.net + vatAmt);
-        bSpentTotal += (row.update || 0);
-      });
-
-      const netVatLiability = 15856.33;
-      const profitVariance = totalIncomeForecast - bIncTotal - netVatLiability;
-
-      document.getElementById('dashTotalIncome').innerText = formatGBP(totalIncomeForecast);
-      document.getElementById('dashBudInc').innerText = formatGBP(bIncTotal);
-      document.getElementById('dashBudSpent').innerText = `Spent: ${formatGBP(bSpentTotal)} | Remaining: ${formatGBP(bIncTotal - bSpentTotal)}`;
-      
-      const varElement = document.getElementById('dashVariance');
-      varElement.innerText = formatGBP(profitVariance);
-      if (profitVariance >= 0) {
-        varElement.style.color = 'var(--accent-green)';
-      } else {
-        varElement.style.color = 'var(--accent-rose)';
-      }
-
-      document.getElementById('dashRevenueBody').innerHTML = `
-        <tr><td>Friday 30th July</td><td style="text-align:right;">${formatGBP(friTicketTotal)}</td><td style="text-align:right;">${formatGBP(friBarForecast)}</td><td style="text-align:right; font-weight:bold;">${formatGBP(friTicketTotal + friBarForecast)}</td></tr>
-        <tr><td>Saturday 31st July</td><td style="text-align:right;">${formatGBP(satTicketTotal)}</td><td style="text-align:right;">${formatGBP(satBarForecast)}</td><td style="text-align:right; font-weight:bold;">${formatGBP(satTicketTotal + satBarForecast)}</td></tr>
-        <tr><td>Vendor Fees & Sponsorship</td><td style="text-align:right;">£0.00</td><td style="text-align:right;">£0.00</td><td style="text-align:right; font-weight:bold;">${formatGBP(vendorSponsorTotal)}</td></tr>
-        <tr style="font-weight:bold; background:#f1f5f9;"><td style="color:var(--accent-rose);">Grand Total Forecast</td><td style="text-align:right; color:var(--accent-blue);">${formatGBP(friTicketTotal + satTicketTotal)}</td><td style="text-align:right; color:var(--accent-blue);">${formatGBP(totalBarForecast)}</td><td style="text-align:right; color:var(--accent-green); font-size:13px;">${formatGBP(totalIncomeForecast)}</td></tr>
-      `;
-
-      document.getElementById('dashOpsBody').innerHTML = `
-        <tr><td>Total Budget Items</td><td style="text-align:right;">${budgetData.length} items</td><td style="text-align:right; font-weight:bold; color:var(--accent-purple);">${formatGBP(bIncTotal)}</td></tr>
-        <tr><td>Budget Actual Spent</td><td style="text-align:right;">${formatGBP(bIncTotal)}</td><td style="text-align:right; font-weight:bold; color:var(--accent-amber);">${formatGBP(bSpentTotal)}</td></tr>
-        <tr><td>Project Tasks Logged</td><td style="text-align:right;">${totalTasks} Tasks</td><td style="text-align:right; font-weight:bold; color:var(--accent-blue);">${completedTasks} / ${totalTasks} Active Updates</td></tr>
-        <tr><td>Net VAT Liability Estimate</td><td style="text-align:right;">Claimed: £42.2k</td><td style="text-align:right; font-weight:bold; color:var(--accent-rose);">${formatGBP(netVatLiability)}</td></tr>
-      `;
-
-      // TAB 2: BUDGET
-      const bBody = document.getElementById('budgetBody');
-      if (bBody) {
-        let bHtml = '';
-        budgetData.forEach((row, idx) => {
-          const vatAmt = row.vat === 'YES' ? row.net * 0.2 : 0;
-          const inc = row.net + vatAmt;
-          bHtml += `<tr>
-            <td style="font-weight:600;">${row.item}</td>
-            <td><span class="badge">${row.cat}</span></td>
-            <td style="text-align:right;">${formatGBP(row.net)}</td>
-            <td style="text-align:center;"><span class="badge ${row.vat === 'YES' ? 'badge-yes' : ''}">${row.vat}</span></td>
-            <td style="text-align:right; color:var(--text-muted);">${formatGBP(vatAmt)}</td>
-            <td style="text-align:right; font-weight:600; color:var(--accent-purple);">${formatGBP(inc)}</td>
-            <td style="text-align:right; font-weight:bold; color:${row.update > 0 ? 'var(--accent-amber)' : 'var(--text-muted)'};">${formatGBP(row.update)}</td>
-            <td style="text-align:center; color:var(--text-muted);">${row.owner}</td>
-            <td style="text-align:center;"><button class="edit-btn" onclick="openBudgetModal(${idx})">Edit</button></td>
-          </tr>`;
-        });
-        bBody.innerHTML = bHtml;
-      }
-
-      // TAB 3: TARGETS
-      const tBody = document.getElementById('targetBody');
-      if (tBody) {
-        let tHtml = '';
-        targetData.forEach((row, idx) => {
+        // FORECAST CALCULATIONS
+        let friTicketTotal = 0, satTicketTotal = 0;
+        targetData.forEach(row => {
           const itemTotal = (row.qty || 0) * (row.price || 0);
-          tHtml += `<tr>
-            <td style="color:var(--text-muted); font-weight:600;">${row.day}</td>
-            <td style="font-weight:bold; color:var(--accent-blue);">${row.type}</td>
-            <td style="text-align:center; font-weight:bold;">${row.qty}</td>
-            <td style="text-align:right;">${formatGBP(row.price)}</td>
-            <td style="text-align:right; font-weight:bold; color:var(--accent-green);">${formatGBP(itemTotal)}</td>
-            <td style="text-align:center;"><button class="edit-btn" onclick="openTargetModal(${idx})">Edit</button></td>
-          </tr>`;
+          if (row.day.includes("Friday")) friTicketTotal += itemTotal;
+          else if (row.day.includes("Saturday")) satTicketTotal += itemTotal;
         });
-        tBody.innerHTML = tHtml;
-      }
 
-      // TAB 4: PLAN
-      const pBody = document.getElementById('planBody');
-      if (pBody) {
-        let pHtml = '';
-        planData.forEach((row, idx) => {
-          if (row.section) {
-            pHtml += `<tr class="section-row"><td colspan="9">📁 ${row.section}</td></tr>`;
-          } else {
-            pHtml += `<tr>
-              <td style="font-weight:600;">${row.task}</td>
-              <td style="text-align:center;"><span class="badge" style="background:#ffe4e6; color:#9f1239; border-color:#fecdd3;">${row.p1 || '-'}</span></td>
-              <td style="text-align:center;"><span class="badge" style="background:#f3e8ff; color:#6b21a8; border-color:#e9d5ff;">${row.p2 || '-'}</span></td>
-              <td style="text-align:center; color:var(--text-muted);">${row.p3 || '-'}</td>
-              <td style="color:var(--accent-amber); font-style:${row.update ? 'normal' : 'italic'};">${row.update || 'No update'}</td>
-              <td style="color:var(--text-main);">${row.steps || '-'}</td>
-              <td style="color:var(--text-muted);">${row.stepsOwner || '-'}</td>
-              <td style="color:var(--text-muted); white-space:nowrap;">${row.stepsDate || '-'}</td>
-              <td style="text-align:center;"><button class="edit-btn" onclick="openPlanModal(${idx})">Edit</button></td>
-            </tr>`;
-          }
-        });
-        pBody.innerHTML = pHtml;
-      }
+        const vendorSponsorTotal = 17500;
+        const friBarForecast = 17100;
+        const satBarForecast = 104000;
+        const totalBarForecast = friBarForecast + satBarForecast;
+        const totalIncomeForecast = friTicketTotal + satTicketTotal + totalBarForecast + vendorSponsorTotal;
 
-      // TAB 5: ROLES
-      const rBody = document.getElementById('rolesBody');
-      if (rBody) {
-        let rHtml = '';
-        rolesData.forEach((row, idx) => {
-          if (row.section) {
-            rHtml += `<tr class="section-row"><td colspan="5">🛡️ ${row.section}</td></tr>`;
-          } else {
-            rHtml += `<tr>
-              <td style="font-weight:600;">${row.task}</td>
-              <td style="color:var(--accent-rose); font-weight:600;">${row.m1 || '-'}</td>
-              <td style="color:var(--text-main);">${row.m2 || '-'}</td>
-              <td style="color:var(--text-muted);">${row.m3 || '-'}</td>
-              <td style="text-align:center;"><button class="edit-btn" onclick="openRolesModal(${idx})">Edit</button></td>
-            </tr>`;
-          }
+        let bNetTotal = 0, bVatTotal = 0, bIncTotal = 0, bSpentTotal = 0;
+        budgetData.forEach(row => {
+          const vatAmt = row.vat === 'YES' ? row.net * 0.2 : 0;
+          bNetTotal += row.net;
+          bVatTotal += vatAmt;
+          bIncTotal += (row.net + vatAmt);
+          bSpentTotal += (row.update || 0);
         });
-        rBody.innerHTML = rHtml;
+
+        const netVatLiability = 15856.33;
+        const profitVariance = totalIncomeForecast - bIncTotal - netVatLiability;
+
+        const dashTotalIncomeEl = document.getElementById('dashTotalIncome');
+        if (dashTotalIncomeEl) dashTotalIncomeEl.innerText = formatGBP(totalIncomeForecast);
+
+        const dashBudIncEl = document.getElementById('dashBudInc');
+        if (dashBudIncEl) dashBudIncEl.innerText = formatGBP(bIncTotal);
+
+        const dashBudSpentEl = document.getElementById('dashBudSpent');
+        if (dashBudSpentEl) dashBudSpentEl.innerText = `Spent: ${formatGBP(bSpentTotal)} | Remaining: ${formatGBP(bIncTotal - bSpentTotal)}`;
+        
+        const varElement = document.getElementById('dashVariance');
+        if (varElement) {
+          varElement.innerText = formatGBP(profitVariance);
+          varElement.style.color = profitVariance >= 0 ? 'var(--accent-green)' : 'var(--accent-rose)';
+        }
+
+        const dashRevenueBodyEl = document.getElementById('dashRevenueBody');
+        if (dashRevenueBodyEl) {
+          dashRevenueBodyEl.innerHTML = `
+            <tr><td>Friday 30th July</td><td style="text-align:right;">${formatGBP(friTicketTotal)}</td><td style="text-align:right;">${formatGBP(friBarForecast)}</td><td style="text-align:right; font-weight:bold;">${formatGBP(friTicketTotal + friBarForecast)}</td></tr>
+            <tr><td>Saturday 31st July</td><td style="text-align:right;">${formatGBP(satTicketTotal)}</td><td style="text-align:right;">${formatGBP(satBarForecast)}</td><td style="text-align:right; font-weight:bold;">${formatGBP(satTicketTotal + satBarForecast)}</td></tr>
+            <tr><td>Vendor Fees & Sponsorship</td><td style="text-align:right;">£0.00</td><td style="text-align:right;">£0.00</td><td style="text-align:right; font-weight:bold;">${formatGBP(vendorSponsorTotal)}</td></tr>
+            <tr style="font-weight:bold; background:#f1f5f9;"><td style="color:var(--accent-rose);">Grand Total Forecast</td><td style="text-align:right; color:var(--accent-blue);">${formatGBP(friTicketTotal + satTicketTotal)}</td><td style="text-align:right; color:var(--accent-blue);">${formatGBP(totalBarForecast)}</td><td style="text-align:right; color:var(--accent-green); font-size:13px;">${formatGBP(totalIncomeForecast)}</td></tr>
+          `;
+        }
+
+        const dashOpsBodyEl = document.getElementById('dashOpsBody');
+        if (dashOpsBodyEl) {
+          dashOpsBodyEl.innerHTML = `
+            <tr><td>Total Budget Items</td><td style="text-align:right;">${budgetData.length} items</td><td style="text-align:right; font-weight:bold; color:var(--accent-purple);">${formatGBP(bIncTotal)}</td></tr>
+            <tr><td>Budget Actual Spent</td><td style="text-align:right;">${formatGBP(bIncTotal)}</td><td style="text-align:right; font-weight:bold; color:var(--accent-amber);">${formatGBP(bSpentTotal)}</td></tr>
+            <tr><td>Project Tasks Logged</td><td style="text-align:right;">${totalTasks} Tasks</td><td style="text-align:right; font-weight:bold; color:var(--accent-blue);">${completedTasks} / ${totalTasks} Active Updates</td></tr>
+            <tr><td>Net VAT Liability Estimate</td><td style="text-align:right;">Claimed: £42.2k</td><td style="text-align:right; font-weight:bold; color:var(--accent-rose);">${formatGBP(netVatLiability)}</td></tr>
+          `;
+        }
+
+        // TAB 2: BUDGET
+        const bBody = document.getElementById('budgetBody');
+        if (bBody) {
+          let bHtml = '';
+          budgetData.forEach((row, idx) => {
+            const vatAmt = row.vat === 'YES' ? row.net * 0.2 : 0;
+            const inc = row.net + vatAmt;
+            bHtml += `<tr>
+              <td style="font-weight:600;">${row.item}</td>
+              <td><span class="badge">${row.cat}</span></td>
+              <td style="text-align:right;">${formatGBP(row.net)}</td>
+              <td style="text-align:center;"><span class="badge ${row.vat === 'YES' ? 'badge-yes' : ''}">${row.vat}</span></td>
+              <td style="text-align:right; color:var(--text-muted);">${formatGBP(vatAmt)}</td>
+              <td style="text-align:right; font-weight:600; color:var(--accent-purple);">${formatGBP(inc)}</td>
+              <td style="text-align:right; font-weight:bold; color:${row.update > 0 ? 'var(--accent-amber)' : 'var(--text-muted)'};">${formatGBP(row.update)}</td>
+              <td style="text-align:center; color:var(--text-muted);">${row.owner}</td>
+              <td style="text-align:center;"><button class="edit-btn" onclick="openBudgetModal(${idx})">Edit</button></td>
+            </tr>`;
+          });
+          bBody.innerHTML = bHtml;
+        }
+
+        // TAB 3: TARGETS
+        const tBody = document.getElementById('targetBody');
+        if (tBody) {
+          let tHtml = '';
+          targetData.forEach((row, idx) => {
+            const itemTotal = (row.qty || 0) * (row.price || 0);
+            tHtml += `<tr>
+              <td style="color:var(--text-muted); font-weight:600;">${row.day}</td>
+              <td style="font-weight:bold; color:var(--accent-blue);">${row.type}</td>
+              <td style="text-align:center; font-weight:bold;">${row.qty}</td>
+              <td style="text-align:right;">${formatGBP(row.price)}</td>
+              <td style="text-align:right; font-weight:bold; color:var(--accent-green);">${formatGBP(itemTotal)}</td>
+              <td style="text-align:center;"><button class="edit-btn" onclick="openTargetModal(${idx})">Edit</button></td>
+            </tr>`;
+          });
+          tBody.innerHTML = tHtml;
+        }
+
+        // TAB 4: PLAN
+        const pBody = document.getElementById('planBody');
+        if (pBody) {
+          let pHtml = '';
+          planData.forEach((row, idx) => {
+            if (row.section) {
+              pHtml += `<tr class="section-row"><td colspan="9">📁 ${row.section}</td></tr>`;
+            } else {
+              pHtml += `<tr>
+                <td style="font-weight:600;">${row.task}</td>
+                <td style="text-align:center;"><span class="badge" style="background:#ffe4e6; color:#9f1239; border-color:#fecdd3;">${row.p1 || '-'}</span></td>
+                <td style="text-align:center;"><span class="badge" style="background:#f3e8ff; color:#6b21a8; border-color:#e9d5ff;">${row.p2 || '-'}</span></td>
+                <td style="text-align:center; color:var(--text-muted);">${row.p3 || '-'}</td>
+                <td style="color:var(--accent-amber); font-style:${row.update ? 'normal' : 'italic'};">${row.update || 'No update'}</td>
+                <td style="color:var(--text-main);">${row.steps || '-'}</td>
+                <td style="color:var(--text-muted);">${row.stepsOwner || '-'}</td>
+                <td style="color:var(--text-muted); white-space:nowrap;">${row.stepsDate || '-'}</td>
+                <td style="text-align:center;"><button class="edit-btn" onclick="openPlanModal(${idx})">Edit</button></td>
+              </tr>`;
+            }
+          });
+          pBody.innerHTML = pHtml;
+        }
+
+        // TAB 5: ROLES
+        const rBody = document.getElementById('rolesBody');
+        if (rBody) {
+          let rHtml = '';
+          rolesData.forEach((row, idx) => {
+            if (row.section) {
+              rHtml += `<tr class="section-row"><td colspan="5">🛡️ ${row.section}</td></tr>`;
+            } else {
+              rHtml += `<tr>
+                <td style="font-weight:600;">${row.task}</td>
+                <td style="color:var(--accent-rose); font-weight:600;">${row.m1 || '-'}</td>
+                <td style="color:var(--text-main);">${row.m2 || '-'}</td>
+                <td style="color:var(--text-muted);">${row.m3 || '-'}</td>
+                <td style="text-align:center;"><button class="edit-btn" onclick="openRolesModal(${idx})">Edit</button></td>
+              </tr>`;
+            }
+          });
+          rBody.innerHTML = rHtml;
+        }
+      } catch (err) {
+        console.error("Dashboard table render error:", err);
       }
     }
 
@@ -892,7 +926,7 @@
         wkndRev: parseFloat(document.getElementById('actWkndRev').value) || 0,
         barRev: parseFloat(document.getElementById('actBarRev').value) || 0
       };
-      localStorage.setItem('sif27_actuals_v14', JSON.stringify(actualSalesData));
+      localStorage.setItem('sif27_actuals_v15', JSON.stringify(actualSalesData));
       closeActualModal();
       buildTables();
     }
@@ -932,14 +966,14 @@
       };
       if (idx === -1) budgetData.push(newItem);
       else budgetData[idx] = newItem;
-      localStorage.setItem('sif27_budget_v14', JSON.stringify(budgetData));
+      localStorage.setItem('sif27_budget_v15', JSON.stringify(budgetData));
       closeBudgetModal();
       buildTables();
     }
     function resetBudget() {
       if (confirm('Reset budget to default spreadsheet values?')) {
         budgetData = [...defaultBudget];
-        localStorage.setItem('sif27_budget_v14', JSON.stringify(budgetData));
+        localStorage.setItem('sif27_budget_v15', JSON.stringify(budgetData));
         buildTables();
       }
     }
@@ -957,14 +991,14 @@
       const idx = parseInt(document.getElementById('targetEditIndex').value);
       targetData[idx].qty = parseInt(document.getElementById('tModalQty').value) || 0;
       targetData[idx].price = parseFloat(document.getElementById('tModalPrice').value) || 0;
-      localStorage.setItem('sif27_targets_v14', JSON.stringify(targetData));
+      localStorage.setItem('sif27_targets_v15', JSON.stringify(targetData));
       closeTargetModal();
       buildTables();
     }
     function resetTargets() {
       if (confirm('Reset sales targets to default spreadsheet values?')) {
         targetData = [...defaultTargets];
-        localStorage.setItem('sif27_targets_v14', JSON.stringify(targetData));
+        localStorage.setItem('sif27_targets_v15', JSON.stringify(targetData));
         buildTables();
       }
     }
@@ -992,14 +1026,14 @@
       planData[idx].steps = document.getElementById('pModalSteps').value;
       planData[idx].stepsOwner = document.getElementById('pModalStepsOwner').value;
       planData[idx].stepsDate = document.getElementById('pModalStepsDate').value;
-      localStorage.setItem('sif27_plan_v14', JSON.stringify(planData));
+      localStorage.setItem('sif27_plan_v15', JSON.stringify(planData));
       closePlanModal();
       buildTables();
     }
     function resetPlan() {
       if (confirm('Reset project plan to default spreadsheet values?')) {
         planData = [...defaultPlan];
-        localStorage.setItem('sif27_plan_v14', JSON.stringify(planData));
+        localStorage.setItem('sif27_plan_v15', JSON.stringify(planData));
         buildTables();
       }
     }
@@ -1019,14 +1053,14 @@
       rolesData[idx].m1 = document.getElementById('rModalM1').value;
       rolesData[idx].m2 = document.getElementById('rModalM2').value;
       rolesData[idx].m3 = document.getElementById('rModalM3').value;
-      localStorage.setItem('sif27_roles_v14', JSON.stringify(rolesData));
+      localStorage.setItem('sif27_roles_v15', JSON.stringify(rolesData));
       closeRolesModal();
       buildTables();
     }
     function resetRoles() {
       if (confirm('Reset roles matrix to default spreadsheet values?')) {
         rolesData = [...defaultRoles];
-        localStorage.setItem('sif27_roles_v14', JSON.stringify(rolesData));
+        localStorage.setItem('sif27_roles_v15', JSON.stringify(rolesData));
         buildTables();
       }
     }
@@ -1055,11 +1089,11 @@
       reader.onload = function(e) {
         try {
           const imported = JSON.parse(e.target.result);
-          if (imported.actualSalesData) { actualSalesData = imported.actualSalesData; localStorage.setItem('sif27_actuals_v14', JSON.stringify(actualSalesData)); }
-          if (imported.budgetData) { budgetData = imported.budgetData; localStorage.setItem('sif27_budget_v14', JSON.stringify(budgetData)); }
-          if (imported.targetData) { targetData = imported.targetData; localStorage.setItem('sif27_targets_v14', JSON.stringify(targetData)); }
-          if (imported.planData) { planData = imported.planData; localStorage.setItem('sif27_plan_v14', JSON.stringify(planData)); }
-          if (imported.rolesData) { rolesData = imported.rolesData; localStorage.setItem('sif27_roles_v14', JSON.stringify(rolesData)); }
+          if (imported.actualSalesData) { actualSalesData = imported.actualSalesData; localStorage.setItem('sif27_actuals_v15', JSON.stringify(actualSalesData)); }
+          if (imported.budgetData) { budgetData = imported.budgetData; localStorage.setItem('sif27_budget_v15', JSON.stringify(budgetData)); }
+          if (imported.targetData) { targetData = imported.targetData; localStorage.setItem('sif27_targets_v15', JSON.stringify(targetData)); }
+          if (imported.planData) { planData = imported.planData; localStorage.setItem('sif27_plan_v15', JSON.stringify(planData)); }
+          if (imported.rolesData) { rolesData = imported.rolesData; localStorage.setItem('sif27_roles_v15', JSON.stringify(rolesData)); }
           buildTables();
           alert('Data imported successfully!');
         } catch (err) {
@@ -1071,25 +1105,36 @@
 
     // Countdown Timer
     function runTimer() {
-      const target = new Date('July 30, 2027 12:00:00').getTime();
-      const diff = target - new Date().getTime();
-      if (diff <= 0) {
-        document.getElementById('countdown').innerText = 'FESTIVAL LIVE!';
-        return;
+      try {
+        const target = new Date('July 30, 2027 12:00:00').getTime();
+        const diff = target - new Date().getTime();
+        const countdownEl = document.getElementById('countdown');
+        if (!countdownEl) return;
+        if (diff <= 0) {
+          countdownEl.innerText = 'FESTIVAL LIVE!';
+          return;
+        }
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const secs = Math.floor((diff % (1000 * 60)) / 1000);
+        countdownEl.innerText = `${days}d ${hours}h ${mins}m ${secs}s`;
+      } catch (e) {
+        console.error("Countdown error:", e);
       }
-      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      const secs = Math.floor((diff % (1000 * 60)) / 1000);
-      document.getElementById('countdown').innerText = `${days}d ${hours}h ${mins}m ${secs}s`;
     }
 
-    const savedUser = localStorage.getItem('sif27_user');
-    if (savedUser) document.getElementById('userSelect').value = savedUser;
-
-    buildTables();
-    runTimer();
-    setInterval(runTimer, 1000);
+    // Initialization on page load
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedUser = localStorage.getItem('sif27_user');
+      if (savedUser) {
+        const userSelectEl = document.getElementById('userSelect');
+        if (userSelectEl) userSelectEl.value = savedUser;
+      }
+      buildTables();
+      runTimer();
+      setInterval(runTimer, 1000);
+    });
   </script>
 </body>
 </html>
