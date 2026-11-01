@@ -143,34 +143,6 @@
         </div>
       </div>
 
-      <!-- STAGE BREAKDOWN WIDGET ON FRONT DASHBOARD WITH FILTER -->
-      <div class="table-card" style="margin-bottom: 24px;">
-        <div class="table-header">
-          <span>🎧 Booked DJs & Acts by Stage</span>
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <label style="font-size: 11px; color: var(--text-muted); font-weight: 600;">Filter Stage:</label>
-            <select id="frontStageFilter" onchange="buildTables()" style="padding: 4px 8px; font-size: 11px;">
-              <option value="ALL">All Stages</option>
-            </select>
-          </div>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Stage</th>
-                <th>Act Name</th>
-                <th>Type</th>
-                <th>Day</th>
-                <th>Time Slot</th>
-                <th style="text-align: right;">Cost (£)</th>
-              </tr>
-            </thead>
-            <tbody id="dashStageBody"></tbody>
-          </table>
-        </div>
-      </div>
-
       <div class="dashboard-grid">
         <div class="table-card">
           <div class="table-header">Forecasted Revenue Breakdown</div>
@@ -217,6 +189,34 @@
               </table>
             </div>
           </div>
+        </div>
+      </div>
+
+      <!-- STAGE BREAKDOWN WIDGET MOVED TO THE BOTTOM OF THE DASHBOARD -->
+      <div class="table-card" style="margin-top: 24px;">
+        <div class="table-header">
+          <span>🎧 Booked DJs & Acts by Stage</span>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <label style="font-size: 11px; color: var(--text-muted); font-weight: 600;">Filter Stage:</label>
+            <select id="frontStageFilter" onchange="buildTables()" style="padding: 4px 8px; font-size: 11px;">
+              <option value="ALL">All Stages</option>
+            </select>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Stage</th>
+                <th>Act Name</th>
+                <th>Type</th>
+                <th>Day</th>
+                <th>Time Slot</th>
+                <th style="text-align: right;">Cost (£)</th>
+              </tr>
+            </thead>
+            <tbody id="dashStageBody"></tbody>
+          </table>
         </div>
       </div>
     </div>
@@ -735,12 +735,12 @@
       }
     }
 
-    let actualSalesData = loadStorage('sif27_actuals_v20', defaultActualSales);
-    let budgetData = loadStorage('sif27_budget_v20', defaultBudget);
-    let targetData = loadStorage('sif27_targets_v20', defaultTargets);
-    let planData = loadStorage('sif27_plan_v20', defaultPlan);
-    let rolesData = loadStorage('sif27_roles_v20', defaultRoles);
-    let djData = loadStorage('sif27_djs_v20', defaultDjs);
+    let actualSalesData = loadStorage('sif27_actuals_v21', defaultActualSales);
+    let budgetData = loadStorage('sif27_budget_v21', defaultBudget);
+    let targetData = loadStorage('sif27_targets_v21', defaultTargets);
+    let planData = loadStorage('sif27_plan_v21', defaultPlan);
+    let rolesData = loadStorage('sif27_roles_v21', defaultRoles);
+    let djData = loadStorage('sif27_djs_v21', defaultDjs);
 
     function formatGBP(num) {
       return '£' + (num || 0).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -1099,7 +1099,7 @@
         wkndRev: parseFloat(document.getElementById('actWkndRev').value) || 0,
         barRev: parseFloat(document.getElementById('actBarRev').value) || 0
       };
-      localStorage.setItem('sif27_actuals_v20', JSON.stringify(actualSalesData));
+      localStorage.setItem('sif27_actuals_v21', JSON.stringify(actualSalesData));
       closeActualModal();
       buildTables();
     }
@@ -1139,14 +1139,14 @@
       };
       if (idx === -1) budgetData.push(newItem);
       else budgetData[idx] = newItem;
-      localStorage.setItem('sif27_budget_v20', JSON.stringify(budgetData));
+      localStorage.setItem('sif27_budget_v21', JSON.stringify(budgetData));
       closeBudgetModal();
       buildTables();
     }
     function resetBudget() {
       if (confirm('Reset budget to default spreadsheet values?')) {
         budgetData = [...defaultBudget];
-        localStorage.setItem('sif27_budget_v20', JSON.stringify(budgetData));
+        localStorage.setItem('sif27_budget_v21', JSON.stringify(budgetData));
         buildTables();
       }
     }
@@ -1164,14 +1164,14 @@
       const idx = parseInt(document.getElementById('targetEditIndex').value);
       targetData[idx].qty = parseInt(document.getElementById('tModalQty').value) || 0;
       targetData[idx].price = parseFloat(document.getElementById('tModalPrice').value) || 0;
-      localStorage.setItem('sif27_targets_v20', JSON.stringify(targetData));
+      localStorage.setItem('sif27_targets_v21', JSON.stringify(targetData));
       closeTargetModal();
       buildTables();
     }
     function resetTargets() {
       if (confirm('Reset sales targets to default spreadsheet values?')) {
         targetData = [...defaultTargets];
-        localStorage.setItem('sif27_targets_v20', JSON.stringify(targetData));
+        localStorage.setItem('sif27_targets_v21', JSON.stringify(targetData));
         buildTables();
       }
     }
@@ -1199,14 +1199,14 @@
       planData[idx].steps = document.getElementById('pModalSteps').value;
       planData[idx].stepsOwner = document.getElementById('pModalStepsOwner').value;
       planData[idx].stepsDate = document.getElementById('pModalStepsDate').value;
-      localStorage.setItem('sif27_plan_v20', JSON.stringify(planData));
+      localStorage.setItem('sif27_plan_v21', JSON.stringify(planData));
       closePlanModal();
       buildTables();
     }
     function resetPlan() {
       if (confirm('Reset project plan to default spreadsheet values?')) {
         planData = [...defaultPlan];
-        localStorage.setItem('sif27_plan_v20', JSON.stringify(planData));
+        localStorage.setItem('sif27_plan_v21', JSON.stringify(planData));
         buildTables();
       }
     }
@@ -1226,14 +1226,14 @@
       rolesData[idx].m1 = document.getElementById('rModalM1').value;
       rolesData[idx].m2 = document.getElementById('rModalM2').value;
       rolesData[idx].m3 = document.getElementById('rModalM3').value;
-      localStorage.setItem('sif27_roles_v20', JSON.stringify(rolesData));
+      localStorage.setItem('sif27_roles_v21', JSON.stringify(rolesData));
       closeRolesModal();
       buildTables();
     }
     function resetRoles() {
       if (confirm('Reset roles matrix to default spreadsheet values?')) {
         rolesData = [...defaultRoles];
-        localStorage.setItem('sif27_roles_v20', JSON.stringify(rolesData));
+        localStorage.setItem('sif27_roles_v21', JSON.stringify(rolesData));
         buildTables();
       }
     }
@@ -1283,21 +1283,21 @@
       };
       if (idx === -1) djData.push(newAct);
       else djData[idx] = newAct;
-      localStorage.setItem('sif27_djs_v20', JSON.stringify(djData));
+      localStorage.setItem('sif27_djs_v21', JSON.stringify(djData));
       closeDjModal();
       buildTables();
     }
     function deleteDjItem(index) {
       if (confirm('Are you sure you want to delete this act?')) {
         djData.splice(index, 1);
-        localStorage.setItem('sif27_djs_v20', JSON.stringify(djData));
+        localStorage.setItem('sif27_djs_v21', JSON.stringify(djData));
         buildTables();
       }
     }
     function resetDjs() {
       if (confirm('Reset DJs & Production list to default values?')) {
         djData = [...defaultDjs];
-        localStorage.setItem('sif27_djs_v20', JSON.stringify(djData));
+        localStorage.setItem('sif27_djs_v21', JSON.stringify(djData));
         buildTables();
       }
     }
@@ -1326,12 +1326,12 @@
       reader.onload = function(e) {
         try {
           const imported = JSON.parse(e.target.result);
-          if (imported.actualSalesData) { actualSalesData = imported.actualSalesData; localStorage.setItem('sif27_actuals_v20', JSON.stringify(actualSalesData)); }
-          if (imported.budgetData) { budgetData = imported.budgetData; localStorage.setItem('sif27_budget_v20', JSON.stringify(budgetData)); }
-          if (imported.targetData) { targetData = imported.targetData; localStorage.setItem('sif27_targets_v20', JSON.stringify(targetData)); }
-          if (imported.planData) { planData = imported.planData; localStorage.setItem('sif27_plan_v20', JSON.stringify(planData)); }
-          if (imported.rolesData) { rolesData = imported.rolesData; localStorage.setItem('sif27_roles_v20', JSON.stringify(rolesData)); }
-          if (imported.djData) { djData = imported.djData; localStorage.setItem('sif27_djs_v20', JSON.stringify(djData)); }
+          if (imported.actualSalesData) { actualSalesData = imported.actualSalesData; localStorage.setItem('sif27_actuals_v21', JSON.stringify(actualSalesData)); }
+          if (imported.budgetData) { budgetData = imported.budgetData; localStorage.setItem('sif27_budget_v21', JSON.stringify(budgetData)); }
+          if (imported.targetData) { targetData = imported.targetData; localStorage.setItem('sif27_targets_v21', JSON.stringify(targetData)); }
+          if (imported.planData) { planData = imported.planData; localStorage.setItem('sif27_plan_v21', JSON.stringify(planData)); }
+          if (imported.rolesData) { rolesData = imported.rolesData; localStorage.setItem('sif27_roles_v21', JSON.stringify(rolesData)); }
+          if (imported.djData) { djData = imported.djData; localStorage.setItem('sif27_djs_v21', JSON.stringify(djData)); }
           buildTables();
           alert('Data imported successfully!');
         } catch (err) {
