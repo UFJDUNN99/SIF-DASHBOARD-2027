@@ -120,7 +120,7 @@
       
       <div class="form-group">
         <label>Email Address</label>
-        <input type="email" id="signupEmail" placeholder="staff@secretisland.com" required>
+        <input type="email" id="signupEmail" placeholder="staff@ultrafunkula.co.uk" required>
       </div>
       <div class="form-group">
         <label>Password (Min 6 characters)</label>
@@ -671,7 +671,7 @@
     const auth = firebase.auth();
     const db = firebase.database();
 
-    // Define Admin emails (Anyone logging in with these emails gets full access)
+    // Define Admin emails (Updated with James and Matt's ultrafunkula emails)
     const adminEmails = [
       "james.dunn@ultrafunkula.co.uk",
       "matthew.prevett@ultrafunkula.co.uk",
@@ -954,12 +954,16 @@
         const statusEl = document.getElementById('syncStatus');
         
         if (val) {
-          if (val.actualSalesData) actualSalesData = val.actualSalesData;
-          if (val.budgetData) budgetData = val.budgetData;
-          if (val.targetData) targetData = val.targetData;
-          if (val.planData) planData = val.planData;
-          if (val.rolesData) rolesData = val.rolesData;
-          if (val.djData) djData = val.djData;
+          actualSalesData = val.actualSalesData ? val.actualSalesData : { ...defaultActualSales };
+          budgetData = val.budgetData ? val.budgetData : [...defaultBudget];
+          targetData = val.targetData ? val.targetData : [...defaultTargets];
+          planData = val.planData ? val.planData : [...defaultPlan];
+          rolesData = val.rolesData ? val.rolesData : [...defaultRoles];
+          djData = val.djData ? val.djData : [...defaultDjs];
+
+          if (!val.actualSalesData || !val.budgetData) {
+            saveAllToFirebase();
+          }
           
           if (statusEl) {
             statusEl.innerText = "🟢 Live Sync Active";
@@ -1112,6 +1116,51 @@
 
         document.getElementById('adminStatsGrid').style.display = isAdmin ? 'grid' : 'none';
         document.getElementById('adminRevenueCard').style.display = isAdmin ? 'block' : 'none';
+
+        // CALCULATE FINANCIALS
+        let friTicketTotal = 0, satTicketTotal = 0;
+        targetData.forEach(row => {
+          const itemTotal = (row.qty || 0) * (row.price || 0);
+          if (row.day.includes("Friday")) friTicketTotal += itemTotal;
+          else if (row.day.includes("Saturday")) satTicketTotal += itemTotal;
+        });
+
+        const vendorSponsorTotal = 17500;
+        const totalBarForecast = 17100 + 104000;
+        const totalIncomeForecast = friTicketTotal + satTicketTotal + totalBarForecast + vendorSponsorTotal;
+
+        const totalActualRevenue = (actualSalesData.friRev || 0) + (actualSalesData.satRev || 0) + (actualSalesData.wkndRev || 0) + (actualSalesData.barRev || 0);
+
+        let bNetTotal = 0, bVatTotal = 0, bIncTotal = 0, bSpentTotal = 0;
+        budgetData.forEach(row => {
+          const vatAmt = row.vat === 'YES' ? row.net * 0.2 : 0;
+          bNetTotal += row.net;
+          bVatTotal += vatAmt;
+          bIncTotal += (row.net + vatAmt);
+          bSpentTotal += (row.update || 0);
+        });
+
+        const netVatLiability = bVatTotal * 0.5; 
+        const profitVariance = totalIncomeForecast - bIncTotal - netVatLiability;
+
+        if (isAdmin) {
+          document.getElementById('dashTotalIncome').innerText = formatGBP(totalIncomeForecast);
+          document.getElementById('dashActualRevenue').innerText = formatGBP(totalActualRevenue);
+          document.getElementById('dashTicketCounts').innerHTML = `Tickets: <b>£${(actualSalesData.friRev + actualSalesData.satRev + actualSalesData.wkndRev).toLocaleString()}</b> | Bar: <b>£${(actualSalesData.barRev || 0).toLocaleString()}</b>`;
+          document.getElementById('dashBudInc').innerText = formatGBP(bIncTotal);
+          document.getElementById('dashBudSpent').innerText = `Spent: ${formatGBP(bSpentTotal)} | Remaining: ${formatGBP(bIncTotal - bSpentTotal)}`;
+          
+          const varEl = document.getElementById('dashVariance');
+          varEl.innerText = formatGBP(profitVariance);
+          varEl.style.color = profitVariance >= 0 ? 'var(--accent-green)' : 'var(--accent-rose)';
+
+          let revTableHtml = `
+            <tr><td>Friday Event</td><td style="text-align:right;">${formatGBP(friTicketTotal)}</td><td style="text-align:right;">${formatGBP(17100)}</td><td style="text-align:right; font-weight:bold;">${formatGBP(friTicketTotal + 17100)}</td></tr>
+            <tr><td>Saturday Event</td><td style="text-align:right;">${formatGBP(satTicketTotal)}</td><td style="text-align:right;">${formatGBP(104000)}</td><td style="text-align:right; font-weight:bold;">${formatGBP(satTicketTotal + 104000)}</td></tr>
+            <tr><td>Sponsorship & Vendors</td><td style="text-align:right;">-</td><td style="text-align:right;">-</td><td style="text-align:right; font-weight:bold;">${formatGBP(vendorSponsorTotal)}</td></tr>
+          `;
+          document.getElementById('dashRevenueBody').innerHTML = revTableHtml;
+        }
 
         const frontStageFilter = document.getElementById('frontStageFilter');
         const currentFilterVal = frontStageFilter ? frontStageFilter.value : "ALL";
