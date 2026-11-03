@@ -5,8 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Secret Island Festival 2027 — Master Revenue & Operations Dashboard</title>
   
-  <!-- Firebase App & Realtime Database CDN SDK -->
+  <!-- Firebase App, Auth & Realtime Database CDN SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
   <style>
@@ -73,6 +74,16 @@
     .edit-btn { background: #f1f5f9; color: var(--text-main); border: 1px solid var(--border-color); padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 600; }
     .edit-btn:hover { background: #e2e8f0; }
 
+    /* Login Modal Overlay */
+    #loginOverlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(4px); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; }
+    .login-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 32px; width: 100%; max-width: 400px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2); }
+    .login-card h2 { font-size: 18px; font-weight: 800; color: var(--accent-rose); margin-bottom: 6px; text-align: center; }
+    .login-card p { font-size: 12px; color: var(--text-muted); margin-bottom: 20px; text-align: center; }
+    .login-card input { width: 100%; padding: 10px 14px; font-size: 13px; margin-bottom: 12px; border-radius: 8px; }
+    .login-card button { width: 100%; padding: 10px; font-weight: bold; background: var(--accent-rose); color: white; border: none; border-radius: 8px; font-size: 13px; cursor: pointer; }
+    .login-card button:hover { background: #be123c; }
+    #loginError { color: var(--accent-rose); font-size: 11px; margin-top: 10px; text-align: center; display: none; }
+
     /* Modal */
     .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 50; align-items: center; justify-content: center; padding: 20px; }
     .modal.active { display: flex; }
@@ -84,11 +95,23 @@
 </head>
 <body>
 
+  <!-- LOGIN GATE OVERLAY -->
+  <div id="loginOverlay">
+    <div class="login-card">
+      <h2>🔒 Secret Island Festival</h2>
+      <p>Log in with your team email and password</p>
+      <input type="email" id="loginEmail" placeholder="Email address..." required>
+      <input type="password" id="loginPassword" placeholder="Password..." required onkeydown="if(event.key==='Enter') handleLogin()">
+      <button onclick="handleLogin()">Log In to Dashboard</button>
+      <div id="loginError"></div>
+    </div>
+  </div>
+
   <!-- HEADER -->
   <header>
     <div class="header-title">
       <h1>SECRET ISLAND FESTIVAL 2027</h1>
-      <p>Master Revenue & Operations Executive Dashboard (Live Firebase Sync)</p>
+      <p>Master Revenue & Operations Executive Dashboard</p>
     </div>
     
     <div class="header-controls">
@@ -104,14 +127,9 @@
       <button onclick="triggerImport()" class="io-btn">📤 Restore JSON</button>
       <input type="file" id="jsonFileInput" accept=".json" style="display:none;" onchange="importFromJSON(event)">
       
-      <div style="display: flex; align-items: center; gap: 6px; background: #f8fafc; padding: 4px 10px; border-radius: 6px; border: 1px solid var(--border-color);">
-        <span style="font-size: 11px; color: var(--text-muted);">User:</span>
-        <select id="userSelect" onchange="switchUser(this.value)">
-          <option value="James Dunn">James Dunn</option>
-          <option value="Matt Prevett">Matt Prevett</option>
-          <option value="Kevin Day">Kevin Day</option>
-          <option value="Ben Wass">Ben Wass</option>
-        </select>
+      <div style="display: flex; align-items: center; gap: 8px; background: #f8fafc; padding: 4px 10px; border-radius: 6px; border: 1px solid var(--border-color);">
+        <span id="loggedInUserDisplay" style="font-size: 11px; font-weight: bold; color: var(--accent-blue);">User</span>
+        <button onclick="handleLogout()" style="background: #ffe4e6; color: #9f1239; border: 1px solid #fecdd3; padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: bold;">Log Out</button>
       </div>
     </div>
   </header>
@@ -129,7 +147,7 @@
   <main>
     <!-- TAB 1: EXECUTIVE DASHBOARD -->
     <div id="tab-dash" class="tab-content active">
-      <div class="stats-grid">
+      <div class="stats-grid" id="adminStatsGrid">
         <div class="stat-card">
           <p>Total Forecasted Income</p>
           <h3 id="dashTotalIncome" style="color: var(--accent-blue);">£0.00</h3>
@@ -156,7 +174,7 @@
       </div>
 
       <div class="dashboard-grid">
-        <div class="table-card">
+        <div class="table-card" id="adminRevenueCard">
           <div class="table-header">Forecasted Revenue Breakdown</div>
           <div class="table-wrap">
             <table>
@@ -613,7 +631,7 @@
 
   <script>
     // ==========================================
-    // ⚙️ FIREBASE LIVE DATABASE CONFIGURATION
+    // ⚙️ FIREBASE LIVE CONFIG & AUTH
     // ==========================================
     const firebaseConfig = {
       apiKey: "AIzaSyCETSeAhkKL4dnBiD3TeDgk_q-LqxluX8k",
@@ -625,9 +643,54 @@
       appId: "1:634080744129:web:70ea3b11e294bf733bfa40"
     };
 
-    // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
     const db = firebase.database();
+
+    // Define Admin emails (Anyone logging in with these emails gets full access)
+    const adminEmails = [
+      "james@secretisland.com",
+      "matt@secretisland.com",
+      "kevin@secretisland.com",
+      "ben@secretisland.com"
+    ];
+
+    let currentUserEmail = "";
+
+    // Firebase Auth Login Handler
+    function handleLogin() {
+      const email = document.getElementById('loginEmail').value.trim();
+      const password = document.getElementById('loginPassword').value;
+      const errorEl = document.getElementById('loginError');
+
+      auth.signInWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+          // Success
+          document.getElementById('loginOverlay').style.display = 'none';
+        })
+        .catch((error) => {
+          errorEl.innerText = error.message;
+          errorEl.style.display = 'block';
+        });
+    }
+
+    function handleLogout() {
+      auth.signOut().then(() => {
+        location.reload();
+      });
+    }
+
+    // Monitor Auth State
+    auth.onAuthStateChanged((user) => {
+      if (user) {
+        currentUserEmail = user.email;
+        document.getElementById('loginOverlay').style.display = 'none';
+        document.getElementById('loggedInUserDisplay').innerText = currentUserEmail;
+        initFirebaseSync();
+      } else {
+        document.getElementById('loginOverlay').style.display = 'flex';
+      }
+    });
 
     const defaultActualSales = {
       friQty: 15, friRev: 525,
@@ -826,7 +889,6 @@
     let djData = [...defaultDjs];
     let currentCalDay = "Friday 30th July";
 
-    // Firebase Realtime Sync Listeners
     function initFirebaseSync() {
       const dbRef = db.ref('sif27_festival_data');
       
@@ -855,7 +917,7 @@
       }, (error) => {
         const statusEl = document.getElementById('syncStatus');
         if (statusEl) {
-          statusEl.innerText = "🔴 Sync Error (Check Config)";
+          statusEl.innerText = "🔴 Sync Error";
           statusEl.style.background = "#ffe4e6";
           statusEl.style.color = "#9f1239";
         }
@@ -872,16 +934,21 @@
     }
 
     function openTab(tabName) {
+      const isAdmin = adminEmails.includes(currentUserEmail);
+
+      if (!isAdmin && tabName !== 'plan' && tabName !== 'djs' && tabName !== 'dash') {
+        alert(`⚠️ Access Restricted\n\nRestricted users can only view the Project Plan and DJs/Production tabs.`);
+        return;
+      }
+
       document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      
       const targetTab = document.getElementById('tab-' + tabName);
       const targetBtn = document.getElementById('btn-' + tabName);
+      
       if (targetTab) targetTab.classList.add('active');
       if (targetBtn) targetBtn.classList.add('active');
-    }
-
-    function switchUser(user) {
-      localStorage.setItem('sif27_user', user);
     }
 
     function switchCalDay(day) {
@@ -907,31 +974,14 @@
       const timeSelect = document.getElementById('djTime');
       timeSelect.innerHTML = "";
 
-      let slots = [];
-      if (daySelect.includes("Friday")) {
-        slots = [
-          "16:00 - 17:00 (1 Hour)", "16:00 - 18:00 (2 Hours)",
-          "17:00 - 18:00 (1 Hour)", "17:00 - 19:00 (2 Hours)",
-          "18:00 - 19:00 (1 Hour)", "18:00 - 20:00 (2 Hours)",
-          "19:00 - 20:00 (1 Hour)", "19:00 - 21:00 (2 Hours)",
-          "20:00 - 21:00 (1 Hour)", "20:00 - 22:00 (2 Hours)",
-          "21:00 - 22:00 (1 Hour)", "21:00 - 23:00 (2 Hours)",
-          "22:00 - 23:00 (1 Hour)"
-        ];
-      } else {
-        slots = [
-          "13:00 - 14:00 (1 Hour)", "13:00 - 15:00 (2 Hours)",
-          "14:00 - 15:00 (1 Hour)", "14:00 - 16:00 (2 Hours)",
-          "15:00 - 16:00 (1 Hour)", "15:00 - 17:00 (2 Hours)",
-          "16:00 - 17:00 (1 Hour)", "16:00 - 18:00 (2 Hours)",
-          "17:00 - 18:00 (1 Hour)", "17:00 - 19:00 (2 Hours)",
-          "18:00 - 19:00 (1 Hour)", "18:00 - 20:00 (2 Hours)",
-          "19:00 - 20:00 (1 Hour)", "19:00 - 21:00 (2 Hours)",
-          "20:00 - 21:00 (1 Hour)", "20:00 - 22:00 (2 Hours)",
-          "21:00 - 22:00 (1 Hour)", "21:00 - 23:00 (2 Hours)",
-          "22:00 - 23:00 (1 Hour)"
-        ];
-      }
+      let slots = daySelect.includes("Friday") ? [
+        "16:00 - 17:00 (1 Hour)", "17:00 - 18:00 (1 Hour)", "18:00 - 19:00 (1 Hour)",
+        "19:00 - 20:00 (1 Hour)", "20:00 - 21:00 (1 Hour)", "21:00 - 22:00 (1 Hour)", "22:00 - 23:00 (1 Hour)"
+      ] : [
+        "13:00 - 14:00 (1 Hour)", "14:00 - 15:00 (1 Hour)", "15:00 - 16:00 (1 Hour)",
+        "16:00 - 17:00 (1 Hour)", "17:00 - 18:00 (1 Hour)", "18:00 - 19:00 (1 Hour)",
+        "19:00 - 20:00 (1 Hour)", "20:00 - 21:00 (1 Hour)", "21:00 - 22:00 (1 Hour)", "22:00 - 23:00 (1 Hour)"
+      ];
 
       slots.forEach(slot => {
         const opt = document.createElement('option');
@@ -961,16 +1011,12 @@
       if (!matrixBody) return;
 
       let slots = currentCalDay.includes("Friday") ? [
-        "16:00 - 17:00 (1 Hour)", "17:00 - 18:00 (1 Hour)",
-        "18:00 - 19:00 (1 Hour)", "19:00 - 20:00 (1 Hour)",
-        "20:00 - 21:00 (1 Hour)", "21:00 - 22:00 (1 Hour)",
-        "22:00 - 23:00 (1 Hour)"
+        "16:00 - 17:00 (1 Hour)", "17:00 - 18:00 (1 Hour)", "18:00 - 19:00 (1 Hour)",
+        "19:00 - 20:00 (1 Hour)", "20:00 - 21:00 (1 Hour)", "21:00 - 22:00 (1 Hour)", "22:00 - 23:00 (1 Hour)"
       ] : [
-        "13:00 - 14:00 (1 Hour)", "14:00 - 15:00 (1 Hour)",
-        "15:00 - 16:00 (1 Hour)", "16:00 - 17:00 (1 Hour)",
-        "17:00 - 18:00 (1 Hour)", "18:00 - 19:00 (1 Hour)",
-        "19:00 - 20:00 (1 Hour)", "20:00 - 21:00 (1 Hour)",
-        "21:00 - 22:00 (1 Hour)", "22:00 - 23:00 (1 Hour)"
+        "13:00 - 14:00 (1 Hour)", "14:00 - 15:00 (1 Hour)", "15:00 - 16:00 (1 Hour)",
+        "16:00 - 17:00 (1 Hour)", "17:00 - 18:00 (1 Hour)", "18:00 - 19:00 (1 Hour)",
+        "19:00 - 20:00 (1 Hour)", "20:00 - 21:00 (1 Hour)", "21:00 - 22:00 (1 Hour)", "22:00 - 23:00 (1 Hour)"
       ];
 
       const officialStages = [
@@ -1001,17 +1047,14 @@
         syncActCostsToBudget();
         buildCalendarMatrix();
 
-        const totalActualRevenue = (actualSalesData.friRev || 0) + (actualSalesData.satRev || 0) + (actualSalesData.wkndRev || 0) + (actualSalesData.barRev || 0);
+        const isAdmin = adminEmails.includes(currentUserEmail);
 
-        const dashActualRevEl = document.getElementById('dashActualRevenue');
-        if (dashActualRevEl) dashActualRevEl.innerText = formatGBP(totalActualRevenue);
+        document.getElementById('btn-budget').style.display = isAdmin ? 'block' : 'none';
+        document.getElementById('btn-target').style.display = isAdmin ? 'block' : 'none';
+        document.getElementById('btn-roles').style.display = isAdmin ? 'block' : 'none';
 
-        const dashTicketCountsEl = document.getElementById('dashTicketCounts');
-        if (dashTicketCountsEl) {
-          dashTicketCountsEl.innerHTML = `
-            🎟️ <strong>Sold:</strong> Fri: ${actualSalesData.friQty || 0} (${formatGBP(actualSalesData.friRev)}) | Sat: ${actualSalesData.satQty || 0} (${formatGBP(actualSalesData.satRev)}) | Wknd: ${actualSalesData.wkndQty || 0} (${formatGBP(actualSalesData.wkndRev)}) | Bar: ${formatGBP(actualSalesData.barRev)}
-          `;
-        }
+        document.getElementById('adminStatsGrid').style.display = isAdmin ? 'grid' : 'none';
+        document.getElementById('adminRevenueCard').style.display = isAdmin ? 'block' : 'none';
 
         const frontStageFilter = document.getElementById('frontStageFilter');
         const currentFilterVal = frontStageFilter ? frontStageFilter.value : "ALL";
@@ -1040,7 +1083,7 @@
           }).sort((a, b) => (a.stage || '').localeCompare(b.stage || ''));
 
           if (filteredDjs.length === 0) {
-            dashStageBody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted); font-style:italic; padding: 16px;">No DJs or acts found for this stage filter.</td></tr>`;
+            dashStageBody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted); font-style:italic; padding: 16px;">No DJs or acts found.</td></tr>`;
           } else {
             let stageHtml = '';
             filteredDjs.forEach(row => {
@@ -1057,50 +1100,26 @@
           }
         }
 
-        const leadMap = {
-          "JD": "James Dunn",
-          "MP": "Matt Prevett",
-          "BW": "Ben Wass",
-          "DW": "Darren Wallond",
-          "TG": "Tracey Gascoyne",
-          "MC": "Mel Chapman"
-        };
-
-        let totalTasks = 0, completedTasksCount = 0;
-        let outstandingTasks = 0;
-        const leadOutstandingCounts = {
-          "James Dunn": 0,
-          "Matt Prevett": 0,
-          "Ben Wass": 0,
-          "Darren Wallond": 0,
-          "Tracey Gascoyne": 0,
-          "Mel Chapman": 0
-        };
+        let totalTasks = 0, completedTasksCount = 0, outstandingTasks = 0;
+        const leadOutstandingCounts = { "James Dunn": 0, "Matt Prevett": 0, "Ben Wass": 0, "Darren Wallond": 0, "Tracey Gascoyne": 0, "Mel Chapman": 0 };
+        const leadMap = { "JD": "James Dunn", "MP": "Matt Prevett", "BW": "Ben Wass", "DW": "Darren Wallond", "TG": "Tracey Gascoyne", "MC": "Mel Chapman" };
 
         planData.forEach(r => {
           if (!r.section) {
             totalTasks++;
-            if (r.completed) {
-              completedTasksCount++;
-            } else {
+            if (r.completed) completedTasksCount++;
+            else {
               outstandingTasks++;
               const rawLead = (r.p1 || "").trim();
               const fullName = leadMap[rawLead] || rawLead;
-              if (leadOutstandingCounts[fullName] !== undefined) {
-                leadOutstandingCounts[fullName]++;
-              } else if (fullName) {
-                leadOutstandingCounts[fullName] = 1;
-              }
+              if (leadOutstandingCounts[fullName] !== undefined) leadOutstandingCounts[fullName]++;
             }
           }
         });
 
-        const projTotalTasksEl = document.getElementById('projTotalTasks');
-        if (projTotalTasksEl) projTotalTasksEl.innerText = `${outstandingTasks} Pending (${totalTasks} Total)`;
-        
+        document.getElementById('projTotalTasks').innerText = `${outstandingTasks} Pending (${totalTasks} Total)`;
         const progressPct = totalTasks > 0 ? Math.round((completedTasksCount / totalTasks) * 100) : 0;
-        const projProgressRateEl = document.getElementById('projProgressRate');
-        if (projProgressRateEl) projProgressRateEl.innerText = `${progressPct}% (${completedTasksCount}/${totalTasks})`;
+        document.getElementById('projProgressRate').innerText = `${progressPct}% (${completedTasksCount}/${totalTasks})`;
 
         let leadHtml = '';
         for (const [name, count] of Object.entries(leadOutstandingCounts)) {
@@ -1110,69 +1129,17 @@
             <td style="text-align:right;"><span class="badge" style="${count > 0 ? 'background:#ffe4e6; color:#9f1239; border-color:#fecdd3;' : ''}">${count > 0 ? 'Action Needed' : 'Up to Date'}</span></td>
           </tr>`;
         }
-        const leadWorkloadBodyEl = document.getElementById('leadWorkloadBody');
-        if (leadWorkloadBodyEl) leadWorkloadBodyEl.innerHTML = leadHtml;
-
-        let friTicketTotal = 0, satTicketTotal = 0;
-        targetData.forEach(row => {
-          const itemTotal = (row.qty || 0) * (row.price || 0);
-          if (row.day.includes("Friday")) friTicketTotal += itemTotal;
-          else if (row.day.includes("Saturday")) satTicketTotal += itemTotal;
-        });
-
-        const vendorSponsorTotal = 17500;
-        const friBarForecast = 17100;
-        const satBarForecast = 104000;
-        const totalBarForecast = friBarForecast + satBarForecast;
-        const totalIncomeForecast = friTicketTotal + satTicketTotal + totalBarForecast + vendorSponsorTotal;
-
-        let bNetTotal = 0, bVatTotal = 0, bIncTotal = 0, bSpentTotal = 0;
-        budgetData.forEach(row => {
-          const vatAmt = row.vat === 'YES' ? row.net * 0.2 : 0;
-          bNetTotal += row.net;
-          bVatTotal += vatAmt;
-          bIncTotal += (row.net + vatAmt);
-          bSpentTotal += (row.update || 0);
-        });
-
-        const netVatLiability = 15856.33;
-        const profitVariance = totalIncomeForecast - bIncTotal - netVatLiability;
-
-        const dashTotalIncomeEl = document.getElementById('dashTotalIncome');
-        if (dashTotalIncomeEl) dashTotalIncomeEl.innerText = formatGBP(totalIncomeForecast);
-
-        const dashBudIncEl = document.getElementById('dashBudInc');
-        if (dashBudIncEl) dashBudIncEl.innerText = formatGBP(bIncTotal);
-
-        const dashBudSpentEl = document.getElementById('dashBudSpent');
-        if (dashBudSpentEl) dashBudSpentEl.innerText = `Spent: ${formatGBP(bSpentTotal)} | Remaining: ${formatGBP(bIncTotal - bSpentTotal)}`;
-        
-        const varElement = document.getElementById('dashVariance');
-        if (varElement) {
-          varElement.innerText = formatGBP(profitVariance);
-          varElement.style.color = profitVariance >= 0 ? 'var(--accent-green)' : 'var(--accent-rose)';
-        }
-
-        const dashRevenueBodyEl = document.getElementById('dashRevenueBody');
-        if (dashRevenueBodyEl) {
-          dashRevenueBodyEl.innerHTML = `
-            <tr><td>Friday 30th July</td><td style="text-align:right;">${formatGBP(friTicketTotal)}</td><td style="text-align:right;">${formatGBP(friBarForecast)}</td><td style="text-align:right; font-weight:bold;">${formatGBP(friTicketTotal + friBarForecast)}</td></tr>
-            <tr><td>Saturday 31st July</td><td style="text-align:right;">${formatGBP(satTicketTotal)}</td><td style="text-align:right;">${formatGBP(satBarForecast)}</td><td style="text-align:right; font-weight:bold;">${formatGBP(satTicketTotal + satBarForecast)}</td></tr>
-            <tr><td>Vendor Fees & Sponsorship</td><td style="text-align:right;">£0.00</td><td style="text-align:right;">£0.00</td><td style="text-align:right; font-weight:bold;">${formatGBP(vendorSponsorTotal)}</td></tr>
-            <tr style="font-weight:bold; background:#f1f5f9;"><td style="color:var(--accent-rose);">Grand Total Forecast</td><td style="text-align:right; color:var(--accent-blue);">${formatGBP(friTicketTotal + satTicketTotal)}</td><td style="text-align:right; color:var(--accent-blue);">${formatGBP(totalBarForecast)}</td><td style="text-align:right; color:var(--accent-green); font-size:13px;">${formatGBP(totalIncomeForecast)}</td></tr>
-          `;
-        }
+        document.getElementById('leadWorkloadBody').innerHTML = leadHtml;
 
         // TAB 2: BUDGET
         const bBody = document.getElementById('budgetBody');
-        if (bBody) {
+        if (bBody && isAdmin) {
           let bHtml = '';
           budgetData.forEach((row, idx) => {
             const vatAmt = row.vat === 'YES' ? row.net * 0.2 : 0;
             const inc = row.net + vatAmt;
-            const isDjRow = row.item.toLowerCase().includes("event dj or act fee");
             bHtml += `<tr>
-              <td style="font-weight:600;">${row.item} ${isDjRow ? '<span class="badge" style="background:#f3e8ff; color:#6b21a8; border-color:#e9d5ff; margin-left:6px;">Auto-Synced from Tab 6</span>' : ''}</td>
+              <td style="font-weight:600;">${row.item}</td>
               <td><span class="badge">${row.cat}</span></td>
               <td style="text-align:right;">${formatGBP(row.net)}</td>
               <td style="text-align:center;"><span class="badge ${row.vat === 'YES' ? 'badge-yes' : ''}">${row.vat}</span></td>
@@ -1180,7 +1147,7 @@
               <td style="text-align:right; font-weight:600; color:var(--accent-purple);">${formatGBP(inc)}</td>
               <td style="text-align:right; font-weight:bold; color:${row.update > 0 ? 'var(--accent-amber)' : 'var(--text-muted)'};">${formatGBP(row.update)}</td>
               <td style="text-align:center; color:var(--text-muted);">${row.owner}</td>
-              <td style="text-align:center;"><button class="edit-btn" onclick="openBudgetModal(${idx})" ${isDjRow ? 'title="Synced automatically from Tab 6 acts cost sum"' : ''}>Edit</button></td>
+              <td style="text-align:center;"><button class="edit-btn" onclick="openBudgetModal(${idx})">Edit</button></td>
             </tr>`;
           });
           bBody.innerHTML = bHtml;
@@ -1188,7 +1155,7 @@
 
         // TAB 3: TARGETS
         const tBody = document.getElementById('targetBody');
-        if (tBody) {
+        if (tBody && isAdmin) {
           let tHtml = '';
           targetData.forEach((row, idx) => {
             const itemTotal = (row.qty || 0) * (row.price || 0);
@@ -1231,7 +1198,7 @@
                   <td style="color:var(--text-muted); white-space:nowrap;">${row.stepsDate || '-'}</td>
                   <td style="text-align:center;">
                     <button class="edit-btn" onclick="openPlanModal(${idx})">Edit</button>
-                    <button class="edit-btn" onclick="deletePlanItem(${idx})" style="background:#ffe4e6; color:#9f1239; border-color:#fecdd3; margin-left:4px;">Del</button>
+                    ${isAdmin ? `<button class="edit-btn" onclick="deletePlanItem(${idx})" style="background:#ffe4e6; color:#9f1239; border-color:#fecdd3; margin-left:4px;">Del</button>` : ''}
                   </td>
                 </tr>`;
               }
@@ -1254,7 +1221,7 @@
                 <td style="white-space:nowrap;">${row.stepsDate || '-'}</td>
                 <td style="text-align:center;">
                   <button class="edit-btn" onclick="openPlanModal(${row.originalIndex})">Edit</button>
-                  <button class="edit-btn" onclick="deletePlanItem(${row.originalIndex})" style="background:#ffe4e6; color:#9f1239; border-color:#fecdd3; margin-left:4px;">Del</button>
+                  ${isAdmin ? `<button class="edit-btn" onclick="deletePlanItem(${row.originalIndex})" style="background:#ffe4e6; color:#9f1239; border-color:#fecdd3; margin-left:4px;">Del</button>` : ''}
                 </td>
               </tr>`;
             });
@@ -1274,7 +1241,7 @@
 
         // TAB 5: ROLES
         const rBody = document.getElementById('rolesBody');
-        if (rBody) {
+        if (rBody && isAdmin) {
           let rHtml = '';
           rolesData.forEach((row, idx) => {
             if (row.section) {
@@ -1317,11 +1284,11 @@
         }
 
       } catch (err) {
-        console.error("Dashboard table render error:", err);
+        console.error("Dashboard render error:", err);
       }
     }
 
-    // MODALS & ACTIONS WITH FIREBASE SYNC
+    // MODALS & ACTIONS
     function openActualModal() {
       document.getElementById('actFriQty').value = actualSalesData.friQty || 0;
       document.getElementById('actFriRev').value = actualSalesData.friRev || 0;
@@ -1357,7 +1324,7 @@
         document.getElementById('bModalNet').value = '';
         document.getElementById('bModalVat').value = 'YES';
         document.getElementById('bModalUpdate').value = '';
-        document.getElementById('bModalOwner').value = document.getElementById('userSelect').value;
+        document.getElementById('bModalOwner').value = currentUserEmail;
       } else {
         document.getElementById('budgetModalTitle').innerText = "Edit Budget Item";
         const item = budgetData[index];
@@ -1388,7 +1355,7 @@
       buildTables();
     }
     function resetBudget() {
-      if (confirm('Reset budget to default spreadsheet values?')) {
+      if (confirm('Reset budget to default values?')) {
         budgetData = [...defaultBudget];
         saveAllToFirebase();
         buildTables();
@@ -1413,7 +1380,7 @@
       buildTables();
     }
     function resetTargets() {
-      if (confirm('Reset sales targets to default spreadsheet values?')) {
+      if (confirm('Reset sales targets to default values?')) {
         targetData = [...defaultTargets];
         saveAllToFirebase();
         buildTables();
@@ -1464,10 +1431,7 @@
     function saveNewPlanItem() {
       const section = document.getElementById('pAddSection').value;
       const taskName = document.getElementById('pAddTaskName').value.trim();
-      if (!taskName) {
-        alert('Please enter a task name.');
-        return;
-      }
+      if (!taskName) { alert('Please enter a task name.'); return; }
 
       const newTask = {
         task: taskName,
@@ -1484,9 +1448,7 @@
       let insertIndex = planData.findIndex(r => r.section === section);
       if (insertIndex !== -1) {
         insertIndex++;
-        while (insertIndex < planData.length && !planData[insertIndex].section) {
-          insertIndex++;
-        }
+        while (insertIndex < planData.length && !planData[insertIndex].section) { insertIndex++; }
         planData.splice(insertIndex, 0, newTask);
       } else {
         planData.push({ section: section });
@@ -1499,15 +1461,14 @@
     }
 
     function deletePlanItem(index) {
-      if (confirm('Are you sure you want to delete this task?')) {
+      if (confirm('Delete this task?')) {
         planData.splice(index, 1);
         saveAllToFirebase();
         buildTables();
       }
     }
-
     function resetPlan() {
-      if (confirm('Reset project plan to default spreadsheet values?')) {
+      if (confirm('Reset project plan?')) {
         planData = [...defaultPlan];
         saveAllToFirebase();
         buildTables();
@@ -1534,7 +1495,7 @@
       buildTables();
     }
     function resetRoles() {
-      if (confirm('Reset roles matrix to default spreadsheet values?')) {
+      if (confirm('Reset roles?')) {
         rolesData = [...defaultRoles];
         saveAllToFirebase();
         buildTables();
@@ -1577,19 +1538,6 @@
       const day = document.getElementById('djDay').value;
       const time = document.getElementById('djTime').value;
 
-      const conflict = djData.find((act, i) => {
-        if (idx !== -1 && i === idx) return false;
-        const sameStage = (act.stage || "").trim() === stage.trim();
-        const sameDay = (act.day || "").trim() === day.trim();
-        const sameTime = (act.time || "").trim() === time.trim();
-        return sameStage && sameDay && sameTime;
-      });
-
-      if (conflict) {
-        alert(`⚠️ Scheduling Conflict!\n\n"${conflict.name}" is already booked on "${stage}" for "${day}" during the time slot "${time}". Please choose a different stage, day, or time slot.`);
-        return;
-      }
-
       const newAct = {
         name: document.getElementById('djName').value,
         type: document.getElementById('djType').value,
@@ -1611,14 +1559,14 @@
     }
 
     function deleteDjItem(index) {
-      if (confirm('Are you sure you want to delete this act?')) {
+      if (confirm('Delete this act?')) {
         djData.splice(index, 1);
         saveAllToFirebase();
         buildTables();
       }
     }
     function resetDjs() {
-      if (confirm('Reset DJs & Production list to default values?')) {
+      if (confirm('Reset DJs?')) {
         djData = [...defaultDjs];
         saveAllToFirebase();
         buildTables();
@@ -1627,19 +1575,16 @@
 
     function exportToJSON() {
       const payload = { actualSalesData, budgetData, targetData, planData, rolesData, djData };
-      const jsonStr = JSON.stringify(payload, null, 2);
-      const blob = new Blob([jsonStr], { type: 'application/json' });
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `SIF27_Dashboard_Backup_${new Date().toISOString().slice(0,10)}.json`;
+      a.download = `SIF27_Backup_${new Date().toISOString().slice(0,10)}.json`;
       a.click();
       URL.revokeObjectURL(url);
     }
 
-    function triggerImport() {
-      document.getElementById('jsonFileInput').click();
-    }
+    function triggerImport() { document.getElementById('jsonFileInput').click(); }
 
     function importFromJSON(event) {
       const file = event.target.files[0];
@@ -1654,13 +1599,10 @@
           if (imported.planData) planData = imported.planData;
           if (imported.rolesData) rolesData = imported.rolesData;
           if (imported.djData) djData = imported.djData;
-          
           saveAllToFirebase();
           buildTables();
-          alert('Data restored and synced to live database successfully!');
-        } catch (err) {
-          alert('Error importing backup file. Please select a valid JSON backup.');
-        }
+          alert('Data restored successfully!');
+        } catch (err) { alert('Invalid backup file.'); }
       };
       reader.readAsText(file);
     }
@@ -1671,27 +1613,16 @@
         const diff = target - new Date().getTime();
         const countdownEl = document.getElementById('countdown');
         if (!countdownEl) return;
-        if (diff <= 0) {
-          countdownEl.innerText = 'FESTIVAL LIVE!';
-          return;
-        }
+        if (diff <= 0) { countdownEl.innerText = 'FESTIVAL LIVE!'; return; }
         const days = Math.floor(diff / (1000 * 60 * 60 * 24));
         const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
         const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
         const secs = Math.floor((diff % (1000 * 60)) / 1000);
         countdownEl.innerText = `${days}d ${hours}h ${mins}m ${secs}s`;
-      } catch (e) {
-        console.error("Countdown error:", e);
-      }
+      } catch (e) {}
     }
 
     window.addEventListener('DOMContentLoaded', () => {
-      const savedUser = localStorage.getItem('sif27_user');
-      if (savedUser) {
-        const userSelectEl = document.getElementById('userSelect');
-        if (userSelectEl) userSelectEl.value = savedUser;
-      }
-      initFirebaseSync();
       runTimer();
       setInterval(runTimer, 1000);
     });
