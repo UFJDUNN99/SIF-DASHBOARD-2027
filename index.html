@@ -28,8 +28,8 @@
     
     header { background: #ffffff; border-bottom: 1px solid var(--border-color); padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
     .header-branding { display: flex; align-items: center; gap: 14px; }
-    .header-logo { width: 44px; height: 44px; object-fit: cover; border-radius: 50%; border: 2px solid var(--accent-rose); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-    .header-title h1 { font-size: 20px; font-weight: 800; color: var(--accent-rose); letter-spacing: 0.5px; }
+    .header-logo { width: 44px; height: 44px; object-fit: cover; border-radius: 50%; border: 2px solid var(--text-main); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .header-title h1 { font-size: 20px; font-weight: 800; color: var(--text-main); letter-spacing: 0.5px; }
     .header-title p { font-size: 12px; color: var(--text-muted); }
     .header-controls { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
     .countdown-box { background: #f1f5f9; border: 1px solid var(--border-color); padding: 6px 14px; font-family: monospace; font-size: 13px; border-radius: 8px; color: var(--text-main); }
@@ -86,7 +86,7 @@
     .timeline-grid-line { flex: 1; border-right: 1px dashed #e2e8f0; height: 100%; }
     .timeline-bar { height: 100%; border-radius: 3px; position: absolute; display: flex; align-items: center; padding: 0 8px; color: white; font-size: 10px; font-weight: bold; white-space: nowrap; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
 
-    /* Notes & Ideas Board */
+    /* Ideas Board */
     .notes-board-grid { display: grid; grid-template-columns: 320px 1fr; gap: 20px; padding: 20px; }
     @media(max-width: 900px) { .notes-board-grid { grid-template-columns: 1fr; } }
     .note-form-card { background: #f8fafc; border: 1px solid var(--border-color); border-radius: 10px; padding: 16px; height: fit-content; }
@@ -160,7 +160,7 @@
   <!-- HEADER -->
   <header>
     <div class="header-branding">
-      <img src="watermarked_img_17179455126861729127.jpg" alt="Secret Island Festival Logo" class="header-logo">
+      <img src="JDSIF_Logo_25_rs_2.jpg" alt="Secret Island Festival Logo" class="header-logo">
       <div class="header-title">
         <h1>SECRET ISLAND FESTIVAL 2027</h1>
         <p>Master Revenue & Operations Executive Dashboard</p>
@@ -196,7 +196,7 @@
     <button onclick="openTab('timeline')" id="btn-timeline" class="tab-btn">📅 Project Timeline</button>
     <button onclick="openTab('roles')" id="btn-roles" class="tab-btn">🛡️ Roles</button>
     <button onclick="openTab('djs')" id="btn-djs" class="tab-btn">🎧 DJs & Production</button>
-    <button onclick="openTab('notes')" id="btn-notes" class="tab-btn">📝 Department Notes</button>
+    <button onclick="openTab('notes')" id="btn-notes" class="tab-btn">💡 Ideas Board</button>
   </nav>
 
   <main>
@@ -498,11 +498,11 @@
       </div>
     </div>
 
-    <!-- TAB 8: DEPARTMENT NOTES & IDEAS -->
+    <!-- TAB 8: IDEAS BOARD -->
     <div id="tab-notes" class="tab-content">
       <div class="table-card">
         <div class="table-header">
-          <span>📝 Department Notes, Brainstorming & Ideas Board</span>
+          <span>💡 Department Ideas Board & Brainstorming</span>
           <div style="display: flex; align-items: center; gap: 10px;">
             <label style="font-size: 11px; color: var(--text-muted); font-weight: 600;">Sort By:</label>
             <select id="notesSortSelect" onchange="buildNotesBoard()" style="padding: 4px 8px; font-size: 11px;">
@@ -533,17 +533,15 @@
               <label>Note / Idea Content (User Input)</label>
               <textarea id="noteContent" rows="4" placeholder="Enter your suggestion, note or brainstorm..." required></textarea>
             </div>
-            <button onclick="submitNewNote()" class="action-btn" style="width: 100%;">Post Note</button>
+            <button onclick="submitNewNote()" class="action-btn" style="width: 100%;">Post Idea</button>
           </div>
 
           <!-- NOTES FEED / LIST -->
           <div>
             <div class="form-group" style="margin-bottom: 14px;">
-              <input type="text" id="notesSearchInput" oninput="buildNotesBoard()" placeholder="🔍 Filter notes by keyword, user input or department..." style="padding: 8px 12px; font-size: 12px;">
+              <input type="text" id="notesSearchInput" oninput="buildNotesBoard()" placeholder="🔍 Filter ideas by keyword, user input or department..." style="padding: 8px 12px; font-size: 12px;">
             </div>
-            <div id="notesFeedContainer">
-              <!-- Rendered via JS -->
-            </div>
+            <div id="notesFeedContainer"></div>
           </div>
         </div>
       </div>
@@ -1100,7 +1098,7 @@
       const isAdmin = adminEmails.includes(currentUserEmail);
 
       if (!isAdmin && tabName !== 'plan' && tabName !== 'timeline' && tabName !== 'djs' && tabName !== 'notes' && tabName !== 'dash') {
-        alert(`⚠️ Access Restricted\n\nRestricted users can view the Dashboard, Project Plan, Project Timeline, DJs, and Department Notes tabs.`);
+        alert(`⚠️ Access Restricted\n\nRestricted users can view the Dashboard, Project Plan, Project Timeline, DJs, and Ideas Board tabs.`);
         return;
       }
 
@@ -1273,7 +1271,7 @@
     }
 
     // ==========================================
-    // 📝 NOTES & IDEAS BOARD LOGIC
+    // 💡 IDEAS BOARD LOGIC
     // ==========================================
     function submitNewNote() {
       const dept = document.getElementById('noteDept').value;
@@ -1336,7 +1334,7 @@
       });
 
       if (filtered.length === 0) {
-        feedContainer.innerHTML = `<p style="color: var(--text-muted); font-style: italic; text-align: center; padding: 20px;">No notes or ideas found matching your search.</p>`;
+        feedContainer.innerHTML = `<p style="color: var(--text-muted); font-style: italic; text-align: center; padding: 20px;">No ideas found matching your search.</p>`;
         return;
       }
 
