@@ -27,6 +27,8 @@
     body { background-color: var(--bg-color); color: var(--text-main); min-height: 100vh; padding-bottom: 40px; }
     
     header { background: #ffffff; border-bottom: 1px solid var(--border-color); padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .header-branding { display: flex; align-items: center; gap: 14px; }
+    .header-logo { width: 44px; height: 44px; object-fit: cover; border-radius: 50%; border: 2px solid var(--accent-rose); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
     .header-title h1 { font-size: 20px; font-weight: 800; color: var(--accent-rose); letter-spacing: 0.5px; }
     .header-title p { font-size: 12px; color: var(--text-muted); }
     .header-controls { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
@@ -40,8 +42,8 @@
     .io-btn { background: #f1f5f9; border: 1px solid var(--border-color); font-weight: 600; padding: 6px 10px; border-radius: 6px; font-size: 11px; display: flex; align-items: center; gap: 4px; }
     .io-btn:hover { background: #e2e8f0; }
 
-    nav { background: #f1f5f9; border-bottom: 1px solid var(--border-color); padding: 0 24px; display: flex; gap: 12px; flex-wrap: wrap; }
-    .tab-btn { background: none; border: none; color: var(--text-muted); padding: 14px 16px; font-size: 13px; font-weight: 600; cursor: pointer; border-bottom: 3px solid transparent; }
+    nav { background: #f1f5f9; border-bottom: 1px solid var(--border-color); padding: 0 24px; display: flex; gap: 8px; flex-wrap: wrap; }
+    .tab-btn { background: none; border: none; color: var(--text-muted); padding: 14px 14px; font-size: 12px; font-weight: 600; cursor: pointer; border-bottom: 3px solid transparent; }
     .tab-btn.active { color: var(--accent-rose); border-bottom-color: var(--accent-rose); background: #ffffff; }
 
     main { max-width: 1450px; margin: 24px auto; padding: 0 20px; }
@@ -73,6 +75,13 @@
     .action-btn:hover { background: #be123c; }
     .edit-btn { background: #f1f5f9; color: var(--text-main); border: 1px solid var(--border-color); padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 600; }
     .edit-btn:hover { background: #e2e8f0; }
+
+    /* Gantt Chart Custom Styling */
+    .gantt-container { padding: 20px; }
+    .gantt-task-row { display: flex; align-items: center; border-bottom: 1px solid #f1f5f9; padding: 8px 0; font-size: 12px; }
+    .gantt-task-name { width: 280px; font-weight: 600; padding-right: 12px; flex-shrink: 0; }
+    .gantt-timeline-track { flex-grow: 1; background: #f8fafc; border: 1px solid var(--border-color); height: 24px; border-radius: 4px; position: relative; overflow: hidden; }
+    .gantt-bar { background: var(--accent-rose); height: 100%; border-radius: 3px; position: absolute; display: flex; align-items: center; padding: 0 8px; color: white; font-size: 10px; font-weight: bold; white-space: nowrap; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
 
     /* Login Modal Overlay */
     #loginOverlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(4px); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; }
@@ -116,7 +125,7 @@
   <div id="signupModal" class="modal">
     <div class="modal-box" style="max-width: 380px;">
       <h3 style="margin-bottom: 12px; font-size: 16px; font-weight: bold; color: var(--accent-rose); text-align: center;">Register New Staff Account</h3>
-      <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 16px; text-align: center;">New accounts default to restricted staff access (Project Plan & DJs).</p>
+      <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 16px; text-align: center;">New accounts default to restricted staff access (Project Plan, Gantt & DJs).</p>
       
       <div class="form-group">
         <label>Email Address</label>
@@ -138,9 +147,12 @@
 
   <!-- HEADER -->
   <header>
-    <div class="header-title">
-      <h1>SECRET ISLAND FESTIVAL 2027</h1>
-      <p>Master Revenue & Operations Executive Dashboard</p>
+    <div class="header-branding">
+      <img src="watermarked_img_17179455126861729127.jpg" alt="Secret Island Festival Logo" class="header-logo">
+      <div class="header-title">
+        <h1>SECRET ISLAND FESTIVAL 2027</h1>
+        <p>Master Revenue & Operations Executive Dashboard</p>
+      </div>
     </div>
     
     <div class="header-controls">
@@ -165,12 +177,13 @@
 
   <!-- NAVIGATION TABS -->
   <nav>
-    <button onclick="openTab('dash')" id="btn-dash" class="tab-btn active">📊 Executive Dashboard</button>
-    <button onclick="openTab('budget')" id="btn-budget" class="tab-btn">💰 Tab 2: Budget Tracker</button>
-    <button onclick="openTab('target')" id="btn-target" class="tab-btn">🎯 Tab 3: Sales Targets</button>
-    <button onclick="openTab('plan')" id="btn-plan" class="tab-btn">📋 Tab 4: Project Plan</button>
-    <button onclick="openTab('roles')" id="btn-roles" class="tab-btn">🛡️ Tab 5: Roles</button>
-    <button onclick="openTab('djs')" id="btn-djs" class="tab-btn">🎧 Tab 6: DJs & Production</button>
+    <button onclick="openTab('dash')" id="btn-dash" class="tab-btn active">📊 Dashboard</button>
+    <button onclick="openTab('budget')" id="btn-budget" class="tab-btn">💰 Budget Tracker</button>
+    <button onclick="openTab('target')" id="btn-target" class="tab-btn">🎯 Sales Targets</button>
+    <button onclick="openTab('plan')" id="btn-plan" class="tab-btn">📋 Project Plan</button>
+    <button onclick="openTab('gantt')" id="btn-gantt" class="tab-btn">📅 Gantt Chart</button>
+    <button onclick="openTab('roles')" id="btn-roles" class="tab-btn">🛡️ Roles</button>
+    <button onclick="openTab('djs')" id="btn-djs" class="tab-btn">🎧 DJs & Production</button>
   </nav>
 
   <main>
@@ -368,7 +381,20 @@
       </div>
     </div>
 
-    <!-- TAB 5: ROLES & RESPONSIBILITIES -->
+    <!-- TAB 5: GANTT CHART TIMELINE (VISIBLE TO ALL USERS) -->
+    <div id="tab-gantt" class="tab-content">
+      <div class="table-card">
+        <div class="table-header">
+          <span>📅 Project Plan Gantt Chart & Schedule Timeline</span>
+          <span style="font-size: 11px; color: var(--text-muted); font-weight: normal;">Automatically maps dates from Tab 4</span>
+        </div>
+        <div class="gantt-container" id="ganttContainerBody">
+          <!-- Populated dynamically via JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 6: ROLES & RESPONSIBILITIES -->
     <div id="tab-roles" class="tab-content">
       <div class="table-card">
         <div class="table-header">
@@ -392,7 +418,7 @@
       </div>
     </div>
 
-    <!-- TAB 6: DJS & PRODUCTION -->
+    <!-- TAB 7: DJS & PRODUCTION -->
     <div id="tab-djs" class="tab-content">
       <!-- CALENDAR / STAGE AVAILABILITY MATRIX AT A GLANCE -->
       <div class="table-card" style="margin-bottom: 24px;">
@@ -531,7 +557,7 @@
       <div class="form-group"><label>Next Steps</label><textarea id="pModalSteps" rows="2"></textarea></div>
       <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
         <div><label>Next Steps Owner</label><input type="text" id="pModalStepsOwner"></div>
-        <div><label>Next Steps Date</label><input type="text" id="pModalStepsDate"></div>
+        <div><label>Next Steps Date</label><input type="text" id="pModalStepsDate" placeholder="e.g. 1st Feb 2027"></div>
       </div>
       <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px;">
         <button type="button" onclick="closePlanModal()" style="background: #f1f5f9;">Cancel</button>
@@ -671,7 +697,6 @@
     const auth = firebase.auth();
     const db = firebase.database();
 
-    // Define Admin emails (Updated with James and Matt's ultrafunkula emails)
     const adminEmails = [
       "james.dunn@ultrafunkula.co.uk",
       "matthew.prevett@ultrafunkula.co.uk",
@@ -681,7 +706,6 @@
 
     let currentUserEmail = "";
 
-    // Firebase Auth Login Handler
     function handleLogin() {
       const email = document.getElementById('loginEmail').value.trim();
       const password = document.getElementById('loginPassword').value;
@@ -703,7 +727,6 @@
       });
     }
 
-    // Sign-Up Modal Handlers
     function openSignupModal() {
       document.getElementById('signupEmail').value = '';
       document.getElementById('signupPassword').value = '';
@@ -737,7 +760,6 @@
         });
     }
 
-    // Monitor Auth State
     auth.onAuthStateChanged((user) => {
       if (user) {
         currentUserEmail = user.email;
@@ -822,58 +844,58 @@
 
     const defaultPlan = [
       { section: "Infrastructure" },
-      { task: "Fencing", p1: "JD", p2: "-", p3: "-", update: "need to book", steps: "get them booked", stepsOwner: "james dunn", stepsDate: "1st february 2027", completed: false },
-      { task: "Stretch/ Dome Tents", p1: "MP", p2: "TG", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "", completed: false },
-      { task: "Camping", p1: "BW", p2: "MC", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "", completed: false },
-      { task: "Waste & Disposal", p1: "DW", p2: "JD", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "", completed: false },
-      { task: "Fire Extinguishers", p1: "JD", p2: "MC", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "", completed: false },
-      { task: "Site Office", p1: "JD", p2: "DW", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "", completed: false },
-      { task: "Wifi & Epos", p1: "JD", p2: "-", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "", completed: false },
-      { task: "Site Vehicles", p1: "BW", p2: "JD", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "", completed: false },
-      { task: "Traffic Management", p1: "JD", p2: "DW", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "", completed: false },
-      { task: "Support Staff", p1: "TG", p2: "-", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "", completed: false },
-      { task: "Site Equipment", p1: "JD", p2: "BW", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "", completed: false },
+      { task: "Fencing", p1: "JD", p2: "-", p3: "-", update: "need to book", steps: "get them booked", stepsOwner: "james dunn", stepsDate: "1st Feb 2027", completed: false },
+      { task: "Stretch/ Dome Tents", p1: "MP", p2: "TG", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "15th Feb 2027", completed: false },
+      { task: "Camping", p1: "BW", p2: "MC", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "1st Mar 2027", completed: false },
+      { task: "Waste & Disposal", p1: "DW", p2: "JD", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "15th Mar 2027", completed: false },
+      { task: "Fire Extinguishers", p1: "JD", p2: "MC", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "1st Apr 2027", completed: false },
+      { task: "Site Office", p1: "JD", p2: "DW", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "15th Apr 2027", completed: false },
+      { task: "Wifi & Epos", p1: "JD", p2: "-", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "1st May 2027", completed: false },
+      { task: "Site Vehicles", p1: "BW", p2: "JD", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "15th May 2027", completed: false },
+      { task: "Traffic Management", p1: "JD", p2: "DW", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "1st Jun 2027", completed: false },
+      { task: "Support Staff", p1: "TG", p2: "-", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "15th Jun 2027", completed: false },
+      { task: "Site Equipment", p1: "JD", p2: "BW", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "1st Jul 2027", completed: false },
       { section: "Facilities" },
-      { task: "Catering / Pitches", p1: "DW", p2: "JD", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "", completed: false },
-      { task: "Toilets", p1: "DW", p2: "JD", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "", completed: false },
-      { task: "Security", p1: "JD", p2: "DW", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "", completed: false },
-      { task: "Paramedic", p1: "JD", p2: "DW", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "", completed: false },
-      { task: "Bar", p1: "JD", p2: "MP", p3: "BW", update: "", steps: "", stepsOwner: "", stepsDate: "", completed: false },
-      { task: "Transport", p1: "JD", p2: "DW", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "", completed: false },
+      { task: "Catering / Pitches", p1: "DW", p2: "JD", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "1st Feb 2027", completed: false },
+      { task: "Toilets", p1: "DW", p2: "JD", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "1st Mar 2027", completed: false },
+      { task: "Security", p1: "JD", p2: "DW", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "1st Apr 2027", completed: false },
+      { task: "Paramedic", p1: "JD", p2: "DW", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "1st May 2027", completed: false },
+      { task: "Bar", p1: "JD", p2: "MP", p3: "BW", update: "", steps: "", stepsOwner: "", stepsDate: "1st Jun 2027", completed: false },
+      { task: "Transport", p1: "JD", p2: "DW", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "1st Jul 2027", completed: false },
       { section: "Theme & Design" },
-      { task: "Asset Design", p1: "TG", p2: "-", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "", completed: false },
-      { task: "Site Design & Layout", p1: "JD", p2: "BW", p3: "MP", update: "", steps: "", stepsOwner: "", stepsDate: "", completed: false },
-      { task: "Bar design & Build", p1: "BW", p2: "JD", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "", completed: false },
-      { task: "Partner Merch", p1: "JD", p2: "BW", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "", completed: false },
-      { task: "VIP Design", p1: "TG", p2: "BW", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "", completed: false },
+      { task: "Asset Design", p1: "TG", p2: "-", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "1st Feb 2027", completed: false },
+      { task: "Site Design & Layout", p1: "JD", p2: "BW", p3: "MP", update: "", steps: "", stepsOwner: "", stepsDate: "1st Mar 2027", completed: false },
+      { task: "Bar design & Build", p1: "BW", p2: "JD", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "1st May 2027", completed: false },
+      { task: "Partner Merch", p1: "JD", p2: "BW", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "1st Jun 2027", completed: false },
+      { task: "VIP Design", p1: "TG", p2: "BW", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "1st Jul 2027", completed: false },
       { section: "Marketing" },
-      { task: "Marketing & Advertising", p1: "MP", p2: "TG", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "", completed: false },
-      { task: "Social Media", p1: "MP", p2: "TG", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "", completed: false },
-      { task: "Website", p1: "JD", p2: "MP", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "", completed: false },
-      { task: "Ticket Sales", p1: "JD", p2: "MP", p3: "BW", update: "", steps: "", stepsOwner: "", stepsDate: "", completed: false },
-      { task: "Content Capture", p1: "TG", p2: "-", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "", completed: false },
+      { task: "Marketing & Advertising", p1: "MP", p2: "TG", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "1st Feb 2027", completed: false },
+      { task: "Social Media", p1: "MP", p2: "TG", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "1st Apr 2027", completed: false },
+      { task: "Website", p1: "JD", p2: "MP", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "1st May 2027", completed: false },
+      { task: "Ticket Sales", p1: "JD", p2: "MP", p3: "BW", update: "", steps: "", stepsOwner: "", stepsDate: "1st Jun 2027", completed: false },
+      { task: "Content Capture", p1: "TG", p2: "-", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "1st Jul 2027", completed: false },
       { section: "Administration" },
-      { task: "Insurance", p1: "MP", p2: "-", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "", completed: false },
-      { task: "License", p1: "JD", p2: "MP", p3: "BW", update: "", steps: "", stepsOwner: "", stepsDate: "", completed: false },
-      { task: "Banking", p1: "JD", p2: "DW", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "", completed: false },
-      { task: "Accounts", p1: "JD", p2: "DW", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "", completed: false },
-      { task: "Project Management", p1: "DW", p2: "-", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "", completed: false },
-      { task: "Health & Safety", p1: "MC", p2: "DW", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "", completed: false },
-      { task: "Safety Advisory Group", p1: "DW", p2: "MC", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "", completed: false },
+      { task: "Insurance", p1: "MP", p2: "-", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "1st Feb 2027", completed: false },
+      { task: "License", p1: "JD", p2: "MP", p3: "BW", update: "", steps: "", stepsOwner: "", stepsDate: "1st Mar 2027", completed: false },
+      { task: "Banking", p1: "JD", p2: "DW", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "1st Apr 2027", completed: false },
+      { task: "Accounts", p1: "JD", p2: "DW", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "1st May 2027", completed: false },
+      { task: "Project Management", p1: "DW", p2: "-", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "1st Jun 2027", completed: false },
+      { task: "Health & Safety", p1: "MC", p2: "DW", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "1st Jul 2027", completed: false },
+      { task: "Safety Advisory Group", p1: "DW", p2: "MC", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "15th Jul 2027", completed: false },
       { section: "Production" },
-      { task: "Lights", p1: "BW", p2: "MP", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "", completed: false },
-      { task: "Sound", p1: "BW", p2: "MP", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "", completed: false },
-      { task: "Stages", p1: "MP", p2: "BW", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "", completed: false },
-      { task: "Decoration", p1: "BW", p2: "TG", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "", completed: false },
-      { task: "Dj Equipment", p1: "MP", p2: "-", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "", completed: false },
+      { task: "Lights", p1: "BW", p2: "MP", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "1st May 2027", completed: false },
+      { task: "Sound", p1: "BW", p2: "MP", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "1st Jun 2027", completed: false },
+      { task: "Stages", p1: "MP", p2: "BW", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "1st Jul 2027", completed: false },
+      { task: "Decoration", p1: "BW", p2: "TG", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "15th Jul 2027", completed: false },
+      { task: "Dj Equipment", p1: "MP", p2: "-", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "20th Jul 2027", completed: false },
       { section: "Acts" },
-      { task: "DJ'S & Percussion", p1: "MP", p2: "-", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "", completed: false },
-      { task: "Dancers", p1: "TG", p2: "BW", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "", completed: false },
-      { task: "Artist Accomodation and Transport", p1: "TG", p2: "MP", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "", completed: false },
+      { task: "DJ'S & Percussion", p1: "MP", p2: "-", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "1st May 2027", completed: false },
+      { task: "Dancers", p1: "TG", p2: "BW", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "1st Jun 2027", completed: false },
+      { task: "Artist Accomodation and Transport", p1: "TG", p2: "MP", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "1st Jul 2027", completed: false },
       { section: "Partnerships" },
-      { task: "Sponsorship plan and delivery", p1: "TG", p2: "MP", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "", completed: false },
-      { task: "Media partner plan", p1: "TG", p2: "MP", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "", completed: false },
-      { task: "Land Owners", p1: "MP", p2: "TG", p3: "BW", update: "", steps: "", stepsOwner: "", stepsDate: "", completed: false }
+      { task: "Sponsorship plan and delivery", p1: "TG", p2: "MP", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "1st Mar 2027", completed: false },
+      { task: "Media partner plan", p1: "TG", p2: "MP", p3: "-", update: "", steps: "", stepsOwner: "", stepsDate: "1st Apr 2027", completed: false },
+      { task: "Land Owners", p1: "MP", p2: "TG", p3: "BW", update: "", steps: "", stepsOwner: "", stepsDate: "1st May 2027", completed: false }
     ];
 
     const defaultRoles = [
@@ -997,8 +1019,9 @@
     function openTab(tabName) {
       const isAdmin = adminEmails.includes(currentUserEmail);
 
-      if (!isAdmin && tabName !== 'plan' && tabName !== 'djs' && tabName !== 'dash') {
-        alert(`⚠️ Access Restricted\n\nRestricted users can only view the Project Plan and DJs/Production tabs.`);
+      // Restricted users can access Dash, Plan, Gantt, and DJs
+      if (!isAdmin && tabName !== 'plan' && tabName !== 'gantt' && tabName !== 'djs' && tabName !== 'dash') {
+        alert(`⚠️ Access Restricted\n\nRestricted users can only view the Dashboard, Project Plan, Gantt Chart, and DJs/Production tabs.`);
         return;
       }
 
@@ -1103,10 +1126,57 @@
       matrixBody.innerHTML = matrixHtml;
     }
 
+    function buildGanttChart() {
+      const ganttContainer = document.getElementById('ganttContainerBody');
+      if (!ganttContainer) return;
+
+      let ganttHtml = '';
+      let currentSection = "";
+
+      // Timeline baseline range: Feb 1, 2027 to July 31, 2027 (181 days)
+      const startDate = new Date('2027-02-01').getTime();
+      const endDate = new Date('2027-07-31').getTime();
+      const totalTimeSpan = endDate - startDate;
+
+      planData.forEach(row => {
+        if (row.section) {
+          currentSection = row.section;
+          ganttHtml += `<div style="font-weight: bold; color: var(--accent-rose); background: #e2e8f0; padding: 6px 10px; border-radius: 4px; margin-top: 12px; margin-bottom: 6px; font-size: 13px;">📁 ${currentSection}</div>`;
+        } else if (!row.completed) {
+          let leftPercent = 5;
+          let widthPercent = 15;
+
+          if (row.stepsDate) {
+            const parsed = Date.parse(row.stepsDate + " 2027");
+            if (!isNaN(parsed)) {
+              let diff = parsed - startDate;
+              if (diff < 0) diff = 0;
+              if (diff > totalTimeSpan) diff = totalTimeSpan;
+              leftPercent = Math.max(2, Math.min(85, (diff / totalTimeSpan) * 85));
+            }
+          }
+
+          ganttHtml += `
+            <div class="gantt-task-row">
+              <div class="gantt-task-name">${row.task} <span style="font-size:10px; color:var(--text-muted); font-weight:normal;">(${row.stepsDate || 'No Date'})</span></div>
+              <div class="gantt-timeline-track">
+                <div class="gantt-bar" style="left: ${leftPercent}%; width: ${widthPercent}%;">
+                  ${row.p1 ? '[' + row.p1 + ']' : ''}
+                </div>
+              </div>
+            </div>
+          `;
+        }
+      });
+
+      ganttContainer.innerHTML = ganttHtml || `<p style="color:var(--text-muted); text-style:italic;">No tasks to display on timeline.</p>`;
+    }
+
     function buildTables() {
       try {
         syncActCostsToBudget();
         buildCalendarMatrix();
+        buildGanttChart();
 
         const isAdmin = adminEmails.includes(currentUserEmail);
 
@@ -1345,7 +1415,7 @@
           return "";
         }
 
-        // TAB 5: ROLES
+        // TAB 6: ROLES
         const rBody = document.getElementById('rolesBody');
         if (rBody && isAdmin) {
           let rHtml = '';
@@ -1365,7 +1435,7 @@
           rBody.innerHTML = rHtml;
         }
 
-        // TAB 6: DJS
+        // TAB 7: DJS
         const djBody = document.getElementById('djBody');
         if (djBody) {
           let djHtml = '';
