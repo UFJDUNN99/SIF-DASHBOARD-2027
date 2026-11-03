@@ -76,12 +76,15 @@
     .edit-btn { background: #f1f5f9; color: var(--text-main); border: 1px solid var(--border-color); padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 600; }
     .edit-btn:hover { background: #e2e8f0; }
 
-    /* Gantt Chart Custom Styling */
-    .gantt-container { padding: 20px; }
-    .gantt-task-row { display: flex; align-items: center; border-bottom: 1px solid #f1f5f9; padding: 8px 0; font-size: 12px; }
-    .gantt-task-name { width: 280px; font-weight: 600; padding-right: 12px; flex-shrink: 0; }
-    .gantt-timeline-track { flex-grow: 1; background: #f8fafc; border: 1px solid var(--border-color); height: 24px; border-radius: 4px; position: relative; overflow: hidden; }
-    .gantt-bar { background: var(--accent-rose); height: 100%; border-radius: 3px; position: absolute; display: flex; align-items: center; padding: 0 8px; color: white; font-size: 10px; font-weight: bold; white-space: nowrap; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+    /* Timeline / Gantt Styles */
+    .timeline-container { padding: 20px; overflow-x: auto; }
+    .timeline-header-months { display: flex; border-bottom: 2px solid var(--border-color); padding-bottom: 8px; margin-bottom: 14px; font-weight: bold; font-size: 11px; color: var(--text-muted); text-transform: uppercase; }
+    .timeline-month-col { flex: 1; text-align: center; border-right: 1px dashed var(--border-color); padding: 0 4px; }
+    .timeline-task-row { display: flex; align-items: center; border-bottom: 1px solid #f1f5f9; padding: 8px 0; font-size: 12px; }
+    .timeline-task-name { width: 260px; font-weight: 600; padding-right: 12px; flex-shrink: 0; }
+    .timeline-track { flex-grow: 1; background: #f8fafc; border: 1px solid var(--border-color); height: 26px; border-radius: 4px; position: relative; display: flex; }
+    .timeline-grid-line { flex: 1; border-right: 1px dashed #e2e8f0; height: 100%; }
+    .timeline-bar { height: 100%; border-radius: 3px; position: absolute; display: flex; align-items: center; padding: 0 8px; color: white; font-size: 10px; font-weight: bold; white-space: nowrap; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
 
     /* Login Modal Overlay */
     #loginOverlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(4px); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; }
@@ -125,7 +128,7 @@
   <div id="signupModal" class="modal">
     <div class="modal-box" style="max-width: 380px;">
       <h3 style="margin-bottom: 12px; font-size: 16px; font-weight: bold; color: var(--accent-rose); text-align: center;">Register New Staff Account</h3>
-      <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 16px; text-align: center;">New accounts default to restricted staff access (Project Plan, Gantt & DJs).</p>
+      <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 16px; text-align: center;">New accounts default to staff access (Project Plan, Timeline & DJs).</p>
       
       <div class="form-group">
         <label>Email Address</label>
@@ -181,7 +184,7 @@
     <button onclick="openTab('budget')" id="btn-budget" class="tab-btn">💰 Budget Tracker</button>
     <button onclick="openTab('target')" id="btn-target" class="tab-btn">🎯 Sales Targets</button>
     <button onclick="openTab('plan')" id="btn-plan" class="tab-btn">📋 Project Plan</button>
-    <button onclick="openTab('gantt')" id="btn-gantt" class="tab-btn">📅 Gantt Chart</button>
+    <button onclick="openTab('timeline')" id="btn-timeline" class="tab-btn">📅 Project Timeline</button>
     <button onclick="openTab('roles')" id="btn-roles" class="tab-btn">🛡️ Roles</button>
     <button onclick="openTab('djs')" id="btn-djs" class="tab-btn">🎧 DJs & Production</button>
   </nav>
@@ -381,15 +384,28 @@
       </div>
     </div>
 
-    <!-- TAB 5: GANTT CHART TIMELINE (VISIBLE TO ALL USERS) -->
-    <div id="tab-gantt" class="tab-content">
+    <!-- TAB 5: PROJECT TIMELINE (GANTT CHART WITH MONTHS & CATEGORY COLORS) -->
+    <div id="tab-timeline" class="tab-content">
       <div class="table-card">
         <div class="table-header">
-          <span>📅 Project Plan Gantt Chart & Schedule Timeline</span>
-          <span style="font-size: 11px; color: var(--text-muted); font-weight: normal;">Automatically maps dates from Tab 4</span>
+          <span>📅 Project Plan Timeline & Schedule</span>
+          <span style="font-size: 11px; color: var(--text-muted); font-weight: normal;">Colour-coded by Department & mapped across Feb–Jul 2027</span>
         </div>
-        <div class="gantt-container" id="ganttContainerBody">
-          <!-- Populated dynamically via JS -->
+        <div class="timeline-container">
+          <div class="timeline-header-months">
+            <div style="width: 260px; flex-shrink: 0;">Task / Department</div>
+            <div style="flex-grow: 1; display: flex;">
+              <div class="timeline-month-col">Feb 2027</div>
+              <div class="timeline-month-col">Mar 2027</div>
+              <div class="timeline-month-col">Apr 2027</div>
+              <div class="timeline-month-col">May 2027</div>
+              <div class="timeline-month-col">Jun 2027</div>
+              <div class="timeline-month-col">Jul 2027</div>
+            </div>
+          </div>
+          <div id="timelineBody">
+            <!-- Populated dynamically via JS -->
+          </div>
         </div>
       </div>
     </div>
@@ -1019,9 +1035,8 @@
     function openTab(tabName) {
       const isAdmin = adminEmails.includes(currentUserEmail);
 
-      // Restricted users can access Dash, Plan, Gantt, and DJs
-      if (!isAdmin && tabName !== 'plan' && tabName !== 'gantt' && tabName !== 'djs' && tabName !== 'dash') {
-        alert(`⚠️ Access Restricted\n\nRestricted users can only view the Dashboard, Project Plan, Gantt Chart, and DJs/Production tabs.`);
+      if (!isAdmin && tabName !== 'plan' && tabName !== 'timeline' && tabName !== 'djs' && tabName !== 'dash') {
+        alert(`⚠️ Access Restricted\n\nRestricted users can only view the Dashboard, Project Plan, Project Timeline, and DJs/Production tabs.`);
         return;
       }
 
@@ -1126,14 +1141,29 @@
       matrixBody.innerHTML = matrixHtml;
     }
 
-    function buildGanttChart() {
-      const ganttContainer = document.getElementById('ganttContainerBody');
-      if (!ganttContainer) return;
+    function getCategoryColor(category) {
+      switch ((category || "").toLowerCase()) {
+        case 'infrastructure': return '#e11d48'; // Rose
+        case 'facilities': return '#0284c7';     // Blue
+        case 'theme & design': return '#7c3aed'; // Purple
+        case 'marketing': return '#d97706';      // Amber
+        case 'administration': return '#059669'; // Green
+        case 'production': return '#0f172a';     // Slate / Dark
+        case 'acts': return '#db2777';           // Pink
+        case 'partnerships': return '#4f46e5';   // Indigo
+        default: return '#64748b';               // Muted
+      }
+    }
 
-      let ganttHtml = '';
+    function buildTimelineChart() {
+      const timelineContainer = document.getElementById('timelineBody');
+      if (!timelineContainer) return;
+
+      let timelineHtml = '';
       let currentSection = "";
+      let sectionColor = '#e11d48';
 
-      // Timeline baseline range: Feb 1, 2027 to July 31, 2027 (181 days)
+      // Timeline baseline range: Feb 1, 2027 to July 31, 2027 (181 days total)
       const startDate = new Date('2027-02-01').getTime();
       const endDate = new Date('2027-07-31').getTime();
       const totalTimeSpan = endDate - startDate;
@@ -1141,10 +1171,11 @@
       planData.forEach(row => {
         if (row.section) {
           currentSection = row.section;
-          ganttHtml += `<div style="font-weight: bold; color: var(--accent-rose); background: #e2e8f0; padding: 6px 10px; border-radius: 4px; margin-top: 12px; margin-bottom: 6px; font-size: 13px;">📁 ${currentSection}</div>`;
+          sectionColor = getCategoryColor(currentSection);
+          timelineHtml += `<div style="font-weight: bold; color: ${sectionColor}; background: #f1f5f9; padding: 6px 10px; border-radius: 4px; margin-top: 14px; margin-bottom: 6px; font-size: 13px; border-left: 4px solid ${sectionColor};">📁 ${currentSection}</div>`;
         } else if (!row.completed) {
-          let leftPercent = 5;
-          let widthPercent = 15;
+          let leftPercent = 2;
+          let widthPercent = 14;
 
           if (row.stepsDate) {
             const parsed = Date.parse(row.stepsDate + " 2027");
@@ -1152,15 +1183,21 @@
               let diff = parsed - startDate;
               if (diff < 0) diff = 0;
               if (diff > totalTimeSpan) diff = totalTimeSpan;
-              leftPercent = Math.max(2, Math.min(85, (diff / totalTimeSpan) * 85));
+              leftPercent = Math.max(1, Math.min(84, (diff / totalTimeSpan) * 84));
             }
           }
 
-          ganttHtml += `
-            <div class="gantt-task-row">
-              <div class="gantt-task-name">${row.task} <span style="font-size:10px; color:var(--text-muted); font-weight:normal;">(${row.stepsDate || 'No Date'})</span></div>
-              <div class="gantt-timeline-track">
-                <div class="gantt-bar" style="left: ${leftPercent}%; width: ${widthPercent}%;">
+          timelineHtml += `
+            <div class="timeline-task-row">
+              <div class="timeline-task-name">${row.task} <span style="font-size:10px; color:var(--text-muted); font-weight:normal;">(${row.stepsDate || 'No Date'})</span></div>
+              <div class="timeline-track">
+                <div class="timeline-grid-line"></div>
+                <div class="timeline-grid-line"></div>
+                <div class="timeline-grid-line"></div>
+                <div class="timeline-grid-line"></div>
+                <div class="timeline-grid-line"></div>
+                <div class="timeline-grid-line"></div>
+                <div class="timeline-bar" style="left: ${leftPercent}%; width: ${widthPercent}%; background: ${sectionColor};">
                   ${row.p1 ? '[' + row.p1 + ']' : ''}
                 </div>
               </div>
@@ -1169,14 +1206,14 @@
         }
       });
 
-      ganttContainer.innerHTML = ganttHtml || `<p style="color:var(--text-muted); text-style:italic;">No tasks to display on timeline.</p>`;
+      timelineContainer.innerHTML = timelineHtml || `<p style="color:var(--text-muted); font-style:italic;">No tasks to display on timeline.</p>`;
     }
 
     function buildTables() {
       try {
         syncActCostsToBudget();
         buildCalendarMatrix();
-        buildGanttChart();
+        buildTimelineChart();
 
         const isAdmin = adminEmails.includes(currentUserEmail);
 
