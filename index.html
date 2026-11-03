@@ -76,7 +76,7 @@
     .edit-btn { background: #f1f5f9; color: var(--text-main); border: 1px solid var(--border-color); padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 600; }
     .edit-btn:hover { background: #e2e8f0; }
 
-    /* Timeline / Gantt Styles */
+    /* Timeline Styles */
     .timeline-container { padding: 20px; overflow-x: auto; }
     .timeline-header-months { display: flex; border-bottom: 2px solid var(--border-color); padding-bottom: 8px; margin-bottom: 14px; font-weight: bold; font-size: 11px; color: var(--text-muted); text-transform: uppercase; }
     .timeline-month-col { flex: 1; text-align: center; border-right: 1px dashed var(--border-color); padding: 0 4px; }
@@ -85,6 +85,15 @@
     .timeline-track { flex-grow: 1; background: #f8fafc; border: 1px solid var(--border-color); height: 26px; border-radius: 4px; position: relative; display: flex; }
     .timeline-grid-line { flex: 1; border-right: 1px dashed #e2e8f0; height: 100%; }
     .timeline-bar { height: 100%; border-radius: 3px; position: absolute; display: flex; align-items: center; padding: 0 8px; color: white; font-size: 10px; font-weight: bold; white-space: nowrap; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+
+    /* Notes & Ideas Board */
+    .notes-board-grid { display: grid; grid-template-columns: 320px 1fr; gap: 20px; padding: 20px; }
+    @media(max-width: 900px) { .notes-board-grid { grid-template-columns: 1fr; } }
+    .note-form-card { background: #f8fafc; border: 1px solid var(--border-color); border-radius: 10px; padding: 16px; height: fit-content; }
+    .note-card { background: #ffffff; border: 1px solid var(--border-color); border-radius: 10px; padding: 16px; margin-bottom: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+    .star-rating-box { display: flex; gap: 4px; align-items: center; margin-top: 8px; }
+    .star-btn { background: none; border: none; font-size: 16px; cursor: pointer; color: #cbd5e1; padding: 0; }
+    .star-btn.rated { color: #f59e0b; }
 
     /* Login Modal Overlay */
     #loginOverlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(4px); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; }
@@ -128,7 +137,7 @@
   <div id="signupModal" class="modal">
     <div class="modal-box" style="max-width: 380px;">
       <h3 style="margin-bottom: 12px; font-size: 16px; font-weight: bold; color: var(--accent-rose); text-align: center;">Register New Staff Account</h3>
-      <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 16px; text-align: center;">New accounts default to staff access (Project Plan, Timeline & DJs).</p>
+      <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 16px; text-align: center;">New accounts default to staff access.</p>
       
       <div class="form-group">
         <label>Email Address</label>
@@ -187,6 +196,7 @@
     <button onclick="openTab('timeline')" id="btn-timeline" class="tab-btn">📅 Project Timeline</button>
     <button onclick="openTab('roles')" id="btn-roles" class="tab-btn">🛡️ Roles</button>
     <button onclick="openTab('djs')" id="btn-djs" class="tab-btn">🎧 DJs & Production</button>
+    <button onclick="openTab('notes')" id="btn-notes" class="tab-btn">📝 Department Notes</button>
   </nav>
 
   <main>
@@ -384,7 +394,7 @@
       </div>
     </div>
 
-    <!-- TAB 5: PROJECT TIMELINE (GANTT CHART WITH MONTHS & CATEGORY COLORS) -->
+    <!-- TAB 5: PROJECT TIMELINE -->
     <div id="tab-timeline" class="tab-content">
       <div class="table-card">
         <div class="table-header">
@@ -403,9 +413,7 @@
               <div class="timeline-month-col">Jul 2027</div>
             </div>
           </div>
-          <div id="timelineBody">
-            <!-- Populated dynamically via JS -->
-          </div>
+          <div id="timelineBody"></div>
         </div>
       </div>
     </div>
@@ -436,7 +444,6 @@
 
     <!-- TAB 7: DJS & PRODUCTION -->
     <div id="tab-djs" class="tab-content">
-      <!-- CALENDAR / STAGE AVAILABILITY MATRIX AT A GLANCE -->
       <div class="table-card" style="margin-bottom: 24px;">
         <div class="table-header">
           <span>📅 Stage & Time Availability Calendar At-A-Glance</span>
@@ -487,6 +494,57 @@
             </thead>
             <tbody id="djBody"></tbody>
           </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 8: DEPARTMENT NOTES & IDEAS -->
+    <div id="tab-notes" class="tab-content">
+      <div class="table-card">
+        <div class="table-header">
+          <span>📝 Department Notes, Brainstorming & Ideas Board</span>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <label style="font-size: 11px; color: var(--text-muted); font-weight: 600;">Sort By:</label>
+            <select id="notesSortSelect" onchange="buildNotesBoard()" style="padding: 4px 8px; font-size: 11px;">
+              <option value="dateDesc">Newest Date First</option>
+              <option value="scoreDesc">Highest Score First</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="notes-board-grid">
+          <!-- SUBMISSION FORM -->
+          <div class="note-form-card">
+            <h3 style="font-size: 14px; font-weight: bold; color: var(--accent-rose); margin-bottom: 10px;">+ Post New Idea / Note</h3>
+            <div class="form-group">
+              <label>Department</label>
+              <select id="noteDept">
+                <option value="Infrastructure">Infrastructure</option>
+                <option value="Facilities">Facilities</option>
+                <option value="Theme & Design">Theme & Design</option>
+                <option value="Marketing">Marketing</option>
+                <option value="Administration">Administration</option>
+                <option value="Production">Production</option>
+                <option value="Acts">Acts</option>
+                <option value="Partnerships">Partnerships</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Note / Idea Content (User Input)</label>
+              <textarea id="noteContent" rows="4" placeholder="Enter your suggestion, note or brainstorm..." required></textarea>
+            </div>
+            <button onclick="submitNewNote()" class="action-btn" style="width: 100%;">Post Note</button>
+          </div>
+
+          <!-- NOTES FEED / LIST -->
+          <div>
+            <div class="form-group" style="margin-bottom: 14px;">
+              <input type="text" id="notesSearchInput" oninput="buildNotesBoard()" placeholder="🔍 Filter notes by keyword, user input or department..." style="padding: 8px 12px; font-size: 12px;">
+            </div>
+            <div id="notesFeedContainer">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -976,12 +1034,17 @@
       { name: "Dan Shake", type: "DJ", cost: 3292, vat: "YES", stage: "Lighthouse (Main Stage)", day: "Saturday 31st July", time: "21:00 - 23:00 (2 Hours)", drinks: "Rider Included", food: "Catering" }
     ];
 
+    const defaultNotes = [
+      { id: 1, dept: "Marketing", text: "Let's explore partnering with local South Coast boutique clothing brands for merch giveaways.", author: "ben@secretisland.com", timestamp: 1709280000000, ratings: { "james.dunn@ultrafunkula.co.uk": 5, "matthew.prevett@ultrafunkula.co.uk": 4 } }
+    ];
+
     let actualSalesData = { ...defaultActualSales };
     let budgetData = [...defaultBudget];
     let targetData = [...defaultTargets];
     let planData = [...defaultPlan];
     let rolesData = [...defaultRoles];
     let djData = [...defaultDjs];
+    let notesData = [...defaultNotes];
     let currentCalDay = "Friday 30th July";
 
     function initFirebaseSync() {
@@ -998,6 +1061,7 @@
           planData = val.planData ? val.planData : [...defaultPlan];
           rolesData = val.rolesData ? val.rolesData : [...defaultRoles];
           djData = val.djData ? val.djData : [...defaultDjs];
+          notesData = val.notesData ? val.notesData : [...defaultNotes];
 
           if (!val.actualSalesData || !val.budgetData) {
             saveAllToFirebase();
@@ -1024,7 +1088,7 @@
     }
 
     function saveAllToFirebase() {
-      const payload = { actualSalesData, budgetData, targetData, planData, rolesData, djData };
+      const payload = { actualSalesData, budgetData, targetData, planData, rolesData, djData, notesData };
       db.ref('sif27_festival_data').set(payload);
     }
 
@@ -1035,8 +1099,8 @@
     function openTab(tabName) {
       const isAdmin = adminEmails.includes(currentUserEmail);
 
-      if (!isAdmin && tabName !== 'plan' && tabName !== 'timeline' && tabName !== 'djs' && tabName !== 'dash') {
-        alert(`⚠️ Access Restricted\n\nRestricted users can only view the Dashboard, Project Plan, Project Timeline, and DJs/Production tabs.`);
+      if (!isAdmin && tabName !== 'plan' && tabName !== 'timeline' && tabName !== 'djs' && tabName !== 'notes' && tabName !== 'dash') {
+        alert(`⚠️ Access Restricted\n\nRestricted users can view the Dashboard, Project Plan, Project Timeline, DJs, and Department Notes tabs.`);
         return;
       }
 
@@ -1143,15 +1207,15 @@
 
     function getCategoryColor(category) {
       switch ((category || "").toLowerCase()) {
-        case 'infrastructure': return '#e11d48'; // Rose
-        case 'facilities': return '#0284c7';     // Blue
-        case 'theme & design': return '#7c3aed'; // Purple
-        case 'marketing': return '#d97706';      // Amber
-        case 'administration': return '#059669'; // Green
-        case 'production': return '#0f172a';     // Slate / Dark
-        case 'acts': return '#db2777';           // Pink
-        case 'partnerships': return '#4f46e5';   // Indigo
-        default: return '#64748b';               // Muted
+        case 'infrastructure': return '#e11d48';
+        case 'facilities': return '#0284c7';
+        case 'theme & design': return '#7c3aed';
+        case 'marketing': return '#d97706';
+        case 'administration': return '#059669';
+        case 'production': return '#0f172a';
+        case 'acts': return '#db2777';
+        case 'partnerships': return '#4f46e5';
+        default: return '#64748b';
       }
     }
 
@@ -1163,7 +1227,6 @@
       let currentSection = "";
       let sectionColor = '#e11d48';
 
-      // Timeline baseline range: Feb 1, 2027 to July 31, 2027 (181 days total)
       const startDate = new Date('2027-02-01').getTime();
       const endDate = new Date('2027-07-31').getTime();
       const totalTimeSpan = endDate - startDate;
@@ -1209,11 +1272,120 @@
       timelineContainer.innerHTML = timelineHtml || `<p style="color:var(--text-muted); font-style:italic;">No tasks to display on timeline.</p>`;
     }
 
+    // ==========================================
+    // 📝 NOTES & IDEAS BOARD LOGIC
+    // ==========================================
+    function submitNewNote() {
+      const dept = document.getElementById('noteDept').value;
+      const text = document.getElementById('noteContent').value.trim();
+      if (!text) { alert('Please enter note content.'); return; }
+
+      const newNote = {
+        id: Date.now(),
+        dept: dept,
+        text: text,
+        author: currentUserEmail || 'Staff',
+        timestamp: Date.now(),
+        ratings: {}
+      };
+
+      notesData.push(newNote);
+      document.getElementById('noteContent').value = '';
+      saveAllToFirebase();
+      buildNotesBoard();
+    }
+
+    function rateNote(noteId, score) {
+      const note = notesData.find(n => n.id === noteId);
+      if (note) {
+        if (!note.ratings) note.ratings = {};
+        note.ratings[currentUserEmail] = score;
+        saveAllToFirebase();
+        buildNotesBoard();
+      }
+    }
+
+    function calculateAverageScore(ratingsObj) {
+      if (!ratingsObj || Object.keys(ratingsObj).length === 0) return 0;
+      let sum = 0, count = 0;
+      for (const email in ratingsObj) {
+        sum += ratingsObj[email];
+        count++;
+      }
+      return (sum / count).toFixed(1);
+    }
+
+    function buildNotesBoard() {
+      const feedContainer = document.getElementById('notesFeedContainer');
+      const sortVal = document.getElementById('notesSortSelect').value;
+      const searchKeyword = (document.getElementById('notesSearchInput').value || "").toLowerCase();
+
+      let filtered = notesData.filter(n => {
+        const matchText = n.text.toLowerCase().includes(searchKeyword);
+        const matchDept = n.dept.toLowerCase().includes(searchKeyword);
+        const matchAuthor = n.author.toLowerCase().includes(searchKeyword);
+        return matchText || matchDept || matchAuthor;
+      });
+
+      filtered.sort((a, b) => {
+        if (sortVal === 'scoreDesc') {
+          return calculateAverageScore(b.ratings) - calculateAverageScore(a.ratings);
+        } else {
+          return b.timestamp - a.timestamp;
+        }
+      });
+
+      if (filtered.length === 0) {
+        feedContainer.innerHTML = `<p style="color: var(--text-muted); font-style: italic; text-align: center; padding: 20px;">No notes or ideas found matching your search.</p>`;
+        return;
+      }
+
+      let feedHtml = '';
+      filtered.forEach(note => {
+        const deptColor = getCategoryColor(note.dept);
+        const avgScore = calculateAverageScore(note.ratings);
+        const userRating = (note.ratings && note.ratings[currentUserEmail]) ? note.ratings[currentUserEmail] : 0;
+        const dateStr = new Date(note.timestamp).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+
+        let starsHtml = '';
+        for (let i = 1; i <= 5; i++) {
+          const ratedClass = i <= userRating ? 'rated' : '';
+          starsHtml += `<button class="star-btn ${ratedClass}" onclick="rateNote(${note.id}, ${i})" title="Rate ${i} stars">★</button>`;
+        }
+
+        feedHtml += `
+          <div class="note-card">
+            <div style="flex-grow: 1;">
+              <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 6px;">
+                <span class="badge" style="background: ${deptColor}15; color: ${deptColor}; border-color: ${deptColor};">${note.dept}</span>
+                <span style="font-size: 11px; color: var(--text-muted);">By ${note.author} on ${dateStr}</span>
+              </div>
+              <p style="font-size: 13px; color: var(--text-main); line-height: 1.5; margin-bottom: 10px;">${note.text}</p>
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <div class="star-rating-box">
+                  <span style="font-size: 11px; font-weight: bold; color: var(--text-muted);">Rate Idea:</span>
+                  ${starsHtml}
+                </div>
+              </div>
+            </div>
+            <div style="text-align: right; flex-shrink: 0; padding-left: 14px; border-left: 1px solid var(--border-color);">
+              <span style="font-size: 10px; text-transform: uppercase; color: var(--text-muted); font-weight: 600; display: block;">Avg Score</span>
+              <span style="font-size: 20px; font-weight: 800; color: var(--accent-amber);">${avgScore} <span style="font-size: 12px; font-weight: normal; color: var(--text-muted);">/5</span></span>
+              <span style="font-size: 10px; color: var(--text-muted); display: block; margin-top: 2px;">(${Object.keys(note.ratings || {}).length} votes)</span>
+            </div>
+          </div>
+        `;
+      });
+
+      feedContainer.innerHTML = feedHtml;
+    }
+
     function buildTables() {
       try {
         syncActCostsToBudget();
         buildCalendarMatrix();
         buildTimelineChart();
+        buildNotesBoard();
 
         const isAdmin = adminEmails.includes(currentUserEmail);
 
@@ -1224,7 +1396,6 @@
         document.getElementById('adminStatsGrid').style.display = isAdmin ? 'grid' : 'none';
         document.getElementById('adminRevenueCard').style.display = isAdmin ? 'block' : 'none';
 
-        // CALCULATE FINANCIALS
         let friTicketTotal = 0, satTicketTotal = 0;
         targetData.forEach(row => {
           const itemTotal = (row.qty || 0) * (row.price || 0);
@@ -1787,7 +1958,7 @@
     }
 
     function exportToJSON() {
-      const payload = { actualSalesData, budgetData, targetData, planData, rolesData, djData };
+      const payload = { actualSalesData, budgetData, targetData, planData, rolesData, djData, notesData };
       const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -1812,6 +1983,7 @@
           if (imported.planData) planData = imported.planData;
           if (imported.rolesData) rolesData = imported.rolesData;
           if (imported.djData) djData = imported.djData;
+          if (imported.notesData) notesData = imported.notesData;
           saveAllToFirebase();
           buildTables();
           alert('Data restored successfully!');
