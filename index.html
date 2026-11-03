@@ -65,6 +65,7 @@
     td { padding: 10px 14px; border-bottom: 1px solid #f1f5f9; color: var(--text-main); }
     tr.section-row td { background: #e2e8f0; font-weight: bold; color: var(--accent-rose); font-size: 13px; }
     tr.completed-row td { background: #ecfdf5 !important; color: #065f46 !important; text-decoration: line-through; }
+    tr.total-row td { background: #f1f5f9 !important; font-weight: bold; color: var(--text-main); border-top: 2px solid var(--border-color); }
     
     .badge { padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; background: #f1f5f9; color: var(--text-main); display: inline-block; border: 1px solid var(--border-color); }
     .badge-yes { background: #fef3c7; color: #92400e; border-color: #fde68a; }
@@ -1403,9 +1404,12 @@
         document.getElementById('adminStatsGrid').style.display = isAdmin ? 'grid' : 'none';
         document.getElementById('adminRevenueCard').style.display = isAdmin ? 'block' : 'none';
 
-        let friTicketTotal = 0, satTicketTotal = 0;
+        // Calculations from Tabs
+        let friTicketTotal = 0, satTicketTotal = 0, totalTargetQty = 0, totalSalesRevenue = 0;
         targetData.forEach(row => {
           const itemTotal = (row.qty || 0) * (row.price || 0);
+          totalTargetQty += (row.qty || 0);
+          totalSalesRevenue += itemTotal;
           if (row.day.includes("Friday")) friTicketTotal += itemTotal;
           else if (row.day.includes("Saturday")) satTicketTotal += itemTotal;
         });
@@ -1416,16 +1420,16 @@
 
         const totalActualRevenue = (actualSalesData.friRev || 0) + (actualSalesData.satRev || 0) + (actualSalesData.wkndRev || 0) + (actualSalesData.barRev || 0);
 
-        let bNetTotal = 0, bVatTotal = 0, bIncTotal = 0, bSpentTotal = 0;
+        let bNetTotal = 0, bVatAmtTotal = 0, bIncTotal = 0, bSpentTotal = 0;
         budgetData.forEach(row => {
           const vatAmt = row.vat === 'YES' ? row.net * 0.2 : 0;
           bNetTotal += row.net;
-          bVatTotal += vatAmt;
+          bVatAmtTotal += vatAmt;
           bIncTotal += (row.net + vatAmt);
           bSpentTotal += (row.update || 0);
         });
 
-        const netVatLiability = bVatTotal * 0.5; 
+        const netVatLiability = bVatAmtTotal * 0.5; 
         const profitVariance = totalIncomeForecast - bIncTotal - netVatLiability;
 
         if (isAdmin) {
@@ -1522,7 +1526,7 @@
         }
         document.getElementById('leadWorkloadBody').innerHTML = leadHtml;
 
-        // TAB 2: BUDGET
+        // TAB 2: BUDGET (WITH TOTALS ROW)
         const bBody = document.getElementById('budgetBody');
         if (bBody && isAdmin) {
           let bHtml = '';
@@ -1541,10 +1545,20 @@
               <td style="text-align:center;"><button class="edit-btn" onclick="openBudgetModal(${idx})">Edit</button></td>
             </tr>`;
           });
+          // Summary Totals Row
+          bHtml += `<tr class="total-row">
+            <td colspan="2" style="text-transform: uppercase;">Total Budget Summary</td>
+            <td style="text-align:right; color:var(--accent-blue);">${formatGBP(bNetTotal)}</td>
+            <td style="text-align:center;">-</td>
+            <td style="text-align:right; color:var(--text-muted);">${formatGBP(bVatAmtTotal)}</td>
+            <td style="text-align:right; color:var(--accent-purple);">${formatGBP(bIncTotal)}</td>
+            <td style="text-align:right; color:var(--accent-amber);">${formatGBP(bSpentTotal)}</td>
+            <td colspan="2"></td>
+          </tr>`;
           bBody.innerHTML = bHtml;
         }
 
-        // TAB 3: TARGETS
+        // TAB 3: TARGETS (WITH TOTALS ROW)
         const tBody = document.getElementById('targetBody');
         if (tBody && isAdmin) {
           let tHtml = '';
@@ -1559,6 +1573,14 @@
               <td style="text-align:center;"><button class="edit-btn" onclick="openTargetModal(${idx})">Edit</button></td>
             </tr>`;
           });
+          // Summary Totals Row
+          tHtml += `<tr class="total-row">
+            <td colspan="2" style="text-transform: uppercase;">Total Sales Targets Summary</td>
+            <td style="text-align:center; color:var(--accent-blue); font-weight:bold;">${totalTargetQty} Tickets</td>
+            <td style="text-align:right;">-</td>
+            <td style="text-align:right; color:var(--accent-green); font-weight:bold;">${formatGBP(totalSalesRevenue)}</td>
+            <td></td>
+          </tr>`;
           tBody.innerHTML = tHtml;
         }
 
