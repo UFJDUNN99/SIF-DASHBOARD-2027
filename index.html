@@ -161,7 +161,7 @@
   <!-- HEADER -->
   <header>
     <div class="header-branding">
-      <img src="https://secretislandfestival.co.uk/wp-content/uploads/2026/06/SIF-logo.png-1.webp" alt="Secret Island Festival Logo" class="header-logo">
+      <img src="url?id=7wp-content/uploads/2026/06/SIF-logo.png-1.webp" alt="Secret Island Festival Logo" class="header-logo">
       <div class="header-title">
         <h1>SECRET ISLAND FESTIVAL 2027</h1>
         <p>Master Revenue & Operations Executive Dashboard</p>
@@ -203,6 +203,7 @@
   <main>
     <!-- TAB 1: EXECUTIVE DASHBOARD -->
     <div id="tab-dash" class="tab-content active">
+      <!-- SUMMARY & METRICS CARDS MOVED TO TOP -->
       <div class="stats-grid" id="adminStatsGrid">
         <div class="stat-card">
           <p>Total Forecasted Income</p>
@@ -311,7 +312,7 @@
     <div id="tab-budget" class="tab-content">
       <div class="table-card">
         <div class="table-header">
-          <span>Festival Budget Line Items (Editable)</span>
+          <span>Festival Budget Line Items (Directly Editable)</span>
           <div style="display: flex; gap: 8px;">
             <button class="action-btn" onclick="openBudgetModal(-1)">+ Add Item</button>
             <button onclick="resetBudget()" style="background: #0f172a; color: var(--text-main); border: 1px solid var(--border-color); padding: 6px 10px; border-radius: 6px;">Reset Default</button>
@@ -323,11 +324,11 @@
               <tr>
                 <th>Account / Line Item</th>
                 <th>Category</th>
-                <th style="text-align: right;">Net Budget</th>
+                <th style="text-align: right;">Net Budget (£)</th>
                 <th style="text-align: center;">VAT</th>
-                <th style="text-align: right;">VAT Amount</th>
-                <th style="text-align: right;">Inc. VAT</th>
-                <th style="text-align: right;">Actual Spent</th>
+                <th style="text-align: right;">VAT Amount (£)</th>
+                <th style="text-align: right;">Inc. VAT (£)</th>
+                <th style="text-align: right;">Actual Spent (£)</th>
                 <th style="text-align: center;">Owner</th>
                 <th style="text-align: center;">Action</th>
               </tr>
@@ -340,10 +341,33 @@
 
     <!-- TAB 3: SALES TARGETS -->
     <div id="tab-target" class="tab-content">
+      <!-- BAR SALES MULTIPLIER CONFIGURATION CARD -->
+      <div class="table-card" style="margin-bottom: 20px;">
+        <div class="table-header">
+          <span>🍻 Bar Sales Per-Head Multiplier Configuration</span>
+          <span style="font-size: 11px; color: var(--text-muted); font-weight: normal;">Multiplier × Total Tickets Sold per Day</span>
+        </div>
+        <div style="padding: 16px; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
+          <div style="background: #0f172a; border: 1px solid var(--border-color); border-radius: 8px; padding: 14px;">
+            <label style="font-size: 11px; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 6px;">Friday Bar Spend per Ticket (£)</label>
+            <input type="number" step="0.50" id="friBarMultiplier" value="35.00" onchange="updateBarMultiplier(this, 'Friday')" style="font-size: 16px; font-weight: bold; width: 100%;">
+            <div id="friBarCalcOutput" style="font-size: 11px; color: var(--accent-green); margin-top: 6px;">Calculated Bar Total: £0.00</div>
+          </div>
+          <div style="background: #0f172a; border: 1px solid var(--border-color); border-radius: 8px; padding: 14px;">
+            <label style="font-size: 11px; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 6px;">Saturday Bar Spend per Ticket (£)</label>
+            <input type="number" step="0.50" id="satBarMultiplier" value="65.00" onchange="updateBarMultiplier(this, 'Saturday')" style="font-size: 16px; font-weight: bold; width: 100%;">
+            <div id="satBarCalcOutput" style="font-size: 11px; color: var(--accent-green); margin-top: 6px;">Calculated Bar Total: £0.00</div>
+          </div>
+        </div>
+      </div>
+
       <div class="table-card">
         <div class="table-header">
           <span>Sales Target & Ticket Pricing Matrix (Editable)</span>
-          <button onclick="resetTargets()" style="background: #0f172a; color: var(--text-main); border: 1px solid var(--border-color); padding: 6px 10px; border-radius: 6px;">Reset Default</button>
+          <div style="display: flex; gap: 8px;">
+            <button class="action-btn" onclick="openTargetModal(-1)">+ Add Ticket Target</button>
+            <button onclick="resetTargets()" style="background: #0f172a; color: var(--text-main); border: 1px solid var(--border-color); padding: 6px 10px; border-radius: 6px;">Reset Default</button>
+          </div>
         </div>
         <div class="table-wrap">
           <table>
@@ -578,42 +602,25 @@
     </div>
   </div>
 
-  <div id="budgetModal" class="modal">
-    <div class="modal-box">
-      <h3 id="budgetModalTitle" style="margin-bottom: 16px; font-size: 16px; font-weight: bold; color: var(--accent-blue);">Edit Budget Item</h3>
-      <input type="hidden" id="budgetEditIndex">
-      <div class="form-group"><label>Account Name</label><input type="text" id="bModalItem" required></div>
-      <div class="form-group"><label>Category</label><input type="text" id="bModalCat" required></div>
-      <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-        <div><label>2027 Net Budget (£)</label><input type="number" step="0.01" id="bModalNet" required></div>
-        <div><label>VAT Applicable</label><select id="bModalVat"><option value="YES">YES</option><option value="NO">NO</option></select></div>
-      </div>
-      <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-        <div><label>Actual Spent (£)</label><input type="number" step="0.01" id="bModalUpdate" required></div>
-        <div>
-          <label>Assigned Owner</label>
-          <input type="text" id="bModalOwner">
-        </div>
-      </div>
-      <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px;">
-        <button type="button" onclick="closeBudgetModal()" style="background: #0f172a;">Cancel</button>
-        <button type="button" onclick="saveBudgetItem()" class="action-btn">Save Changes</button>
-      </div>
-    </div>
-  </div>
-
   <div id="targetModal" class="modal">
     <div class="modal-box">
-      <h3 style="margin-bottom: 16px; font-size: 16px; font-weight: bold; color: var(--accent-blue);">Edit Ticket Target</h3>
+      <h3 id="targetModalTitle" style="margin-bottom: 16px; font-size: 16px; font-weight: bold; color: var(--accent-blue);">Edit Ticket Target</h3>
       <input type="hidden" id="targetEditIndex">
-      <div class="form-group"><label>Ticket Type</label><input type="text" id="tModalType" disabled style="color: var(--text-muted); background: #0f172a;"></div>
+      <div class="form-group">
+        <label>Day / Event</label>
+        <select id="tModalDay">
+          <option value="Friday 30th July">Friday 30th July</option>
+          <option value="Saturday 31st July">Saturday 31st July</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Ticket Type</label><input type="text" id="tModalType" placeholder="e.g. VIP Adult" required></div>
       <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-        <div><label>Target Quantity</label><input type="number" id="tModalQty"></div>
-        <div><label>Price inc VAT (£)</label><input type="number" step="0.01" id="tModalPrice"></div>
+        <div><label>Target Quantity</label><input type="number" id="tModalQty" required></div>
+        <div><label>Price inc VAT (£)</label><input type="number" step="0.01" id="tModalPrice" required></div>
       </div>
       <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px;">
         <button type="button" onclick="closeTargetModal()" style="background: #0f172a;">Cancel</button>
-        <button type="button" onclick="saveTargetItem()" class="action-btn">Save Changes</button>
+        <button type="button" onclick="saveTargetItem()" class="action-btn">Save Ticket Target</button>
       </div>
     </div>
   </div>
@@ -1047,6 +1054,7 @@
     let djData = [...defaultDjs];
     let notesData = [...defaultNotes];
     let currentCalDay = "Friday 30th July";
+    let barMultipliers = { Friday: 17.10, Saturday: 65.00 };
 
     function initFirebaseSync() {
       const dbRef = db.ref('sif27_festival_data');
@@ -1063,6 +1071,7 @@
           rolesData = val.rolesData ? val.rolesData : [...defaultRoles];
           djData = val.djData ? val.djData : [...defaultDjs];
           notesData = val.notesData ? val.notesData : [...defaultNotes];
+          if (val.barMultipliers) barMultipliers = val.barMultipliers;
 
           if (!val.actualSalesData || !val.budgetData) {
             saveAllToFirebase();
@@ -1089,7 +1098,7 @@
     }
 
     function saveAllToFirebase() {
-      const payload = { actualSalesData, budgetData, targetData, planData, rolesData, djData, notesData };
+      const payload = { actualSalesData, budgetData, targetData, planData, rolesData, djData, notesData, barMultipliers };
       db.ref('sif27_festival_data').set(payload);
     }
 
@@ -1395,6 +1404,31 @@
       feedContainer.innerHTML = feedHtml;
     }
 
+    function updateBarMultiplier(inputEl, day) {
+      const val = parseFloat(inputEl.value) || 0;
+      barMultipliers[day] = val;
+      saveAllToFirebase();
+      buildTables();
+    }
+
+    function updateBudgetInline(index, field, element) {
+      let val = element.value;
+      if (field === 'net' || field === 'update') {
+        val = parseFloat(val) || 0;
+      }
+      budgetData[index][field] = val;
+      saveAllToFirebase();
+      buildTables();
+    }
+
+    function deleteBudgetItem(index) {
+      if (confirm('Delete this budget item?')) {
+        budgetData.splice(index, 1);
+        saveAllToFirebase();
+        buildTables();
+      }
+    }
+
     function buildTables() {
       try {
         syncActCostsToBudget();
@@ -1411,29 +1445,44 @@
         document.getElementById('adminStatsGrid').style.display = isAdmin ? 'grid' : 'none';
         document.getElementById('adminRevenueCard').style.display = isAdmin ? 'block' : 'none';
 
-        // Calculations from Tabs
+        // Calculations from Tabs & Multipliers
         let friTicketTotal = 0, satTicketTotal = 0, totalTargetQty = 0, totalSalesRevenue = 0;
+        let friTicketQtyCount = 0, satTicketQtyCount = 0;
+
         targetData.forEach(row => {
           const itemTotal = (row.qty || 0) * (row.price || 0);
           totalTargetQty += (row.qty || 0);
           totalSalesRevenue += itemTotal;
-          if (row.day.includes("Friday")) friTicketTotal += itemTotal;
-          else if (row.day.includes("Saturday")) satTicketTotal += itemTotal;
+          if (row.day.includes("Friday")) {
+            friTicketTotal += itemTotal;
+            friTicketQtyCount += (row.qty || 0);
+          } else if (row.day.includes("Saturday")) {
+            satTicketTotal += itemTotal;
+            satTicketQtyCount += (row.qty || 0);
+          }
         });
 
+        const friBarTotal = friTicketQtyCount * (barMultipliers.Friday || 17.10);
+        const satBarTotal = satTicketQtyCount * (barMultipliers.Saturday || 65.00);
+
+        document.getElementById('friBarMultiplier').value = barMultipliers.Friday || 17.10;
+        document.getElementById('satBarMultiplier').value = barMultipliers.Saturday || 65.00;
+        document.getElementById('friBarCalcOutput').innerText = `Calculated Bar Total (${friTicketQtyCount} tickets × £${(barMultipliers.Friday||17.10).toFixed(2)}): ${formatGBP(friBarTotal)}`;
+        document.getElementById('satBarCalcOutput').innerText = `Calculated Bar Total (${satTicketQtyCount} tickets × £${(barMultipliers.Saturday||65.00).toFixed(2)}): ${formatGBP(satBarTotal)}`;
+
         const vendorSponsorTotal = 17500;
-        const totalBarForecast = 17100 + 104000;
+        const totalBarForecast = friBarTotal + satBarTotal;
         const totalIncomeForecast = friTicketTotal + satTicketTotal + totalBarForecast + vendorSponsorTotal;
 
         const totalActualRevenue = (actualSalesData.friRev || 0) + (actualSalesData.satRev || 0) + (actualSalesData.wkndRev || 0) + (actualSalesData.barRev || 0);
 
         let bNetTotal = 0, bVatAmtTotal = 0, bIncTotal = 0, bSpentTotal = 0;
         budgetData.forEach(row => {
-          const vatAmt = row.vat === 'YES' ? row.net * 0.2 : 0;
-          bNetTotal += row.net;
+          const vatAmt = row.vat === 'YES' ? (parseFloat(row.net) || 0) * 0.2 : 0;
+          bNetTotal += (parseFloat(row.net) || 0);
           bVatAmtTotal += vatAmt;
-          bIncTotal += (row.net + vatAmt);
-          bSpentTotal += (row.update || 0);
+          bIncTotal += ((parseFloat(row.net) || 0) + vatAmt);
+          bSpentTotal += (parseFloat(row.update) || 0);
         });
 
         const netVatLiability = bVatAmtTotal * 0.5; 
@@ -1451,8 +1500,8 @@
           varEl.style.color = profitVariance >= 0 ? 'var(--accent-green)' : 'var(--accent-rose)';
 
           let revTableHtml = `
-            <tr><td>Friday Event</td><td style="text-align:right;">${formatGBP(friTicketTotal)}</td><td style="text-align:right;">${formatGBP(17100)}</td><td style="text-align:right; font-weight:bold;">${formatGBP(friTicketTotal + 17100)}</td></tr>
-            <tr><td>Saturday Event</td><td style="text-align:right;">${formatGBP(satTicketTotal)}</td><td style="text-align:right;">${formatGBP(104000)}</td><td style="text-align:right; font-weight:bold;">${formatGBP(satTicketTotal + 104000)}</td></tr>
+            <tr><td>Friday Event</td><td style="text-align:right;">${formatGBP(friTicketTotal)}</td><td style="text-align:right;">${formatGBP(friBarTotal)}</td><td style="text-align:right; font-weight:bold;">${formatGBP(friTicketTotal + friBarTotal)}</td></tr>
+            <tr><td>Saturday Event</td><td style="text-align:right;">${formatGBP(satTicketTotal)}</td><td style="text-align:right;">${formatGBP(satBarTotal)}</td><td style="text-align:right; font-weight:bold;">${formatGBP(satTicketTotal + satBarTotal)}</td></tr>
             <tr><td>Sponsorship & Vendors</td><td style="text-align:right;">-</td><td style="text-align:right;">-</td><td style="text-align:right; font-weight:bold;">${formatGBP(vendorSponsorTotal)}</td></tr>
           `;
           document.getElementById('dashRevenueBody').innerHTML = revTableHtml;
@@ -1535,23 +1584,33 @@
         }
         document.getElementById('leadWorkloadBody').innerHTML = leadHtml;
 
-        // TAB 2: BUDGET (WITH TOTALS ROW)
+        // TAB 2: BUDGET (DIRECTLY INLINE EDITABLE)
         const bBody = document.getElementById('budgetBody');
         if (bBody && isAdmin) {
           let bHtml = '';
           budgetData.forEach((row, idx) => {
-            const vatAmt = row.vat === 'YES' ? row.net * 0.2 : 0;
-            const inc = row.net + vatAmt;
+            const netVal = parseFloat(row.net) || 0;
+            const vatAmt = row.vat === 'YES' ? netVal * 0.2 : 0;
+            const inc = netVal + vatAmt;
+            const updateVal = parseFloat(row.update) || 0;
+
             bHtml += `<tr>
-              <td style="font-weight:600;">${row.item}</td>
-              <td><span class="badge">${row.cat}</span></td>
-              <td style="text-align:right;">${formatGBP(row.net)}</td>
-              <td style="text-align:center;"><span class="badge ${row.vat === 'YES' ? 'badge-yes' : ''}">${row.vat}</span></td>
+              <td><input type="text" value="${row.item}" onchange="updateBudgetInline(${idx}, 'item', this)" style="width:100%; padding:4px 8px;"></td>
+              <td><input type="text" value="${row.cat}" onchange="updateBudgetInline(${idx}, 'cat', this)" style="width:100%; padding:4px 8px;"></td>
+              <td style="text-align:right;"><input type="number" step="0.01" value="${netVal}" onchange="updateBudgetInline(${idx}, 'net', this)" style="width:100px; text-align:right; padding:4px 8px;"></td>
+              <td style="text-align:center;">
+                <select onchange="updateBudgetInline(${idx}, 'vat', this)" style="padding:4px;">
+                  <option value="YES" ${row.vat === 'YES' ? 'selected' : ''}>YES</option>
+                  <option value="NO" ${row.vat === 'NO' ? 'selected' : ''}>NO</option>
+                </select>
+              </td>
               <td style="text-align:right; color:var(--text-muted);">${formatGBP(vatAmt)}</td>
               <td style="text-align:right; font-weight:600; color:var(--accent-purple);">${formatGBP(inc)}</td>
-              <td style="text-align:right; font-weight:bold; color:${row.update > 0 ? 'var(--accent-amber)' : 'var(--text-muted)'};">${formatGBP(row.update)}</td>
-              <td style="text-align:center; color:var(--text-muted);">${row.owner}</td>
-              <td style="text-align:center;"><button class="edit-btn" onclick="openBudgetModal(${idx})">Edit</button></td>
+              <td style="text-align:right;"><input type="number" step="0.01" value="${updateVal}" onchange="updateBudgetInline(${idx}, 'update', this)" style="width:100px; text-align:right; padding:4px 8px;"></td>
+              <td style="text-align:center;"><input type="text" value="${row.owner || ''}" onchange="updateBudgetInline(${idx}, 'owner', this)" style="width:110px; text-align:center; padding:4px 8px;"></td>
+              <td style="text-align:center;">
+                <button class="edit-btn" onclick="deleteBudgetItem(${idx})" style="background:rgba(225,29,72,0.2); color:#fda4af; border-color:var(--border-color);">Del</button>
+              </td>
             </tr>`;
           });
           // Summary Totals Row
@@ -1567,7 +1626,7 @@
           bBody.innerHTML = bHtml;
         }
 
-        // TAB 3: TARGETS (WITH TOTALS ROW)
+        // TAB 3: TARGETS (WITH TOTALS ROW & DELETE BUTTON)
         const tBody = document.getElementById('targetBody');
         if (tBody && isAdmin) {
           let tHtml = '';
@@ -1579,7 +1638,10 @@
               <td style="text-align:center; font-weight:bold;">${row.qty}</td>
               <td style="text-align:right;">${formatGBP(row.price)}</td>
               <td style="text-align:right; font-weight:bold; color:var(--accent-green);">${formatGBP(itemTotal)}</td>
-              <td style="text-align:center;"><button class="edit-btn" onclick="openTargetModal(${idx})">Edit</button></td>
+              <td style="text-align:center;">
+                <button class="edit-btn" onclick="openTargetModal(${idx})">Edit</button>
+                <button class="edit-btn" onclick="deleteTargetItem(${idx})" style="background:rgba(225,29,72,0.2); color:#fda4af; border-color:var(--border-color); margin-left:4px;">Del</button>
+              </td>
             </tr>`;
           });
           // Summary Totals Row
@@ -1681,7 +1743,7 @@
           rBody.innerHTML = rHtml;
         }
 
-        // TAB 7: DJS (WITH VAT DYNAMIC CALCULATION)
+        // TAB 7: DJS
         const djBody = document.getElementById('djBody');
         if (djBody) {
           let djHtml = '';
@@ -1753,35 +1815,10 @@
         document.getElementById('bModalVat').value = 'YES';
         document.getElementById('bModalUpdate').value = '';
         document.getElementById('bModalOwner').value = currentUserEmail;
-      } else {
-        document.getElementById('budgetModalTitle').innerText = "Edit Budget Item";
-        const item = budgetData[index];
-        document.getElementById('bModalItem').value = item.item;
-        document.getElementById('bModalCat').value = item.cat;
-        document.getElementById('bModalNet').value = item.net;
-        document.getElementById('bModalVat').value = item.vat;
-        document.getElementById('bModalUpdate').value = item.update;
-        document.getElementById('bModalOwner').value = item.owner;
       }
       document.getElementById('budgetModal').classList.add('active');
     }
     function closeBudgetModal() { document.getElementById('budgetModal').classList.remove('active'); }
-    function saveBudgetItem() {
-      const idx = parseInt(document.getElementById('budgetEditIndex').value);
-      const newItem = {
-        item: document.getElementById('bModalItem').value,
-        cat: document.getElementById('bModalCat').value,
-        net: parseFloat(document.getElementById('bModalNet').value) || 0,
-        vat: document.getElementById('bModalVat').value,
-        update: parseFloat(document.getElementById('bModalUpdate').value) || 0,
-        owner: document.getElementById('bModalOwner').value
-      };
-      if (idx === -1) budgetData.push(newItem);
-      else budgetData[idx] = newItem;
-      saveAllToFirebase();
-      closeBudgetModal();
-      buildTables();
-    }
     function resetBudget() {
       if (confirm('Reset budget to default values?')) {
         budgetData = [...defaultBudget];
@@ -1792,20 +1829,43 @@
 
     function openTargetModal(index) {
       document.getElementById('targetEditIndex').value = index;
-      const item = targetData[index];
-      document.getElementById('tModalType').value = item.type;
-      document.getElementById('tModalQty').value = item.qty;
-      document.getElementById('tModalPrice').value = item.price;
+      if (index === -1) {
+        document.getElementById('targetModalTitle').innerText = "Add Ticket Target";
+        document.getElementById('tModalDay').value = "Friday 30th July";
+        document.getElementById('tModalType').value = "";
+        document.getElementById('tModalQty').value = "";
+        document.getElementById('tModalPrice').value = "";
+      } else {
+        document.getElementById('targetModalTitle').innerText = "Edit Ticket Target";
+        const item = targetData[index];
+        document.getElementById('tModalDay').value = item.day;
+        document.getElementById('tModalType').value = item.type;
+        document.getElementById('tModalQty').value = item.qty;
+        document.getElementById('tModalPrice').value = item.price;
+      }
       document.getElementById('targetModal').classList.add('active');
     }
     function closeTargetModal() { document.getElementById('targetModal').classList.remove('active'); }
     function saveTargetItem() {
       const idx = parseInt(document.getElementById('targetEditIndex').value);
-      targetData[idx].qty = parseInt(document.getElementById('tModalQty').value) || 0;
-      targetData[idx].price = parseFloat(document.getElementById('tModalPrice').value) || 0;
+      const newItem = {
+        day: document.getElementById('tModalDay').value,
+        type: document.getElementById('tModalType').value,
+        qty: parseInt(document.getElementById('tModalQty').value) || 0,
+        price: parseFloat(document.getElementById('tModalPrice').value) || 0
+      };
+      if (idx === -1) targetData.push(newItem);
+      else targetData[idx] = newItem;
       saveAllToFirebase();
       closeTargetModal();
       buildTables();
+    }
+    function deleteTargetItem(index) {
+      if (confirm('Delete this ticket target line?')) {
+        targetData.splice(index, 1);
+        saveAllToFirebase();
+        buildTables();
+      }
     }
     function resetTargets() {
       if (confirm('Reset sales targets to default values?')) {
@@ -2002,7 +2062,7 @@
     }
 
     function exportToJSON() {
-      const payload = { actualSalesData, budgetData, targetData, planData, rolesData, djData, notesData };
+      const payload = { actualSalesData, budgetData, targetData, planData, rolesData, djData, notesData, barMultipliers };
       const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -2028,6 +2088,7 @@
           if (imported.rolesData) rolesData = imported.rolesData;
           if (imported.djData) djData = imported.djData;
           if (imported.notesData) notesData = imported.notesData;
+          if (imported.barMultipliers) barMultipliers = imported.barMultipliers;
           saveAllToFirebase();
           buildTables();
           alert('Data restored successfully!');
