@@ -161,7 +161,7 @@
   <!-- HEADER -->
   <header>
     <div class="header-branding">
-      <img src="https://secretislandfestival.co.uk/wp-content/uploads/2026/06/SIF-logo.png-1.webp" alt="Secret Island Festival Logo" class="header-logo">
+      <img src="url?id=7wp-content/uploads/2026/06/SIF-logo.png-1.webp" alt="Secret Island Festival Logo" class="header-logo">
       <div class="header-title">
         <h1>SECRET ISLAND FESTIVAL 2027</h1>
         <p>Master Revenue & Operations Executive Dashboard</p>
@@ -360,25 +360,32 @@
 
     <!-- TAB 3: SALES TARGETS -->
     <div id="tab-target" class="tab-content">
-      <!-- SALES TARGETS SUMMARY TOP STATS CARD (EXCLUDING CAR PARK) -->
-      <div class="stats-grid" style="margin-bottom: 20px;">
+      <!-- SALES TARGETS SUMMARY TOP STATS CARDS (SEPARATING FRIDAY, SATURDAY & WEEKEND) -->
+      <div class="stats-grid" style="margin-bottom: 20px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
         <div class="stat-card">
-          <p>Friday Ticket Qty (Excl. Parking)</p>
-          <h3 id="topFriTicketQty" style="color: var(--accent-blue);">0 Tickets</h3>
-          <p id="topFriTicketRev" style="font-size: 10px; color: var(--accent-green); margin-top: 4px;">Revenue: £0.00</p>
+          <p>Friday Sales (Excl. Parking)</p>
+          <h3 id="topFriTicketRev" style="color: var(--accent-blue);">£0.00</h3>
+          <p id="topFriTicketQty" style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">0 Tickets | Bar: £0.00</p>
         </div>
         <div class="stat-card">
-          <p>Saturday Ticket Qty (Excl. Parking)</p>
-          <h3 id="topSatTicketQty" style="color: var(--accent-blue);">0 Tickets</h3>
-          <p id="topSatTicketRev" style="font-size: 10px; color: var(--accent-green); margin-top: 4px;">Revenue: £0.00</p>
+          <p>Saturday Sales (Excl. Parking)</p>
+          <h3 id="topSatTicketRev" style="color: var(--accent-blue);">£0.00</h3>
+          <p id="topSatTicketQty" style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">0 Tickets | Bar: £0.00</p>
         </div>
         <div class="stat-card">
-          <p>Total Festival Tickets (Excl. Parking)</p>
-          <h3 id="topTargetQty" style="color: var(--accent-purple);">0 Tickets</h3>
+          <p>Weekend Sales</p>
+          <h3 id="topWkndTicketRev" style="color: var(--accent-purple);">£0.00</h3>
+          <p id="topWkndTicketQty" style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">0 Tickets | Bar: £0.00</p>
         </div>
         <div class="stat-card">
-          <p>Total Ticket Sales Forecast (Inc. VAT)</p>
+          <p>Total Ticket Sales (Excl. Parking)</p>
           <h3 id="topTargetRev" style="color: var(--accent-green);">£0.00</h3>
+          <p id="topTargetQty" style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">0 Total Tickets</p>
+        </div>
+        <div class="stat-card">
+          <p>Total Bar Spend Forecast</p>
+          <h3 id="topTotalBarRev" style="color: var(--accent-amber);">£0.00</h3>
+          <p style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">Friday + Saturday + Weekend</p>
         </div>
       </div>
 
@@ -386,9 +393,9 @@
       <div class="table-card" style="margin-bottom: 20px;">
         <div class="table-header">
           <span>🍻 Bar Sales Per-Head Multiplier Configuration</span>
-          <span style="font-size: 11px; color: var(--text-muted); font-weight: normal;">Multiplier × Total Festival Attendees (Excl. Parking)</span>
+          <span style="font-size: 11px; color: var(--text-muted); font-weight: normal;">Multiplier × Ticket Quantities (Excl. Parking)</span>
         </div>
-        <div style="padding: 16px; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
+        <div style="padding: 16px; display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px;">
           <div style="background: #0f172a; border: 1px solid var(--border-color); border-radius: 8px; padding: 14px;">
             <label style="font-size: 11px; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 6px;">Friday Bar Spend per Ticket (£)</label>
             <input type="number" step="0.50" id="friBarMultiplier" value="35.00" onchange="updateBarMultiplier(this, 'Friday')" style="font-size: 16px; font-weight: bold; width: 100%;">
@@ -398,6 +405,11 @@
             <label style="font-size: 11px; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 6px;">Saturday Bar Spend per Ticket (£)</label>
             <input type="number" step="0.50" id="satBarMultiplier" value="65.00" onchange="updateBarMultiplier(this, 'Saturday')" style="font-size: 16px; font-weight: bold; width: 100%;">
             <div id="satBarCalcOutput" style="font-size: 11px; color: var(--accent-green); margin-top: 6px;">Calculated Bar Total: £0.00</div>
+          </div>
+          <div style="background: #0f172a; border: 1px solid var(--border-color); border-radius: 8px; padding: 14px;">
+            <label style="font-size: 11px; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 6px;">Weekend Bar Spend per Ticket (£)</label>
+            <input type="number" step="0.50" id="wkndBarMultiplier" value="100.00" onchange="updateBarMultiplier(this, 'Weekend')" style="font-size: 16px; font-weight: bold; width: 100%;">
+            <div id="wkndBarCalcOutput" style="font-size: 11px; color: var(--accent-green); margin-top: 6px;">Calculated Bar Total: £0.00</div>
           </div>
         </div>
       </div>
@@ -1095,7 +1107,7 @@
     let djData = [...defaultDjs];
     let notesData = [...defaultNotes];
     let currentCalDay = "Friday 30th July";
-    let barMultipliers = { Friday: 17.10, Saturday: 65.00 };
+    let barMultipliers = { Friday: 17.10, Saturday: 65.00, Weekend: 100.00 };
 
     function initFirebaseSync() {
       const dbRef = db.ref('sif27_festival_data');
@@ -1486,59 +1498,70 @@
         document.getElementById('adminStatsGrid').style.display = isAdmin ? 'grid' : 'none';
         document.getElementById('adminRevenueCard').style.display = isAdmin ? 'block' : 'none';
 
-        // Calculations from Tabs & Multipliers (Excluding Car Park from Bar & Ticket Qty Totals)
-        let friTicketTotal = 0, satTicketTotal = 0, totalSalesRevenue = 0;
-        let friTicketQtyCount = 0, satTicketQtyCount = 0;
-        let friTicketQtyExclParking = 0, satTicketQtyExclParking = 0;
-        let friTicketRevExclParking = 0, satTicketRevExclParking = 0;
-        let totalQtyExclParking = 0;
+        // Separate Ticket Calculations for Friday, Saturday, Weekend & Car Park
+        let friTicketRev = 0, friTicketQty = 0;
+        let satTicketRev = 0, satTicketQty = 0;
+        let wkndTicketRev = 0, wkndTicketQty = 0;
+        let totalSalesRevenue = 0, totalQtyExclParking = 0;
 
         targetData.forEach(row => {
           const itemTotal = (row.qty || 0) * (row.price || 0);
           totalSalesRevenue += itemTotal;
 
-          const isCarPark = (row.type || "").toLowerCase().includes("car park");
+          const typeLower = (row.type || "").toLowerCase();
+          const isCarPark = typeLower.includes("car park");
+          const isWeekend = typeLower.includes("weekend");
 
-          if (row.day.includes("Friday")) {
-            friTicketTotal += itemTotal;
-            friTicketQtyCount += (row.qty || 0);
+          if (isWeekend) {
+            wkndTicketRev += itemTotal;
+            wkndTicketQty += (row.qty || 0);
+            totalQtyExclParking += (row.qty || 0);
+          } else if (row.day.includes("Friday")) {
+            friTicketRev += itemTotal;
             if (!isCarPark) {
-              friTicketQtyExclParking += (row.qty || 0);
-              friTicketRevExclParking += itemTotal;
+              friTicketQty += (row.qty || 0);
               totalQtyExclParking += (row.qty || 0);
             }
           } else if (row.day.includes("Saturday")) {
-            satTicketTotal += itemTotal;
-            satTicketQtyCount += (row.qty || 0);
+            satTicketRev += itemTotal;
             if (!isCarPark) {
-              satTicketQtyExclParking += (row.qty || 0);
-              satTicketRevExclParking += itemTotal;
+              satTicketQty += (row.qty || 0);
               totalQtyExclParking += (row.qty || 0);
             }
           }
         });
 
-        // Update Sales Target Top Summary Cards (Excluding Car Park)
-        document.getElementById('topFriTicketQty').innerText = `${friTicketQtyExclParking.toLocaleString()} Tickets`;
-        document.getElementById('topFriTicketRev').innerText = `Revenue: ${formatGBP(friTicketRevExclParking)}`;
-        document.getElementById('topSatTicketQty').innerText = `${satTicketQtyExclParking.toLocaleString()} Tickets`;
-        document.getElementById('topSatTicketRev').innerText = `Revenue: ${formatGBP(satTicketRevExclParking)}`;
-        document.getElementById('topTargetQty').innerText = `${totalQtyExclParking.toLocaleString()} Tickets`;
-        document.getElementById('topTargetRev').innerText = formatGBP(totalSalesRevenue);
+        // Bar Spend Calculations
+        const friBarTotal = friTicketQty * (barMultipliers.Friday || 35.00);
+        const satBarTotal = satTicketQty * (barMultipliers.Saturday || 65.00);
+        const wkndBarTotal = wkndTicketQty * (barMultipliers.Weekend || 100.00);
+        const totalBarForecast = friBarTotal + satBarTotal + wkndBarTotal;
 
-        // Bar Spend Multiplied ONLY by Non-Car-Park Attendance
-        const friBarTotal = friTicketQtyExclParking * (barMultipliers.Friday || 17.10);
-        const satBarTotal = satTicketQtyExclParking * (barMultipliers.Saturday || 65.00);
-
-        document.getElementById('friBarMultiplier').value = barMultipliers.Friday || 17.10;
+        // Update Multiplier Inputs & Outputs
+        document.getElementById('friBarMultiplier').value = barMultipliers.Friday || 35.00;
         document.getElementById('satBarMultiplier').value = barMultipliers.Saturday || 65.00;
-        document.getElementById('friBarCalcOutput').innerText = `Calculated Bar Total (${friTicketQtyExclParking} attendees × £${(barMultipliers.Friday||17.10).toFixed(2)}): ${formatGBP(friBarTotal)}`;
-        document.getElementById('satBarCalcOutput').innerText = `Calculated Bar Total (${satTicketQtyExclParking} attendees × £${(barMultipliers.Saturday||65.00).toFixed(2)}): ${formatGBP(satBarTotal)}`;
+        document.getElementById('wkndBarMultiplier').value = barMultipliers.Weekend || 100.00;
+
+        document.getElementById('friBarCalcOutput').innerText = `Calculated Bar Total (${friTicketQty} attendees × £${(barMultipliers.Friday||35.00).toFixed(2)}): ${formatGBP(friBarTotal)}`;
+        document.getElementById('satBarCalcOutput').innerText = `Calculated Bar Total (${satTicketQty} attendees × £${(barMultipliers.Saturday||65.00).toFixed(2)}): ${formatGBP(satBarTotal)}`;
+        document.getElementById('wkndBarCalcOutput').innerText = `Calculated Bar Total (${wkndTicketQty} attendees × £${(barMultipliers.Weekend||100.00).toFixed(2)}): ${formatGBP(wkndBarTotal)}`;
+
+        // Update Sales Target Top Summary Cards (Separating Friday, Saturday & Weekend)
+        document.getElementById('topFriTicketRev').innerText = formatGBP(friTicketRev);
+        document.getElementById('topFriTicketQty').innerText = `${friTicketQty} Tickets | Bar: ${formatGBP(friBarTotal)}`;
+        
+        document.getElementById('topSatTicketRev').innerText = formatGBP(satTicketRev);
+        document.getElementById('topSatTicketQty').innerText = `${satTicketQty} Tickets | Bar: ${formatGBP(satBarTotal)}`;
+
+        document.getElementById('topWkndTicketRev').innerText = formatGBP(wkndTicketRev);
+        document.getElementById('topWkndTicketQty').innerText = `${wkndTicketQty} Tickets | Bar: ${formatGBP(wkndBarTotal)}`;
+
+        document.getElementById('topTargetRev').innerText = formatGBP(friTicketRev + satTicketRev + wkndTicketRev);
+        document.getElementById('topTargetQty').innerText = `${totalQtyExclParking} Total Festival Tickets`;
+        document.getElementById('topTotalBarRev').innerText = formatGBP(totalBarForecast);
 
         const vendorSponsorTotal = 17500;
-        const totalBarForecast = friBarTotal + satBarTotal;
-        const totalIncomeForecast = friTicketTotal + satTicketTotal + totalBarForecast + vendorSponsorTotal;
-
+        const totalIncomeForecast = friTicketRev + satTicketRev + wkndTicketRev + totalBarForecast + vendorSponsorTotal;
         const totalActualRevenue = (actualSalesData.friRev || 0) + (actualSalesData.satRev || 0) + (actualSalesData.wkndRev || 0) + (actualSalesData.barRev || 0);
 
         let bNetTotal = 0, bVatAmtTotal = 0, bIncTotal = 0, bSpentTotal = 0;
@@ -1571,8 +1594,9 @@
           varEl.style.color = profitVariance >= 0 ? 'var(--accent-green)' : 'var(--accent-rose)';
 
           let revTableHtml = `
-            <tr><td>Friday Event</td><td style="text-align:right;">${formatGBP(friTicketTotal)}</td><td style="text-align:right;">${formatGBP(friBarTotal)}</td><td style="text-align:right; font-weight:bold;">${formatGBP(friTicketTotal + friBarTotal)}</td></tr>
-            <tr><td>Saturday Event</td><td style="text-align:right;">${formatGBP(satTicketTotal)}</td><td style="text-align:right;">${formatGBP(satBarTotal)}</td><td style="text-align:right; font-weight:bold;">${formatGBP(satTicketTotal + satBarTotal)}</td></tr>
+            <tr><td>Friday Event</td><td style="text-align:right;">${formatGBP(friTicketRev)}</td><td style="text-align:right;">${formatGBP(friBarTotal)}</td><td style="text-align:right; font-weight:bold;">${formatGBP(friTicketRev + friBarTotal)}</td></tr>
+            <tr><td>Saturday Event</td><td style="text-align:right;">${formatGBP(satTicketRev)}</td><td style="text-align:right;">${formatGBP(satBarTotal)}</td><td style="text-align:right; font-weight:bold;">${formatGBP(satTicketRev + satBarTotal)}</td></tr>
+            <tr><td>Weekend Passes</td><td style="text-align:right;">${formatGBP(wkndTicketRev)}</td><td style="text-align:right;">${formatGBP(wkndBarTotal)}</td><td style="text-align:right; font-weight:bold;">${formatGBP(wkndTicketRev + wkndBarTotal)}</td></tr>
             <tr><td>Sponsorship & Vendors</td><td style="text-align:right;">-</td><td style="text-align:right;">-</td><td style="text-align:right; font-weight:bold;">${formatGBP(vendorSponsorTotal)}</td></tr>
           `;
           document.getElementById('dashRevenueBody').innerHTML = revTableHtml;
@@ -1718,7 +1742,7 @@
           // Summary Totals Row
           tHtml += `<tr class="total-row">
             <td colspan="2" style="text-transform: uppercase;">Total Sales Targets Summary</td>
-            <td style="text-align:center; color:var(--accent-blue); font-weight:bold;">${friTicketQtyCount + satTicketQtyCount} Tickets (Incl. Parking)</td>
+            <td style="text-align:center; color:var(--accent-blue); font-weight:bold;">${friTicketQty + satTicketQty + wkndTicketQty} Tickets (Excl. Parking)</td>
             <td style="text-align:right;">-</td>
             <td style="text-align:right; color:var(--accent-green); font-weight:bold;">${formatGBP(totalSalesRevenue)}</td>
             <td></td>
