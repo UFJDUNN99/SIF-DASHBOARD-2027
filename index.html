@@ -161,7 +161,7 @@
   <!-- HEADER -->
   <header>
     <div class="header-branding">
-      <img src="url?id=7wp-content/uploads/2026/06/SIF-logo.png-1.webp" alt="Secret Island Festival Logo" class="header-logo">
+      <img src="https://secretislandfestival.co.uk/wp-content/uploads/2026/06/SIF-logo.png-1.webp" alt="Secret Island Festival Logo" class="header-logo">
       <div class="header-title">
         <h1>SECRET ISLAND FESTIVAL 2027</h1>
         <p>Master Revenue & Operations Executive Dashboard</p>
@@ -203,7 +203,6 @@
   <main>
     <!-- TAB 1: EXECUTIVE DASHBOARD -->
     <div id="tab-dash" class="tab-content active">
-      <!-- SUMMARY & METRICS CARDS MOVED TO TOP -->
       <div class="stats-grid" id="adminStatsGrid">
         <div class="stat-card">
           <p>Total Forecasted Income</p>
@@ -310,6 +309,26 @@
 
     <!-- TAB 2: BUDGET TRACKER -->
     <div id="tab-budget" class="tab-content">
+      <!-- BUDGET SUMMARY TOP STATS CARD -->
+      <div class="stats-grid" style="margin-bottom: 20px;">
+        <div class="stat-card">
+          <p>Total Net Budget</p>
+          <h3 id="topBudgetNet" style="color: var(--accent-blue);">£0.00</h3>
+        </div>
+        <div class="stat-card">
+          <p>Total VAT Amount</p>
+          <h3 id="topBudgetVat" style="color: var(--text-muted);">£0.00</h3>
+        </div>
+        <div class="stat-card">
+          <p>Total Budget (Inc. VAT)</p>
+          <h3 id="topBudgetInc" style="color: var(--accent-purple);">£0.00</h3>
+        </div>
+        <div class="stat-card">
+          <p>Total Actual Spent</p>
+          <h3 id="topBudgetSpent" style="color: var(--accent-amber);">£0.00</h3>
+        </div>
+      </div>
+
       <div class="table-card">
         <div class="table-header">
           <span>Festival Budget Line Items (Directly Editable)</span>
@@ -341,6 +360,18 @@
 
     <!-- TAB 3: SALES TARGETS -->
     <div id="tab-target" class="tab-content">
+      <!-- SALES TARGETS SUMMARY TOP STATS CARD -->
+      <div class="stats-grid" style="margin-bottom: 20px;">
+        <div class="stat-card">
+          <p>Total Target Ticket Quantity</p>
+          <h3 id="topTargetQty" style="color: var(--accent-blue);">0 Tickets</h3>
+        </div>
+        <div class="stat-card">
+          <p>Total Ticket Sales Forecast (Inc. VAT)</p>
+          <h3 id="topTargetRev" style="color: var(--accent-green);">£0.00</h3>
+        </div>
+      </div>
+
       <!-- BAR SALES MULTIPLIER CONFIGURATION CARD -->
       <div class="table-card" style="margin-bottom: 20px;">
         <div class="table-header">
@@ -1462,6 +1493,10 @@
           }
         });
 
+        // Update Sales Target Top Summary Card
+        document.getElementById('topTargetQty').innerText = `${totalTargetQty.toLocaleString()} Tickets`;
+        document.getElementById('topTargetRev').innerText = formatGBP(totalSalesRevenue);
+
         const friBarTotal = friTicketQtyCount * (barMultipliers.Friday || 17.10);
         const satBarTotal = satTicketQtyCount * (barMultipliers.Saturday || 65.00);
 
@@ -1484,6 +1519,12 @@
           bIncTotal += ((parseFloat(row.net) || 0) + vatAmt);
           bSpentTotal += (parseFloat(row.update) || 0);
         });
+
+        // Update Budget Top Summary Card
+        document.getElementById('topBudgetNet').innerText = formatGBP(bNetTotal);
+        document.getElementById('topBudgetVat').innerText = formatGBP(bVatAmtTotal);
+        document.getElementById('topBudgetInc').innerText = formatGBP(bIncTotal);
+        document.getElementById('topBudgetSpent').innerText = formatGBP(bSpentTotal);
 
         const netVatLiability = bVatAmtTotal * 0.5; 
         const profitVariance = totalIncomeForecast - bIncTotal - netVatLiability;
