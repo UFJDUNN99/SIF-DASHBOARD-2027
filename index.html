@@ -483,8 +483,10 @@
               <tr>
                 <th>Act Name</th>
                 <th>DJ / Production</th>
-                <th style="text-align: right;">Cost (£)</th>
+                <th style="text-align: right;">Cost (Net/Inc) (£)</th>
                 <th style="text-align: center;">VAT</th>
+                <th style="text-align: right;">VAT Amount (£)</th>
+                <th style="text-align: right;">Total Inc. VAT (£)</th>
                 <th>Stage</th>
                 <th>Day</th>
                 <th>Time Slot</th>
@@ -1155,7 +1157,12 @@
     }
 
     function syncActCostsToBudget() {
-      const totalActsCost = djData.reduce((sum, act) => sum + (parseFloat(act.cost) || 0), 0);
+      const totalActsCost = djData.reduce((sum, act) => {
+        const baseCost = parseFloat(act.cost) || 0;
+        const withVat = act.vat === 'YES' ? baseCost * 1.2 : baseCost;
+        return sum + withVat;
+      }, 0);
+
       const djBudgetRow = budgetData.find(row => row.item.toLowerCase().includes("event dj or act fee"));
       if (djBudgetRow) {
         djBudgetRow.update = totalActsCost;
@@ -1482,13 +1489,15 @@
           } else {
             let stageHtml = '';
             filteredDjs.forEach(row => {
+              const baseCost = parseFloat(row.cost) || 0;
+              const totalIncCost = row.vat === 'YES' ? baseCost * 1.2 : baseCost;
               stageHtml += `<tr>
                 <td style="font-weight:bold; color:var(--accent-blue);">${row.stage || 'Lighthouse (Main Stage)'}</td>
                 <td style="font-weight:bold; color:var(--accent-rose);">${row.name}</td>
                 <td><span class="badge">${row.type}</span></td>
                 <td style="color:var(--text-muted);">${row.day || '-'}</td>
                 <td style="font-weight:600; color:var(--accent-purple);">${row.time || '-'}</td>
-                <td style="text-align:right; font-weight:bold; color:var(--accent-green);">${formatGBP(row.cost)}</td>
+                <td style="text-align:right; font-weight:bold; color:var(--accent-green);">${formatGBP(totalIncCost)}</td>
               </tr>`;
             });
             dashStageBody.innerHTML = stageHtml;
@@ -1672,16 +1681,22 @@
           rBody.innerHTML = rHtml;
         }
 
-        // TAB 7: DJS
+        // TAB 7: DJS (WITH VAT DYNAMIC CALCULATION)
         const djBody = document.getElementById('djBody');
         if (djBody) {
           let djHtml = '';
           djData.forEach((row, idx) => {
+            const baseCost = parseFloat(row.cost) || 0;
+            const vatAmount = row.vat === 'YES' ? baseCost * 0.2 : 0;
+            const totalIncCost = baseCost + vatAmount;
+
             djHtml += `<tr>
               <td style="font-weight:bold; color:var(--accent-rose);">${row.name}</td>
               <td><span class="badge">${row.type}</span></td>
-              <td style="text-align:right; font-weight:bold; color:var(--accent-green);">${formatGBP(row.cost)}</td>
+              <td style="text-align:right;">${formatGBP(baseCost)}</td>
               <td style="text-align:center;"><span class="badge ${row.vat === 'YES' ? 'badge-yes' : ''}">${row.vat}</span></td>
+              <td style="text-align:right; color:var(--text-muted);">${formatGBP(vatAmount)}</td>
+              <td style="text-align:right; font-weight:bold; color:var(--accent-green);">${formatGBP(totalIncCost)}</td>
               <td>${row.stage || '-'}</td>
               <td style="color:var(--text-muted);">${row.day || '-'}</td>
               <td style="font-weight:600; color:var(--accent-blue);">${row.time || '-'}</td>
