@@ -161,7 +161,7 @@
   <!-- HEADER -->
   <header>
     <div class="header-branding">
-      <img src="url?id=7wp-content/uploads/2026/06/SIF-logo.png-1.webp" alt="Secret Island Festival Logo" class="header-logo">
+      <img src="https://secretislandfestival.co.uk/wp-content/uploads/2026/06/SIF-logo.png-1.webp" alt="Secret Island Festival Logo" class="header-logo">
       <div class="header-title">
         <h1>SECRET ISLAND FESTIVAL 2027</h1>
         <p>Master Revenue & Operations Executive Dashboard</p>
@@ -360,8 +360,8 @@
 
     <!-- TAB 3: SALES TARGETS -->
     <div id="tab-target" class="tab-content">
-      <!-- SALES TARGETS SUMMARY TOP STATS CARDS (SEPARATING FRIDAY, SATURDAY & WEEKEND) -->
-      <div class="stats-grid" style="margin-bottom: 20px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
+      <!-- SALES TARGETS SUMMARY TOP STATS CARDS (INCLUDING GRAND TOTAL COMBINED OVER WEEKEND) -->
+      <div class="stats-grid" style="margin-bottom: 20px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
         <div class="stat-card">
           <p>Friday Sales (Excl. Parking)</p>
           <h3 id="topFriTicketRev" style="color: var(--accent-blue);">£0.00</h3>
@@ -386,6 +386,11 @@
           <p>Total Bar Spend Forecast</p>
           <h3 id="topTotalBarRev" style="color: var(--accent-amber);">£0.00</h3>
           <p style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">Friday + Saturday + Weekend</p>
+        </div>
+        <div class="stat-card" style="background: linear-gradient(135deg, #1e293b, #0f172a); border: 2px solid var(--accent-blue);">
+          <p style="color: var(--accent-blue);">Grand Total Combined Weekend Sales</p>
+          <h3 id="topGrandTotalRev" style="color: var(--accent-green); font-size: 26px;">£0.00</h3>
+          <p style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">Total Tickets + Total Bar Spend</p>
         </div>
       </div>
 
@@ -1107,7 +1112,7 @@
     let djData = [...defaultDjs];
     let notesData = [...defaultNotes];
     let currentCalDay = "Friday 30th July";
-    let barMultipliers = { Friday: 17.10, Saturday: 65.00, Weekend: 100.00 };
+    let barMultipliers = { Friday: 35.00, Saturday: 65.00, Weekend: 100.00 };
 
     function initFirebaseSync() {
       const dbRef = db.ref('sif27_festival_data');
@@ -1537,6 +1542,9 @@
         const wkndBarTotal = wkndTicketQty * (barMultipliers.Weekend || 100.00);
         const totalBarForecast = friBarTotal + satBarTotal + wkndBarTotal;
 
+        // Grand Total Combined Weekend Sales (Tickets + Bar Spend across Friday, Saturday, Weekend)
+        const grandTotalCombined = friTicketRev + satTicketRev + wkndTicketRev + totalBarForecast;
+
         // Update Multiplier Inputs & Outputs
         document.getElementById('friBarMultiplier').value = barMultipliers.Friday || 35.00;
         document.getElementById('satBarMultiplier').value = barMultipliers.Saturday || 65.00;
@@ -1546,7 +1554,7 @@
         document.getElementById('satBarCalcOutput').innerText = `Calculated Bar Total (${satTicketQty} attendees × £${(barMultipliers.Saturday||65.00).toFixed(2)}): ${formatGBP(satBarTotal)}`;
         document.getElementById('wkndBarCalcOutput').innerText = `Calculated Bar Total (${wkndTicketQty} attendees × £${(barMultipliers.Weekend||100.00).toFixed(2)}): ${formatGBP(wkndBarTotal)}`;
 
-        // Update Sales Target Top Summary Cards (Separating Friday, Saturday & Weekend)
+        // Update Sales Target Top Summary Cards
         document.getElementById('topFriTicketRev').innerText = formatGBP(friTicketRev);
         document.getElementById('topFriTicketQty').innerText = `${friTicketQty} Tickets | Bar: ${formatGBP(friBarTotal)}`;
         
@@ -1559,6 +1567,7 @@
         document.getElementById('topTargetRev').innerText = formatGBP(friTicketRev + satTicketRev + wkndTicketRev);
         document.getElementById('topTargetQty').innerText = `${totalQtyExclParking} Total Festival Tickets`;
         document.getElementById('topTotalBarRev').innerText = formatGBP(totalBarForecast);
+        document.getElementById('topGrandTotalRev').innerText = formatGBP(grandTotalCombined);
 
         const vendorSponsorTotal = 17500;
         const totalIncomeForecast = friTicketRev + satTicketRev + wkndTicketRev + totalBarForecast + vendorSponsorTotal;
