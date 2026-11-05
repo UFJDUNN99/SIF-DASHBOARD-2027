@@ -246,7 +246,6 @@
       <div class="unified-summary-card" id="adminSummaryBlock">
         <div class="unified-summary-header">
           <span id="summaryCardTitle">📊 Executive Financial & VAT Summary</span>
-          <button onclick="openActualModal()" class="edit-btn" id="logActualsBtn">+ Log Actuals Manually</button>
         </div>
         
         <!-- Top Row -->
@@ -267,7 +266,7 @@
             <div class="sub-text">Income - Budget - VAT to Pay to HMRC</div>
           </div>
           <div class="summary-item">
-            <p>4. Actual Ticket Sales</p>
+            <p>4. Actual Ticket Sales (Uploaded)</p>
             <h3 id="dashActualRevenue" style="color: var(--accent-green);">£0.00</h3>
             <div id="dashTicketCounts" class="sub-text">Qty Sold: 0 Tickets</div>
           </div>
@@ -827,32 +826,6 @@
   </main>
 
   <!-- MODALS -->
-  <div id="actualModal" class="modal">
-    <div class="modal-box">
-      <h3 style="margin-bottom: 16px; font-size: 16px; font-weight: bold; color: var(--accent-blue);">Update Actual Sales To Date</h3>
-      <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-        <div><label>Friday Tickets Sold</label><input type="number" id="actFriQty"></div>
-        <div><label>Friday Ticket Income (£)</label><input type="number" step="0.01" id="actFriRev"></div>
-      </div>
-      <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-        <div><label>Saturday Tickets Sold</label><input type="number" id="actSatQty"></div>
-        <div><label>Saturday Ticket Income (£)</label><input type="number" step="0.01" id="actSatRev"></div>
-      </div>
-      <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-        <div><label>Weekend Tickets Sold</label><input type="number" id="actWkndQty"></div>
-        <div><label>Weekend Ticket Income (£)</label><input type="number" step="0.01" id="actWkndRev"></div>
-      </div>
-      <div class="form-group">
-        <label>Actual Bar Revenue (£)</label>
-        <input type="number" step="0.01" id="actBarRev">
-      </div>
-      <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px;">
-        <button type="button" onclick="closeActualModal()" style="background: var(--input-bg);">Cancel</button>
-        <button type="button" onclick="saveActualSales()" class="action-btn">Save Actuals</button>
-      </div>
-    </div>
-  </div>
-
   <div id="targetModal" class="modal">
     <div class="modal-box">
       <h3 id="targetModalTitle" style="margin-bottom: 16px; font-size: 16px; font-weight: bold; color: var(--accent-blue);">Edit Ticket Target</h3>
@@ -1229,13 +1202,6 @@
       }
     });
 
-    const defaultActualSales = {
-      friQty: 15, friRev: 525,
-      satQty: 30, satRev: 1500,
-      wkndQty: 10, wkndRev: 700,
-      barRev: 2712.50
-    };
-
     const defaultBudget = [
       { item: "Alcohol", cat: "Bar & Beverage", net: 17500, vat: "YES", update: 22200, owner: "James Dunn" },
       { item: "Bar Costs", cat: "Bar & Beverage", net: 1000, vat: "YES", update: 0, owner: "James Dunn" },
@@ -1426,7 +1392,6 @@
       { id: 1, dept: "Marketing", text: "Let's explore partnering with local South Coast boutique clothing brands for merch giveaways.", author: "team@ultrafunkula.co.uk", timestamp: 1709280000000, ratings: {} }
     ];
 
-    let actualSalesData = { ...defaultActualSales };
     let budgetData = [...defaultBudget];
     let targetData = [...defaultTargets];
     let sponsorshipData = [...defaultSponsorships];
@@ -1436,6 +1401,7 @@
     let notesData = [...defaultNotes];
     let currentCalDay = "Friday 30th July";
     let barMultipliers = { Friday: 35.00, Saturday: 65.00, Weekend: 100.00 };
+    let uploadedTicketSalesRows = [];
 
     function initFirebaseSync() {
       const dbRef = db.ref('sif27_festival_data');
@@ -1445,7 +1411,6 @@
         const statusEl = document.getElementById('syncStatus');
         
         if (val) {
-          actualSalesData = val.actualSalesData ? val.actualSalesData : { ...defaultActualSales };
           budgetData = val.budgetData ? val.budgetData : [...defaultBudget];
           targetData = val.targetData ? val.targetData : [...defaultTargets];
           sponsorshipData = val.sponsorshipData ? val.sponsorshipData : [...defaultSponsorships];
@@ -1483,7 +1448,7 @@
     }
 
     function saveAllToFirebase() {
-      const payload = { actualSalesData, budgetData, targetData, sponsorshipData, planData, rolesData, djData, notesData, barMultipliers, uploadedTicketSalesRows, userRoles: userRolesMap, usersRegistry };
+      const payload = { budgetData, targetData, sponsorshipData, planData, rolesData, djData, notesData, barMultipliers, uploadedTicketSalesRows, userRoles: userRolesMap, usersRegistry };
       db.ref('sif27_festival_data').update(payload);
     }
 
@@ -1518,8 +1483,6 @@
       setDisplay('vatSummaryBottomRow', isDirector ? 'grid' : 'none');
       setDisplay('adminRevenueCard', isDirector ? 'block' : 'none');
       setDisplay('summaryCardTitle', isDirector ? 'block' : 'none');
-
-      setDisplay('logActualsBtn', 'inline-block');
 
       ['budgetActionBtns', 'sponsorshipActionBtns', 'targetActionBtns', 'planActionBtns'].forEach(id => {
         setDisplay(id, isDirector ? 'flex' : 'none');
@@ -1584,7 +1547,6 @@
 
           uploadedTicketSalesRows = [];
           jsonRows.forEach(row => {
-            // Flexible column header mapping
             const typeKey = Object.keys(row).find(k => /type|name|category|ticket/i.test(k)) || Object.keys(row)[0];
             const qtyKey = Object.keys(row).find(k => /qty|quantity|sold|count/i.test(k)) || Object.keys(row)[1];
             const revKey = Object.keys(row).find(k => /rev|revenue|price|total|amount/i.test(k)) || Object.keys(row)[2];
@@ -1604,7 +1566,7 @@
           saveAllToFirebase();
           logActivity(currentUserEmail, `Uploaded ticket sales spreadsheet (${file.name})`);
           buildTables();
-          alert("✅ Ticket sales successfully imported and parsed from Excel/CSV!");
+          alert("✅ Ticket sales successfully imported from Excel/CSV and linked to the summary card!");
         } catch (err) {
           alert("❌ Error reading Excel file. Please ensure it is a valid .xlsx or .csv file.");
           console.error(err);
@@ -1623,6 +1585,17 @@
         const isAdmin = currentUserEmail.includes('james.dunn@ultrafunkula');
         const isDirector = role === 'director' || isAdmin;
 
+        // CALCULATE TOTALS FROM UPLOADED TICKET SALES
+        let uploadedTotalQty = 0;
+        let uploadedTotalRev = 0;
+        uploadedTicketSalesRows.forEach(r => {
+          uploadedTotalQty += r.qty;
+          uploadedTotalRev += r.rev;
+        });
+
+        document.getElementById('dashActualRevenue').innerText = formatGBP(uploadedTotalRev);
+        document.getElementById('dashTicketCounts').innerHTML = `Qty Sold: <b>${uploadedTotalQty} Tickets</b>`;
+
         // RENDER UPLOADED TICKET SALES TABLE WITH SORTING
         const ticketBody = document.getElementById('uploadedTicketSalesBody');
         const sortMode = document.getElementById('ticketSortSelect') ? document.getElementById('ticketSortSelect').value : 'default';
@@ -1638,7 +1611,6 @@
             } else if (sortMode === 'revDesc') {
               sortedRows.sort((a, b) => b.rev - a.rev);
             } else {
-              // Default sort: Weekend -> Friday -> Saturday
               const getRank = (d) => {
                 if (d.includes('Weekend')) return 1;
                 if (d.includes('Friday')) return 2;
@@ -1648,12 +1620,7 @@
             }
 
             let tHtml = '';
-            let totalUploadedQty = 0;
-            let totalUploadedRev = 0;
-
             sortedRows.forEach(r => {
-              totalUploadedQty += r.qty;
-              totalUploadedRev += r.rev;
               tHtml += `<tr>
                 <td style="font-weight:bold; color:var(--accent-blue);">${r.type}</td>
                 <td style="color:var(--text-muted);">${r.day}</td>
@@ -1664,8 +1631,8 @@
 
             tHtml += `<tr class="total-row">
               <td colspan="2" style="text-transform: uppercase;">Total Uploaded Ticket Sales</td>
-              <td style="text-align:center; color:var(--accent-blue);">${totalUploadedQty} Tickets</td>
-              <td style="text-align:right; color:var(--accent-green);">${formatGBP(totalUploadedRev)}</td>
+              <td style="text-align:center; color:var(--accent-blue);">${uploadedTotalQty} Tickets</td>
+              <td style="text-align:right; color:var(--accent-green);">${formatGBP(uploadedTotalRev)}</td>
             </tr>`;
             ticketBody.innerHTML = tHtml;
           }
@@ -1768,9 +1735,6 @@
         document.getElementById('topConsolidatedGrandTotal').innerText = formatGBP(grandTotalCombined);
 
         const totalIncomeForecast = totalCombinedTicketRev + totalBarForecast + totalSponsorshipInc;
-        
-        const actualTicketRevenue = (actualSalesData.friRev || 0) + (actualSalesData.satRev || 0) + (actualSalesData.wkndRev || 0);
-        const actualTicketQtyTotal = (actualSalesData.friQty || 0) + (actualSalesData.satQty || 0) + (actualSalesData.wkndQty || 0);
 
         let bNetTotal = 0, bVatAmtTotal = 0, bIncTotal = 0, bSpentTotal = 0;
         budgetData.forEach(row => {
@@ -1788,9 +1752,6 @@
 
         const netVatLiability = totalVatCollected - bVatAmtTotal;
         const profitVariance = totalIncomeForecast - bIncTotal - netVatLiability;
-
-        document.getElementById('dashActualRevenue').innerText = formatGBP(actualTicketRevenue);
-        document.getElementById('dashTicketCounts').innerHTML = `Tickets Sold: <b>${actualTicketQtyTotal} Qty</b>`;
 
         if (isDirector) {
           document.getElementById('dashTotalIncome').innerText = formatGBP(totalIncomeForecast);
@@ -2084,33 +2045,6 @@
     }
 
     // MODALS & ACTIONS
-    function openActualModal() {
-      document.getElementById('actFriQty').value = actualSalesData.friQty || 0;
-      document.getElementById('actFriRev').value = actualSalesData.friRev || 0;
-      document.getElementById('actSatQty').value = actualSalesData.satQty || 0;
-      document.getElementById('actSatRev').value = actualSalesData.satRev || 0;
-      document.getElementById('actWkndQty').value = actualSalesData.wkndQty || 0;
-      document.getElementById('actWkndRev').value = actualSalesData.wkndRev || 0;
-      document.getElementById('actBarRev').value = actualSalesData.barRev || 0;
-      document.getElementById('actualModal').classList.add('active');
-    }
-    function closeActualModal() { document.getElementById('actualModal').classList.remove('active'); }
-    function saveActualSales() {
-      actualSalesData = {
-        friQty: parseInt(document.getElementById('actFriQty').value) || 0,
-        friRev: parseFloat(document.getElementById('actFriRev').value) || 0,
-        satQty: parseInt(document.getElementById('actSatQty').value) || 0,
-        satRev: parseFloat(document.getElementById('actSatRev').value) || 0,
-        wkndQty: parseInt(document.getElementById('actWkndQty').value) || 0,
-        wkndRev: parseFloat(document.getElementById('actWkndRev').value) || 0,
-        barRev: parseFloat(document.getElementById('actBarRev').value) || 0
-      };
-      saveAllToFirebase();
-      logActivity(currentUserEmail, "Updated actual sales data");
-      closeActualModal();
-      buildTables();
-    }
-
     function openTargetModal(index) {
       document.getElementById('targetEditIndex').value = index;
       if (index === -1) {
@@ -2618,7 +2552,7 @@
     }
 
     function exportToJSON() {
-      const payload = { actualSalesData, budgetData, targetData, sponsorshipData, planData, rolesData, djData, notesData, barMultipliers, uploadedTicketSalesRows, userRoles: userRolesMap, usersRegistry };
+      const payload = { budgetData, targetData, sponsorshipData, planData, rolesData, djData, notesData, barMultipliers, uploadedTicketSalesRows, userRoles: userRolesMap, usersRegistry };
       const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -2637,7 +2571,6 @@
       reader.onload = function(e) {
         try {
           const imported = JSON.parse(e.target.result);
-          if (imported.actualSalesData) actualSalesData = imported.actualSalesData;
           if (imported.budgetData) budgetData = imported.budgetData;
           if (imported.targetData) targetData = imported.targetData;
           if (imported.sponsorshipData) sponsorshipData = imported.sponsorshipData;
