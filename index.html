@@ -1030,6 +1030,15 @@
       auth.signInWithEmailAndPassword(email, password)
         .then((userCredential) => {
           const key = email.replace(/\./g, '_');
+          
+          // BYPASS APPROVAL CHECK FOR JAMES DUNN
+          if (email.includes('james.dunn@ultrafunkula')) {
+            db.ref(`sif27_festival_data/userRoles/${key}`).set('admin');
+            document.getElementById('loginOverlay').style.display = 'none';
+            recordUserLogin(email);
+            return;
+          }
+
           db.ref(`sif27_festival_data/userRoles/${key}`).once('value', (snapshot) => {
             const role = snapshot.val();
             if (!role || role === 'pending') {
@@ -1379,7 +1388,7 @@
           usersRegistry = val.usersRegistry ? val.usersRegistry : {};
           auditLogsList = val.auditLogs ? Object.values(val.auditLogs) : [];
 
-          if (currentUserEmail === 'james.dunn@ultrafunkula.co.uk') {
+          if (currentUserEmail.includes('james.dunn@ultrafunkula')) {
             userRolesMap[currentUserEmail.replace(/\./g, '_')] = 'admin';
           }
 
@@ -1412,7 +1421,7 @@
     }
 
     function getUserRole() {
-      if (currentUserEmail === 'james.dunn@ultrafunkula.co.uk') return 'admin';
+      if (currentUserEmail.includes('james.dunn@ultrafunkula')) return 'admin';
       const key = currentUserEmail.replace(/\./g, '_');
       return userRolesMap[key] || 'pending';
     }
@@ -1422,7 +1431,7 @@
       const roleBadge = document.getElementById('loggedInRoleDisplay');
       if (roleBadge) roleBadge.innerText = role.toUpperCase();
 
-      const isAdmin = (currentUserEmail === 'james.dunn@ultrafunkula.co.uk');
+      const isAdmin = currentUserEmail.includes('james.dunn@ultrafunkula');
       const isDirector = role === 'director' || isAdmin;
       const isTeam = role === 'team' && !isAdmin;
 
@@ -1454,7 +1463,7 @@
     }
 
     function openTab(tabName) {
-      const isAdmin = (currentUserEmail === 'james.dunn@ultrafunkula.co.uk');
+      const isAdmin = currentUserEmail.includes('james.dunn@ultrafunkula');
       const role = getUserRole();
 
       if (tabName === 'admin' && !isAdmin) {
@@ -1484,7 +1493,7 @@
         buildNotesBoard();
 
         const role = getUserRole();
-        const isAdmin = (currentUserEmail === 'james.dunn@ultrafunkula.co.uk');
+        const isAdmin = currentUserEmail.includes('james.dunn@ultrafunkula');
         const isDirector = role === 'director' || isAdmin;
 
         let friTicketRev = 0, friTicketQty = 0;
@@ -1858,7 +1867,7 @@
           for (const [key, reg] of Object.entries(usersRegistry)) {
             const email = reg.email || key.replace(/_/g, '.');
             const lastLog = reg.lastLogin ? new Date(reg.lastLogin).toLocaleString('en-GB') : 'Registered';
-            const currentR = userRolesMap[key] || (email === 'james.dunn@ultrafunkula.co.uk' ? 'admin' : 'pending');
+            const currentR = userRolesMap[key] || (email.includes('james.dunn@ultrafunkula') ? 'admin' : 'pending');
 
             const statusBadge = currentR === 'pending' 
               ? `<span class="badge" style="background:rgba(225,29,72,0.2); color:#fda4af; border-color:#e11d48;">⏳ Pending Approval</span>`
