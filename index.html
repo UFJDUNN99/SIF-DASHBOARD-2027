@@ -5,8 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Secret Island Festival 2027 — Master Revenue & Operations Dashboard</title>
   
-  <!-- Firebase App & Realtime Database CDN SDK -->
+  <!-- Firebase App, Auth & Realtime Database CDN SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
   <style>
@@ -95,6 +96,16 @@
     .star-btn { background: none; border: none; font-size: 16px; cursor: pointer; color: var(--border-color); padding: 0; }
     .star-btn.rated { color: var(--accent-amber); }
 
+    /* Login Modal Overlay */
+    #loginOverlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(4px); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; }
+    .login-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 32px; width: 100%; max-width: 400px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4); }
+    .login-card h2 { font-size: 18px; font-weight: 800; color: var(--accent-blue); margin-bottom: 6px; text-align: center; }
+    .login-card p { font-size: 12px; color: var(--text-muted); margin-bottom: 20px; text-align: center; }
+    .login-card input { width: 100%; padding: 10px 14px; font-size: 13px; margin-bottom: 12px; border-radius: 8px; border: 1px solid var(--border-color); background: #0f172a; color: var(--text-main); }
+    .login-card button { width: 100%; padding: 10px; font-weight: bold; background: var(--accent-blue); color: #0f172a; border: none; border-radius: 8px; font-size: 13px; cursor: pointer; }
+    .login-card button:hover { background: #0ea5e9; }
+    #loginError { color: var(--accent-rose); font-size: 11px; margin-top: 10px; text-align: center; display: none; }
+
     /* Modal */
     .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 50; align-items: center; justify-content: center; padding: 20px; }
     .modal.active { display: flex; }
@@ -105,6 +116,47 @@
   </style>
 </head>
 <body>
+
+  <!-- LOGIN GATE OVERLAY -->
+  <div id="loginOverlay">
+    <div class="login-card">
+      <h2>🔒 Secret Island Festival</h2>
+      <p>Log in with your staff email and password</p>
+      <input type="email" id="loginEmail" placeholder="Email address..." required>
+      <input type="password" id="loginPassword" placeholder="Password..." required onkeydown="if(event.key==='Enter') handleLogin()">
+      <button type="button" onclick="handleLogin()">Log In to Dashboard</button>
+      <div id="loginError"></div>
+
+      <div style="margin-top: 16px; text-align: center; border-top: 1px solid var(--border-color); padding-top: 12px;">
+        <span style="font-size: 11px; color: var(--text-muted);">Don't have an account? </span>
+        <button type="button" onclick="openSignupModal()" style="background: none; border: none; color: var(--accent-blue); font-size: 11px; font-weight: bold; cursor: pointer; display: inline; padding: 0;">Create Staff Account</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SIGN-UP MODAL POPUP -->
+  <div id="signupModal" class="modal">
+    <div class="modal-box" style="max-width: 380px;">
+      <h3 style="margin-bottom: 12px; font-size: 16px; font-weight: bold; color: var(--accent-blue); text-align: center;">Register New Staff Account</h3>
+      <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 16px; text-align: center;">New accounts default to staff access.</p>
+      
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" id="signupEmail" placeholder="staff@ultrafunkula.co.uk" required>
+      </div>
+      <div class="form-group">
+        <label>Password (Min 6 characters)</label>
+        <input type="password" id="signupPassword" placeholder="••••••••" required>
+      </div>
+      
+      <div id="signupError" style="color: var(--accent-rose); font-size: 11px; margin-bottom: 10px; display: none;"></div>
+
+      <div style="display: flex; gap: 8px; margin-top: 20px;">
+        <button type="button" onclick="closeSignupModal()" style="background: #0f172a; flex: 1; padding: 8px;">Cancel</button>
+        <button type="button" onclick="handleSignup()" class="action-btn" style="flex: 1; padding: 8px;">Register</button>
+      </div>
+    </div>
+  </div>
 
   <!-- HEADER -->
   <header>
@@ -128,6 +180,11 @@
       <button onclick="exportToJSON()" class="io-btn">📥 Backup JSON</button>
       <button onclick="triggerImport()" class="io-btn">📤 Restore JSON</button>
       <input type="file" id="jsonFileInput" accept=".json" style="display:none;" onchange="importFromJSON(event)">
+      
+      <div style="display: flex; align-items: center; gap: 8px; background: #0f172a; padding: 4px 10px; border-radius: 6px; border: 1px solid var(--border-color);">
+        <span id="loggedInUserDisplay" style="font-size: 11px; font-weight: bold; color: var(--accent-blue);">User</span>
+        <button onclick="handleLogout()" style="background: rgba(225, 29, 72, 0.2); color: #fda4af; border: 1px solid var(--border-color); padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: bold;">Log Out</button>
+      </div>
     </div>
   </header>
 
@@ -159,6 +216,11 @@
           </div>
           <h3 id="dashActualRevenue" style="color: var(--accent-green);">£0.00</h3>
           <div id="dashTicketCounts" style="font-size: 10px; color: var(--text-muted); margin-top: 6px; line-height: 1.4;"></div>
+        </div>
+        <div class="stat-card">
+          <p>Total VAT Collected (Forecast)</p>
+          <h3 id="dashTotalVatCollected" style="color: var(--accent-amber);">£0.00</h3>
+          <p style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">Included in Ticket & Bar Revenue</p>
         </div>
         <div class="stat-card">
           <p>Budget Allocation (Inc. VAT)</p>
@@ -789,7 +851,7 @@
 
   <script>
     // ==========================================
-    // ⚙️ FIREBASE LIVE CONFIG
+    // ⚙️ FIREBASE LIVE CONFIG & AUTH
     // ==========================================
     const firebaseConfig = {
       apiKey: "AIzaSyCETSeAhkKL4dnBiD3TeDgk_q-LqxluX8k",
@@ -802,7 +864,88 @@
     };
 
     firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
     const db = firebase.database();
+
+    const adminEmails = [
+      "james.dunn@ultrafunkula.co.uk",
+      "matthew.prevett@ultrafunkula.co.uk",
+      "kevin@secretisland.com",
+      "ben@secretisland.com"
+    ];
+
+    let currentUserEmail = "";
+
+    function handleLogin() {
+      const email = document.getElementById('loginEmail').value.trim();
+      const password = document.getElementById('loginPassword').value;
+      const errorEl = document.getElementById('loginError');
+
+      if (!email || !password) {
+        errorEl.innerText = "Please enter your email and password.";
+        errorEl.style.display = 'block';
+        return;
+      }
+
+      auth.signInWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+          document.getElementById('loginOverlay').style.display = 'none';
+        })
+        .catch((error) => {
+          errorEl.innerText = error.message;
+          errorEl.style.display = 'block';
+        });
+    }
+
+    function handleLogout() {
+      auth.signOut().then(() => {
+        location.reload();
+      });
+    }
+
+    function openSignupModal() {
+      document.getElementById('signupEmail').value = '';
+      document.getElementById('signupPassword').value = '';
+      document.getElementById('signupError').style.display = 'none';
+      document.getElementById('signupModal').classList.add('active');
+    }
+
+    function closeSignupModal() {
+      document.getElementById('signupModal').classList.remove('active');
+    }
+
+    function handleSignup() {
+      const email = document.getElementById('signupEmail').value.trim();
+      const password = document.getElementById('signupPassword').value;
+      const errorEl = document.getElementById('signupError');
+
+      if (!email || !password) {
+        errorEl.innerText = "Please fill in both email and password.";
+        errorEl.style.display = 'block';
+        return;
+      }
+
+      auth.createUserWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+          closeSignupModal();
+          document.getElementById('loginOverlay').style.display = 'none';
+        })
+        .catch((error) => {
+          errorEl.innerText = error.message;
+          errorEl.style.display = 'block';
+        });
+    }
+
+    auth.onAuthStateChanged((user) => {
+      if (user) {
+        currentUserEmail = user.email;
+        document.getElementById('loginOverlay').style.display = 'none';
+        document.getElementById('loggedInUserDisplay').innerText = currentUserEmail;
+        initFirebaseSync();
+      } else {
+        document.getElementById('loginOverlay').style.display = 'flex';
+      }
+    });
 
     const defaultActualSales = {
       friQty: 15, friRev: 525,
@@ -1058,6 +1201,13 @@
     }
 
     function openTab(tabName) {
+      const isAdmin = adminEmails.includes(currentUserEmail);
+
+      if (!isAdmin && tabName !== 'plan' && tabName !== 'timeline' && tabName !== 'djs' && tabName !== 'notes' && tabName !== 'dash') {
+        alert(`⚠️ Access Restricted\n\nRestricted users can view the Dashboard, Project Plan, Project Timeline, DJs, and Ideas Board tabs.`);
+        return;
+      }
+
       document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       
@@ -1240,7 +1390,7 @@
         id: Date.now(),
         dept: dept,
         text: text,
-        author: 'Staff',
+        author: currentUserEmail || 'Staff',
         timestamp: Date.now(),
         ratings: {}
       };
@@ -1255,7 +1405,7 @@
       const note = notesData.find(n => n.id === noteId);
       if (note) {
         if (!note.ratings) note.ratings = {};
-        note.ratings['Staff'] = score;
+        note.ratings[currentUserEmail] = score;
         saveAllToFirebase();
         buildNotesBoard();
       }
@@ -1308,11 +1458,13 @@
       filtered.forEach(note => {
         const deptColor = getCategoryColor(note.dept);
         const avgScore = calculateAverageScore(note.ratings);
+        const userRating = (note.ratings && note.ratings[currentUserEmail]) ? note.ratings[currentUserEmail] : 0;
         const dateStr = new Date(note.timestamp).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 
         let starsHtml = '';
         for (let i = 1; i <= 5; i++) {
-          starsHtml += `<button class="star-btn" onclick="rateNote(${note.id}, ${i})" title="Rate ${i} stars">★</button>`;
+          const ratedClass = i <= userRating ? 'rated' : '';
+          starsHtml += `<button class="star-btn ${ratedClass}" onclick="rateNote(${note.id}, ${i})" title="Rate ${i} stars">★</button>`;
         }
 
         feedHtml += `
@@ -1375,6 +1527,15 @@
         buildTimelineChart();
         buildNotesBoard();
 
+        const isAdmin = adminEmails.includes(currentUserEmail);
+
+        document.getElementById('btn-budget').style.display = isAdmin ? 'block' : 'none';
+        document.getElementById('btn-target').style.display = isAdmin ? 'block' : 'none';
+        document.getElementById('btn-roles').style.display = isAdmin ? 'block' : 'none';
+
+        document.getElementById('adminStatsGrid').style.display = isAdmin ? 'grid' : 'none';
+        document.getElementById('adminRevenueCard').style.display = isAdmin ? 'block' : 'none';
+
         let friTicketRev = 0, friTicketQty = 0;
         let satTicketRev = 0, satTicketQty = 0;
         let wkndTicketRev = 0, wkndTicketQty = 0;
@@ -1414,6 +1575,9 @@
 
         const totalCombinedTicketRev = friTicketRev + satTicketRev + wkndTicketRev;
         const grandTotalCombined = totalCombinedTicketRev + totalBarForecast;
+
+        // VAT Collected Calculation (20% standard VAT on inclusive ticket sales and bar spend)
+        const totalVatCollected = (totalCombinedTicketRev / 6) + (totalBarForecast / 6);
 
         document.getElementById('friBarMultiplier').value = barMultipliers.Friday || 35.00;
         document.getElementById('satBarMultiplier').value = barMultipliers.Saturday || 65.00;
@@ -1456,23 +1620,26 @@
         const netVatLiability = bVatAmtTotal * 0.5; 
         const profitVariance = totalIncomeForecast - bIncTotal - netVatLiability;
 
-        document.getElementById('dashTotalIncome').innerText = formatGBP(totalIncomeForecast);
-        document.getElementById('dashActualRevenue').innerText = formatGBP(totalActualRevenue);
-        document.getElementById('dashTicketCounts').innerHTML = `Tickets: <b>£${(actualSalesData.friRev + actualSalesData.satRev + actualSalesData.wkndRev).toLocaleString()}</b> | Bar: <b>£${(actualSalesData.barRev || 0).toLocaleString()}</b>`;
-        document.getElementById('dashBudInc').innerText = formatGBP(bIncTotal);
-        document.getElementById('dashBudSpent').innerText = `Spent: ${formatGBP(bSpentTotal)} | Remaining: ${formatGBP(bIncTotal - bSpentTotal)}`;
-        
-        const varEl = document.getElementById('dashVariance');
-        varEl.innerText = formatGBP(profitVariance);
-        varEl.style.color = profitVariance >= 0 ? 'var(--accent-green)' : 'var(--accent-rose)';
+        if (isAdmin) {
+          document.getElementById('dashTotalIncome').innerText = formatGBP(totalIncomeForecast);
+          document.getElementById('dashActualRevenue').innerText = formatGBP(totalActualRevenue);
+          document.getElementById('dashTicketCounts').innerHTML = `Tickets: <b>£${(actualSalesData.friRev + actualSalesData.satRev + actualSalesData.wkndRev).toLocaleString()}</b> | Bar: <b>£${(actualSalesData.barRev || 0).toLocaleString()}</b>`;
+          document.getElementById('dashTotalVatCollected').innerText = formatGBP(totalVatCollected);
+          document.getElementById('dashBudInc').innerText = formatGBP(bIncTotal);
+          document.getElementById('dashBudSpent').innerText = `Spent: ${formatGBP(bSpentTotal)} | Remaining: ${formatGBP(bIncTotal - bSpentTotal)}`;
+          
+          const varEl = document.getElementById('dashVariance');
+          varEl.innerText = formatGBP(profitVariance);
+          varEl.style.color = profitVariance >= 0 ? 'var(--accent-green)' : 'var(--accent-rose)';
 
-        let revTableHtml = `
-          <tr><td>Friday Event</td><td style="text-align:right;">${formatGBP(friTicketRev)}</td><td style="text-align:right;">${formatGBP(friBarTotal)}</td><td style="text-align:right; font-weight:bold;">${formatGBP(friTicketRev + friBarTotal)}</td></tr>
-          <tr><td>Saturday Event</td><td style="text-align:right;">${formatGBP(satTicketRev)}</td><td style="text-align:right;">${formatGBP(satBarTotal)}</td><td style="text-align:right; font-weight:bold;">${formatGBP(satTicketRev + satBarTotal)}</td></tr>
-          <tr><td>Weekend Passes</td><td style="text-align:right;">${formatGBP(wkndTicketRev)}</td><td style="text-align:right;">${formatGBP(wkndBarTotal)}</td><td style="text-align:right; font-weight:bold;">${formatGBP(wkndTicketRev + wkndBarTotal)}</td></tr>
-          <tr><td>Sponsorship & Vendors</td><td style="text-align:right;">-</td><td style="text-align:right;">-</td><td style="text-align:right; font-weight:bold;">${formatGBP(vendorSponsorTotal)}</td></tr>
-        `;
-        document.getElementById('dashRevenueBody').innerHTML = revTableHtml;
+          let revTableHtml = `
+            <tr><td>Friday Event</td><td style="text-align:right;">${formatGBP(friTicketRev)}</td><td style="text-align:right;">${formatGBP(friBarTotal)}</td><td style="text-align:right; font-weight:bold;">${formatGBP(friTicketRev + friBarTotal)}</td></tr>
+            <tr><td>Saturday Event</td><td style="text-align:right;">${formatGBP(satTicketRev)}</td><td style="text-align:right;">${formatGBP(satBarTotal)}</td><td style="text-align:right; font-weight:bold;">${formatGBP(satTicketRev + satBarTotal)}</td></tr>
+            <tr><td>Weekend Passes</td><td style="text-align:right;">${formatGBP(wkndTicketRev)}</td><td style="text-align:right;">${formatGBP(wkndBarTotal)}</td><td style="text-align:right; font-weight:bold;">${formatGBP(wkndTicketRev + wkndBarTotal)}</td></tr>
+            <tr><td>Sponsorship & Vendors</td><td style="text-align:right;">-</td><td style="text-align:right;">-</td><td style="text-align:right; font-weight:bold;">${formatGBP(vendorSponsorTotal)}</td></tr>
+          `;
+          document.getElementById('dashRevenueBody').innerHTML = revTableHtml;
+        }
 
         const frontStageFilter = document.getElementById('frontStageFilter');
         const currentFilterVal = frontStageFilter ? frontStageFilter.value : "ALL";
@@ -1552,7 +1719,7 @@
         document.getElementById('leadWorkloadBody').innerHTML = leadHtml;
 
         const bBody = document.getElementById('budgetBody');
-        if (bBody) {
+        if (bBody && isAdmin) {
           let bHtml = '';
           budgetData.forEach((row, idx) => {
             const netVal = parseFloat(row.net) || 0;
@@ -1592,7 +1759,7 @@
         }
 
         const tBody = document.getElementById('targetBody');
-        if (tBody) {
+        if (tBody && isAdmin) {
           let tHtml = '';
           targetData.forEach((row, idx) => {
             const incPrice = parseFloat(row.price) || 0;
@@ -1650,7 +1817,7 @@
                   <td style="color:var(--text-muted); white-space:nowrap;">${row.stepsDate || '-'}</td>
                   <td style="text-align:center;">
                     <button class="edit-btn" onclick="openPlanModal(${idx})">Edit</button>
-                    <button class="edit-btn" onclick="deletePlanItem(${idx})" style="background:rgba(225,29,72,0.2); color:#fda4af; border-color:var(--border-color); margin-left:4px;">Del</button>
+                    ${isAdmin ? `<button class="edit-btn" onclick="deletePlanItem(${idx})" style="background:rgba(225,29,72,0.2); color:#fda4af; border-color:var(--border-color); margin-left:4px;">Del</button>` : ''}
                   </td>
                 </tr>`;
               }
@@ -1673,7 +1840,7 @@
                 <td style="white-space:nowrap;">${row.stepsDate || '-'}</td>
                 <td style="text-align:center;">
                   <button class="edit-btn" onclick="openPlanModal(${row.originalIndex})">Edit</button>
-                  <button class="edit-btn" onclick="deletePlanItem(${row.originalIndex})" style="background:rgba(225,29,72,0.2); color:#fda4af; border-color:var(--border-color); margin-left:4px;">Del</button>
+                  ${isAdmin ? `<button class="edit-btn" onclick="deletePlanItem(${row.originalIndex})" style="background:rgba(225,29,72,0.2); color:#fda4af; border-color:var(--border-color); margin-left:4px;">Del</button>` : ''}
                 </td>
               </tr>`;
             });
@@ -1692,7 +1859,7 @@
         }
 
         const rBody = document.getElementById('rolesBody');
-        if (rBody) {
+        if (rBody && isAdmin) {
           let rHtml = '';
           rolesData.forEach((row, idx) => {
             if (row.section) {
@@ -2071,7 +2238,6 @@
     window.addEventListener('DOMContentLoaded', () => {
       runTimer();
       setInterval(runTimer, 1000);
-      initFirebaseSync();
     });
   </script>
 </body>
