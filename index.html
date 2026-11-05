@@ -118,7 +118,7 @@
 
     /* Modal */
     .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 10000; align-items: center; justify-content: center; padding: 20px; }
-    .modal.active { display: flex; }
+    .modal.active { display: flex !important; }
     .modal-box { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; width: 100%; max-width: 600px; padding: 24px; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
     .form-group { margin-bottom: 12px; }
     .form-group label { display: block; font-size: 11px; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; }
@@ -139,7 +139,7 @@
 
       <div style="margin-top: 16px; text-align: center; border-top: 1px solid var(--border-color); padding-top: 12px;">
         <span style="font-size: 11px; color: var(--text-muted);">Don't have an account? </span>
-        <button type="button" onclick="openSignupModal()" style="background: none; border: none; color: var(--accent-blue); font-size: 11px; font-weight: bold; cursor: pointer; display: inline; padding: 0;">Create Staff Account</button>
+        <button type="button" id="openSignupBtn" style="background: none; border: none; color: var(--accent-blue); font-size: 11px; font-weight: bold; cursor: pointer; display: inline; padding: 0;">Create Staff Account</button>
       </div>
     </div>
   </div>
@@ -169,8 +169,8 @@
       <div id="signupError" style="color: var(--accent-rose); font-size: 11px; margin-bottom: 10px; display: none;"></div>
 
       <div style="display: flex; gap: 8px; margin-top: 16px;">
-        <button type="button" onclick="closeSignupModal()" style="background: #0f172a; flex: 1; padding: 8px;">Cancel</button>
-        <button type="button" onclick="handleSignup()" class="action-btn" style="flex: 1; padding: 8px;">Register</button>
+        <button type="button" id="closeSignupBtn" style="background: #0f172a; flex: 1; padding: 8px;">Cancel</button>
+        <button type="button" id="submitSignupBtn" class="action-btn" style="flex: 1; padding: 8px;">Register</button>
       </div>
     </div>
   </div>
@@ -1001,11 +1001,11 @@
 
     // Initialize EmailJS for admin notifications
     (function(){
-      emailjs.init("YOUR_EMAILJS_PUBLIC_KEY"); // Replace with your EmailJS key if desired, or email alerts trigger automatically
+      emailjs.init("YOUR_EMAILJS_PUBLIC_KEY");
     })();
 
     let currentUserEmail = "";
-    let userRolesMap = {}; // { email: 'pending' | 'admin' | 'director' | 'team' }
+    let userRolesMap = {}; 
     let usersRegistry = {};
     let auditLogs = [];
     let currentCaptchaSolution = 7;
@@ -1023,7 +1023,6 @@
 
       auth.signInWithEmailAndPassword(email, password)
         .then((userCredential) => {
-          // Check if approved / role assigned
           const key = email.replace(/\./g, '_');
           db.ref(`sif27_festival_data/userRoles/${key}`).once('value', (snapshot) => {
             const role = snapshot.val();
@@ -1090,14 +1089,12 @@
 
       auth.createUserWithEmailAndPassword(email, password)
         .then((userCredential) => {
-          // Set as pending role initially
           db.ref(`sif27_festival_data/userRoles/${email.replace(/\./g, '_')}`).set('pending');
           db.ref(`sif27_festival_data/usersRegistry/${email.replace(/\./g, '_')}`).set({
             email: email,
             lastLogin: new Date().toISOString()
           });
 
-          // Send Email notification to James Dunn
           try {
             emailjs.send("default_service", "template_registration", {
               to_email: "james.dunn@ultrafunkula.co.uk",
@@ -1423,24 +1420,20 @@
       const isDirector = role === 'director' || isAdmin;
       const isTeam = role === 'team' && !isAdmin;
 
-      // Tab buttons visibility
       document.getElementById('btn-budget').style.display = isDirector ? 'block' : 'none';
       document.getElementById('btn-target').style.display = isDirector ? 'block' : 'none';
       document.getElementById('btn-roles').style.display = isDirector ? 'block' : 'none';
       document.getElementById('btn-admin').style.display = isAdmin ? 'block' : 'none';
 
-      // Summary block & revenue card visibility
       document.getElementById('adminSummaryBlock').style.display = isDirector ? 'block' : 'none';
       document.getElementById('adminRevenueCard').style.display = isDirector ? 'block' : 'none';
       document.getElementById('logActualsBtn').style.display = isDirector ? 'inline-block' : 'none';
 
-      // Action buttons hide/show for team vs director/admin
       ['budgetActionBtns', 'sponsorshipActionBtns', 'targetActionBtns', 'planActionBtns'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.style.display = isDirector ? 'flex' : 'none';
       });
 
-      // Hide table action headers for team members
       document.querySelectorAll('.admin-col-header').forEach(th => {
         th.style.display = isDirector ? 'table-cell' : 'none';
       });
@@ -2191,7 +2184,6 @@
           djBody.innerHTML = djHtml;
         }
 
-        // Build Admin Tab Content if Admin
         if (isAdmin) {
           const uBody = document.getElementById('adminUsersBody');
           let uHtml = '';
@@ -2616,9 +2608,34 @@
       } catch (e) {}
     }
 
+    // Direct event listener binding to guarantee the modal buttons trigger correctly
     window.addEventListener('DOMContentLoaded', () => {
       runTimer();
       setInterval(runTimer, 1000);
+
+      const openBtn = document.getElementById('openSignupBtn');
+      if (openBtn) {
+        openBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          openSignupModal();
+        });
+      }
+
+      const closeBtn = document.getElementById('closeSignupBtn');
+      if (closeBtn) {
+        closeBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          closeSignupModal();
+        });
+      }
+
+      const submitBtn = document.getElementById('submitSignupBtn');
+      if (submitBtn) {
+        submitBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          handleSignup();
+        });
+      }
     });
   </script>
 </body>
