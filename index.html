@@ -50,10 +50,14 @@
     .tab-content { display: none; }
     .tab-content.active { display: block; }
 
-    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 24px; }
-    .stat-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-    .stat-card p { font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 600; }
-    .stat-card h3 { font-size: 24px; font-weight: 800; margin-top: 6px; }
+    /* Unified Summary Block Styles */
+    .unified-summary-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 24px; margin-bottom: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+    .unified-summary-header { font-size: 16px; font-weight: 800; color: var(--accent-blue); margin-bottom: 18px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
+    .unified-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+    .summary-item { background: #0f172a; border: 1px solid var(--border-color); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between; }
+    .summary-item p { font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 700; letter-spacing: 0.5px; margin-bottom: 6px; }
+    .summary-item h3 { font-size: 22px; font-weight: 800; color: var(--text-main); }
+    .summary-item .sub-text { font-size: 10px; color: var(--text-muted); margin-top: 6px; }
 
     .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 20px; margin-bottom: 24px; }
 
@@ -203,34 +207,56 @@
   <main>
     <!-- TAB 1: EXECUTIVE DASHBOARD -->
     <div id="tab-dash" class="tab-content active">
-      <div class="stats-grid" id="adminStatsGrid">
-        <div class="stat-card">
-          <p>Total Forecasted Income</p>
-          <h3 id="dashTotalIncome" style="color: var(--accent-blue);">£0.00</h3>
-          <p style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">Tickets + Bar + Sponsorship</p>
+      
+      <!-- UNIFIED SUMMARY BLOCK -->
+      <div class="unified-summary-card" id="adminSummaryBlock">
+        <div class="unified-summary-header">
+          <span>📊 Executive Financial & VAT Summary</span>
+          <button onclick="openActualModal()" class="edit-btn">+ Log Actuals</button>
         </div>
-        <div class="stat-card">
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <p>Actual Revenue to Date</p>
-            <button onclick="openActualModal()" class="edit-btn">+ Log Actuals</button>
+        <div class="unified-grid">
+          <!-- 1. Total Forecasted Income -->
+          <div class="summary-item">
+            <p>1. Total Forecasted Income</p>
+            <h3 id="dashTotalIncome" style="color: var(--accent-blue);">£0.00</h3>
+            <div class="sub-text">Tickets + Bar + Sponsorship</div>
           </div>
-          <h3 id="dashActualRevenue" style="color: var(--accent-green);">£0.00</h3>
-          <div id="dashTicketCounts" style="font-size: 10px; color: var(--text-muted); margin-top: 6px; line-height: 1.4;"></div>
-        </div>
-        <div class="stat-card">
-          <p>Total VAT Collected (Forecast)</p>
-          <h3 id="dashTotalVatCollected" style="color: var(--accent-amber);">£0.00</h3>
-          <p style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">Included in Tickets, Bar & Sponsorships</p>
-        </div>
-        <div class="stat-card">
-          <p>Budget Allocation (Inc. VAT)</p>
-          <h3 id="dashBudInc" style="color: var(--accent-purple);">£0.00</h3>
-          <p id="dashBudSpent" style="font-size: 10px; color: var(--accent-amber); margin-top: 4px;">Spent: £0.00 | Remaining: £0.00</p>
-        </div>
-        <div class="stat-card">
-          <p>Forecasted Profit Variance</p>
-          <h3 id="dashVariance">£0.00</h3>
-          <p style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">Income - Budget - Net VAT Liability</p>
+          <!-- 2. Budget Allocation -->
+          <div class="summary-item">
+            <p>2. Budget Allocation</p>
+            <h3 id="dashBudInc" style="color: var(--accent-purple);">£0.00</h3>
+            <div id="dashBudSpent" class="sub-text">Spent: £0.00 | Remaining: £0.00</div>
+          </div>
+          <!-- 3. VAT Collected -->
+          <div class="summary-item">
+            <p>3. VAT Collected</p>
+            <h3 id="dashTotalVatCollected" style="color: var(--accent-amber);">£0.00</h3>
+            <div class="sub-text">From Tickets, Bar & Sponsorships</div>
+          </div>
+          <!-- 4. VAT Paid -->
+          <div class="summary-item">
+            <p>4. VAT Paid</p>
+            <h3 id="dashTotalVatPaid" style="color: var(--accent-amber);">£0.00</h3>
+            <div class="sub-text">Total VAT on Budget Expenses</div>
+          </div>
+          <!-- 5. VAT to Pay to HMRC -->
+          <div class="summary-item">
+            <p>5. VAT to Pay to HMRC</p>
+            <h3 id="dashNetVatLiability" style="color: var(--accent-rose);">£0.00</h3>
+            <div class="sub-text">VAT Collected minus VAT Paid</div>
+          </div>
+          <!-- 6. Profit Forecast -->
+          <div class="summary-item">
+            <p>6. Profit Forecast</p>
+            <h3 id="dashVariance">£0.00</h3>
+            <div class="sub-text">Income - Budget - VAT to Pay to HMRC</div>
+          </div>
+          <!-- 7. Actual Sales -->
+          <div class="summary-item">
+            <p>7. Actual Sales</p>
+            <h3 id="dashActualRevenue" style="color: var(--accent-green);">£0.00</h3>
+            <div id="dashTicketCounts" class="sub-text">Tickets: £0 | Bar: £0</div>
+          </div>
         </div>
       </div>
 
@@ -1588,7 +1614,7 @@
         document.getElementById('btn-target').style.display = isAdmin ? 'block' : 'none';
         document.getElementById('btn-roles').style.display = isAdmin ? 'block' : 'none';
 
-        document.getElementById('adminStatsGrid').style.display = isAdmin ? 'grid' : 'none';
+        document.getElementById('adminSummaryBlock').style.display = isAdmin ? 'block' : 'none';
         document.getElementById('adminRevenueCard').style.display = isAdmin ? 'block' : 'none';
 
         let friTicketRev = 0, friTicketQty = 0;
@@ -1668,7 +1694,7 @@
 
         const grandTotalCombined = totalCombinedTicketRev + totalBarForecast + totalSponsorshipInc;
 
-        // Total VAT Collected calculation (20% standard VAT included across tickets, bar spend, and sponsorships)
+        // VAT Collected (20% standard VAT included across tickets, bar spend, and sponsorships)
         const totalVatCollected = (totalCombinedTicketRev / 6) + (totalBarForecast / 6) + totalSponsorshipVat;
 
         document.getElementById('friBarMultiplier').value = barMultipliers.Friday || 35.00;
@@ -1708,20 +1734,40 @@
         document.getElementById('topBudgetInc').innerText = formatGBP(bIncTotal);
         document.getElementById('topBudgetSpent').innerText = formatGBP(bSpentTotal);
 
-        const netVatLiability = bVatAmtTotal * 0.5; 
+        // VAT to Pay to HMRC = VAT Collected - VAT Paid
+        const netVatLiability = totalVatCollected - bVatAmtTotal;
+        
+        // Profit Forecast = Income - Budget - VAT to Pay to HMRC
         const profitVariance = totalIncomeForecast - bIncTotal - netVatLiability;
 
         if (isAdmin) {
+          // Populate unified summary cards in exact requested order:
+          // 1. Total Forecasted Income
           document.getElementById('dashTotalIncome').innerText = formatGBP(totalIncomeForecast);
-          document.getElementById('dashActualRevenue').innerText = formatGBP(totalActualRevenue);
-          document.getElementById('dashTicketCounts').innerHTML = `Tickets: <b>£${(actualSalesData.friRev + actualSalesData.satRev + actualSalesData.wkndRev).toLocaleString()}</b> | Bar: <b>£${(actualSalesData.barRev || 0).toLocaleString()}</b>`;
-          document.getElementById('dashTotalVatCollected').innerText = formatGBP(totalVatCollected);
+          
+          // 2. Budget Allocation
           document.getElementById('dashBudInc').innerText = formatGBP(bIncTotal);
           document.getElementById('dashBudSpent').innerText = `Spent: ${formatGBP(bSpentTotal)} | Remaining: ${formatGBP(bIncTotal - bSpentTotal)}`;
           
+          // 3. VAT Collected
+          document.getElementById('dashTotalVatCollected').innerText = formatGBP(totalVatCollected);
+          
+          // 4. VAT Paid
+          document.getElementById('dashTotalVatPaid').innerText = formatGBP(bVatAmtTotal);
+          
+          // 5. VAT to Pay to HMRC
+          const liabilityEl = document.getElementById('dashNetVatLiability');
+          liabilityEl.innerText = formatGBP(netVatLiability);
+          liabilityEl.style.color = netVatLiability >= 0 ? 'var(--accent-rose)' : 'var(--accent-green)';
+          
+          // 6. Profit Forecast
           const varEl = document.getElementById('dashVariance');
           varEl.innerText = formatGBP(profitVariance);
           varEl.style.color = profitVariance >= 0 ? 'var(--accent-green)' : 'var(--accent-rose)';
+          
+          // 7. Actual Sales
+          document.getElementById('dashActualRevenue').innerText = formatGBP(totalActualRevenue);
+          document.getElementById('dashTicketCounts').innerHTML = `Tickets: <b>£${(actualSalesData.friRev + actualSalesData.satRev + actualSalesData.wkndRev).toLocaleString()}</b> | Bar: <b>£${(actualSalesData.barRev || 0).toLocaleString()}</b>`;
 
           let revTableHtml = `
             <tr><td>Friday Event</td><td style="text-align:right;">${formatGBP(friTicketRev)}</td><td style="text-align:right;">${formatGBP(friBarTotal)}</td><td style="text-align:right; font-weight:bold;">${formatGBP(friTicketRev + friBarTotal)}</td></tr>
