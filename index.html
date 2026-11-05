@@ -360,37 +360,29 @@
 
     <!-- TAB 3: SALES TARGETS -->
     <div id="tab-target" class="tab-content">
-      <!-- SALES TARGETS SUMMARY TOP STATS CARDS (INCLUDING GRAND TOTAL COMBINED OVER WEEKEND) -->
-      <div class="stats-grid" style="margin-bottom: 20px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
-        <div class="stat-card">
-          <p>Friday Sales (Excl. Parking)</p>
-          <h3 id="topFriTicketRev" style="color: var(--accent-blue);">£0.00</h3>
-          <p id="topFriTicketQty" style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">0 Tickets | Bar: £0.00</p>
+      <!-- SALES TARGETS SUMMARY TOP 2 AMALGAMATED BLOCKS -->
+      <div class="stats-grid" style="margin-bottom: 20px; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));">
+        <!-- BLOCK 1: TOTAL COMBINED TICKET SALES -->
+        <div class="stat-card" style="border: 2px solid var(--accent-blue);">
+          <p style="color: var(--accent-blue);">Total Combined Ticket Sales (Fri + Sat + Weekend)</p>
+          <h3 id="topConsolidatedTicketRev" style="color: var(--accent-green); font-size: 28px;">£0.00</h3>
+          <p id="topConsolidatedTicketQty" style="font-size: 11px; color: var(--text-muted); margin-top: 6px;">0 Total Tickets (Excl. Parking)</p>
         </div>
-        <div class="stat-card">
-          <p>Saturday Sales (Excl. Parking)</p>
-          <h3 id="topSatTicketRev" style="color: var(--accent-blue);">£0.00</h3>
-          <p id="topSatTicketQty" style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">0 Tickets | Bar: £0.00</p>
-        </div>
-        <div class="stat-card">
-          <p>Weekend Sales</p>
-          <h3 id="topWkndTicketRev" style="color: var(--accent-purple);">£0.00</h3>
-          <p id="topWkndTicketQty" style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">0 Tickets | Bar: £0.00</p>
-        </div>
-        <div class="stat-card">
-          <p>Total Ticket Sales (Excl. Parking)</p>
-          <h3 id="topTargetRev" style="color: var(--accent-green);">£0.00</h3>
-          <p id="topTargetQty" style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">0 Total Tickets</p>
-        </div>
-        <div class="stat-card">
-          <p>Total Bar Spend Forecast</p>
-          <h3 id="topTotalBarRev" style="color: var(--accent-amber);">£0.00</h3>
-          <p style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">Friday + Saturday + Weekend</p>
-        </div>
-        <div class="stat-card" style="background: linear-gradient(135deg, #1e293b, #0f172a); border: 2px solid var(--accent-blue);">
-          <p style="color: var(--accent-blue);">Grand Total Combined Weekend Sales</p>
-          <h3 id="topGrandTotalRev" style="color: var(--accent-green); font-size: 26px;">£0.00</h3>
-          <p style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">Total Tickets + Total Bar Spend</p>
+
+        <!-- BLOCK 2: TOTAL BAR SPEND & GRAND TOTAL COMBINED -->
+        <div class="stat-card" style="background: linear-gradient(135deg, #1e293b, #0f172a); border: 2px solid var(--accent-amber);">
+          <p style="color: var(--accent-amber);">Total Bar Spend & Grand Total Combined Weekend Sales</p>
+          <div style="display: flex; justify-content: space-between; align-items: baseline; margin-top: 6px; flex-wrap: wrap; gap: 10px;">
+            <div>
+              <span style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; display: block;">Total Bar Forecast</span>
+              <span id="topConsolidatedBarRev" style="font-size: 20px; font-weight: 800; color: var(--accent-amber);">£0.00</span>
+            </div>
+            <div style="text-align: right;">
+              <span style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; display: block;">Grand Total Combined</span>
+              <span id="topConsolidatedGrandTotal" style="font-size: 26px; font-weight: 800; color: var(--accent-green);">£0.00</span>
+            </div>
+          </div>
+          <p style="font-size: 10px; color: var(--text-muted); margin-top: 8px;">Amalgamated across Friday, Saturday & Weekend passes</p>
         </div>
       </div>
 
@@ -1542,8 +1534,8 @@
         const wkndBarTotal = wkndTicketQty * (barMultipliers.Weekend || 100.00);
         const totalBarForecast = friBarTotal + satBarTotal + wkndBarTotal;
 
-        // Grand Total Combined Weekend Sales (Tickets + Bar Spend across Friday, Saturday, Weekend)
-        const grandTotalCombined = friTicketRev + satTicketRev + wkndTicketRev + totalBarForecast;
+        const totalCombinedTicketRev = friTicketRev + satTicketRev + wkndTicketRev;
+        const grandTotalCombined = totalCombinedTicketRev + totalBarForecast;
 
         // Update Multiplier Inputs & Outputs
         document.getElementById('friBarMultiplier').value = barMultipliers.Friday || 35.00;
@@ -1554,23 +1546,15 @@
         document.getElementById('satBarCalcOutput').innerText = `Calculated Bar Total (${satTicketQty} attendees × £${(barMultipliers.Saturday||65.00).toFixed(2)}): ${formatGBP(satBarTotal)}`;
         document.getElementById('wkndBarCalcOutput').innerText = `Calculated Bar Total (${wkndTicketQty} attendees × £${(barMultipliers.Weekend||100.00).toFixed(2)}): ${formatGBP(wkndBarTotal)}`;
 
-        // Update Sales Target Top Summary Cards
-        document.getElementById('topFriTicketRev').innerText = formatGBP(friTicketRev);
-        document.getElementById('topFriTicketQty').innerText = `${friTicketQty} Tickets | Bar: ${formatGBP(friBarTotal)}`;
+        // Update Sales Target Top Consolidated Blocks
+        document.getElementById('topConsolidatedTicketRev').innerText = formatGBP(totalCombinedTicketRev);
+        document.getElementById('topConsolidatedTicketQty').innerText = `${totalQtyExclParking} Total Festival Tickets (Fri: ${friTicketQty} | Sat: ${satTicketQty} | Wknd: ${wkndTicketQty})`;
         
-        document.getElementById('topSatTicketRev').innerText = formatGBP(satTicketRev);
-        document.getElementById('topSatTicketQty').innerText = `${satTicketQty} Tickets | Bar: ${formatGBP(satBarTotal)}`;
-
-        document.getElementById('topWkndTicketRev').innerText = formatGBP(wkndTicketRev);
-        document.getElementById('topWkndTicketQty').innerText = `${wkndTicketQty} Tickets | Bar: ${formatGBP(wkndBarTotal)}`;
-
-        document.getElementById('topTargetRev').innerText = formatGBP(friTicketRev + satTicketRev + wkndTicketRev);
-        document.getElementById('topTargetQty').innerText = `${totalQtyExclParking} Total Festival Tickets`;
-        document.getElementById('topTotalBarRev').innerText = formatGBP(totalBarForecast);
-        document.getElementById('topGrandTotalRev').innerText = formatGBP(grandTotalCombined);
+        document.getElementById('topConsolidatedBarRev').innerText = formatGBP(totalBarForecast);
+        document.getElementById('topConsolidatedGrandTotal').innerText = formatGBP(grandTotalCombined);
 
         const vendorSponsorTotal = 17500;
-        const totalIncomeForecast = friTicketRev + satTicketRev + wkndTicketRev + totalBarForecast + vendorSponsorTotal;
+        const totalIncomeForecast = totalCombinedTicketRev + totalBarForecast + vendorSponsorTotal;
         const totalActualRevenue = (actualSalesData.friRev || 0) + (actualSalesData.satRev || 0) + (actualSalesData.wkndRev || 0) + (actualSalesData.barRev || 0);
 
         let bNetTotal = 0, bVatAmtTotal = 0, bIncTotal = 0, bSpentTotal = 0;
