@@ -1324,11 +1324,13 @@
 
       let slots = daySelect.includes("Friday") ? [
         "16:00 - 17:00 (1 Hour)", "17:00 - 18:00 (1 Hour)", "18:00 - 19:00 (1 Hour)",
-        "19:00 - 20:00 (1 Hour)", "20:00 - 21:00 (1 Hour)", "21:00 - 22:00 (1 Hour)", "22:00 - 23:00 (1 Hour)"
+        "19:00 - 20:00 (1 Hour)", "20:00 - 21:00 (1 Hour)", "21:00 - 22:00 (1 Hour)", "22:00 - 23:00 (1 Hour)",
+        "21:00 - 23:00 (2 Hours)"
       ] : [
         "13:00 - 14:00 (1 Hour)", "14:00 - 15:00 (1 Hour)", "15:00 - 16:00 (1 Hour)",
         "16:00 - 17:00 (1 Hour)", "17:00 - 18:00 (1 Hour)", "18:00 - 19:00 (1 Hour)",
-        "19:00 - 20:00 (1 Hour)", "20:00 - 21:00 (1 Hour)", "21:00 - 22:00 (1 Hour)", "22:00 - 23:00 (1 Hour)"
+        "19:00 - 20:00 (1 Hour)", "20:00 - 21:00 (1 Hour)", "21:00 - 22:00 (1 Hour)", "22:00 - 23:00 (1 Hour)",
+        "21:00 - 23:00 (2 Hours)"
       ];
 
       slots.forEach(slot => {
@@ -1364,12 +1366,12 @@
       if (!matrixBody) return;
 
       let slots = currentCalDay.includes("Friday") ? [
-        "16:00 - 17:00 (1 Hour)", "17:00 - 18:00 (1 Hour)", "18:00 - 19:00 (1 Hour)",
-        "19:00 - 20:00 (1 Hour)", "20:00 - 21:00 (1 Hour)", "21:00 - 22:00 (1 Hour)", "22:00 - 23:00 (1 Hour)"
+        "16:00 - 17:00", "17:00 - 18:00", "18:00 - 19:00",
+        "19:00 - 20:00", "20:00 - 21:00", "21:00 - 22:00", "22:00 - 23:00"
       ] : [
-        "13:00 - 14:00 (1 Hour)", "14:00 - 15:00 (1 Hour)", "15:00 - 16:00 (1 Hour)",
-        "16:00 - 17:00 (1 Hour)", "17:00 - 18:00 (1 Hour)", "18:00 - 19:00 (1 Hour)",
-        "19:00 - 20:00 (1 Hour)", "20:00 - 21:00 (1 Hour)", "21:00 - 22:00 (1 Hour)", "22:00 - 23:00 (1 Hour)"
+        "13:00 - 14:00", "14:00 - 15:00", "15:00 - 16:00",
+        "16:00 - 17:00", "17:00 - 18:00", "18:00 - 19:00",
+        "19:00 - 20:00", "20:00 - 21:00", "21:00 - 22:00", "22:00 - 23:00"
       ];
 
       const officialStages = [
@@ -1381,9 +1383,23 @@
 
       let matrixHtml = '';
       slots.forEach(slot => {
-        matrixHtml += `<tr><td style="font-weight:bold; color:var(--accent-blue); white-space:nowrap;">${slot}</td>`;
+        const slotStartHour = parseInt(slot.slice(0, 2), 10);
+        matrixHtml += `<tr><td style="font-weight:bold; color:var(--accent-blue); white-space:nowrap;">${slot} (1 Hour)</td>`;
+        
         officialStages.forEach(stage => {
-          const bookedAct = djData.find(a => (a.stage || "").trim() === stage && (a.day || "").trim() === currentCalDay && (a.time || "").includes(slot.slice(0, 5)));
+          // Find any booked act for this stage and day whose time slot covers this specific hour
+          const bookedAct = djData.find(a => {
+            if ((a.stage || "").trim() !== stage || (a.day || "").trim() !== currentCalDay) return false;
+            const timeStr = a.time || "";
+            const match = timeStr.match(/(\d{2}):00\s*-\s*(\d{2}):00/);
+            if (match) {
+              const startH = parseInt(match[1], 10);
+              const endH = parseInt(match[2], 10);
+              return slotStartHour >= startH && slotStartHour < endH;
+            }
+            return timeStr.includes(slot.slice(0, 5));
+          });
+
           if (bookedAct) {
             matrixHtml += `<td><span class="badge badge-booked" style="display:block; text-align:center; padding:6px;">🔒 ${bookedAct.name}</span></td>`;
           } else {
