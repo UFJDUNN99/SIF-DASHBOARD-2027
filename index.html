@@ -200,7 +200,7 @@
     </div>
     
     <div class="header-controls">
-      <button onclick="toggleTheme()" class="io-btn" id="themeToggleBtn" title="Switch Light/Dark Theme">🌙 Theme</button>
+      <button onclick="toggleTheme()" class="io-btn" id="themeToggleBtn" title="Switch Light/Dark Theme">Light / Dark</button>
 
       <div id="syncStatus" style="font-size: 11px; font-weight: bold; color: var(--accent-amber); background: rgba(245, 158, 11, 0.15); padding: 4px 10px; border-radius: 6px; border: 1px solid var(--border-color);">
         Connecting Live...
@@ -1030,23 +1030,18 @@
     // THEME TOGGLE LOGIC
     function toggleTheme() {
       const htmlEl = document.documentElement;
-      const btn = document.getElementById('themeToggleBtn');
       if (htmlEl.classList.contains('light-theme')) {
         htmlEl.classList.remove('light-theme');
         localStorage.setItem('sif27_theme', 'dark');
-        if (btn) btn.innerText = "🌙 Theme";
       } else {
         htmlEl.classList.add('light-theme');
         localStorage.setItem('sif27_theme', 'light');
-        if (btn) btn.innerText = "☀️ Theme";
       }
     }
 
     // Initialize saved theme on load
     if (localStorage.getItem('sif27_theme') === 'light') {
       document.documentElement.classList.add('light-theme');
-      const btn = document.getElementById('themeToggleBtn');
-      if (btn) btn.innerText = "☀️ Theme";
     }
 
     function handleLogin() {
