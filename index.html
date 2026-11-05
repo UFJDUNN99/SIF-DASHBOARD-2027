@@ -1576,7 +1576,7 @@
         const totalCombinedTicketRev = friTicketRev + satTicketRev + wkndTicketRev;
         const grandTotalCombined = totalCombinedTicketRev + totalBarForecast;
 
-        // VAT Collected Calculation (20% standard VAT on inclusive ticket sales and bar spend)
+        // Total VAT Collected calculation (20% standard VAT included across tickets and bar spend)
         const totalVatCollected = (totalCombinedTicketRev / 6) + (totalBarForecast / 6);
 
         document.getElementById('friBarMultiplier').value = barMultipliers.Friday || 35.00;
