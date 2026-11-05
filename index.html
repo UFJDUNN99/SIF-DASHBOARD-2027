@@ -10,6 +10,9 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
   
+  <!-- SheetJS (XLSX) Library for Excel File Parsing -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  
   <!-- EmailJS SDK for Admin Registration Notifications -->
   <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/emailjs.min.js"></script>
 
@@ -239,14 +242,14 @@
     <!-- TAB 1: EXECUTIVE DASHBOARD -->
     <div id="tab-dash" class="tab-content active">
       
-      <!-- UNIFIED SUMMARY BLOCK (VISIBLE TO ALL USERS, SHOWS TICKET SALES ONLY IN CARD #4) -->
+      <!-- UNIFIED SUMMARY BLOCK -->
       <div class="unified-summary-card" id="adminSummaryBlock">
         <div class="unified-summary-header">
           <span id="summaryCardTitle">📊 Executive Financial & VAT Summary</span>
-          <button onclick="openActualModal()" class="edit-btn" id="logActualsBtn">+ Log Actuals</button>
+          <button onclick="openActualModal()" class="edit-btn" id="logActualsBtn">+ Log Actuals Manually</button>
         </div>
         
-        <!-- Top Row: Total Forecasted Income, Budget, Profit, Actual Ticket Sales -->
+        <!-- Top Row -->
         <div class="unified-grid">
           <div class="summary-item" id="sumBox1">
             <p>1. Total Forecasted Income</p>
@@ -270,7 +273,7 @@
           </div>
         </div>
 
-        <!-- Bottom Row: VAT Collected, VAT Paid, VAT due to HMRC (Director/Admin only) -->
+        <!-- Bottom Row -->
         <div class="unified-grid-bottom" id="vatSummaryBottomRow">
           <div class="summary-item">
             <p>5. VAT Collected</p>
@@ -287,6 +290,41 @@
             <h3 id="dashNetVatLiability" style="color: var(--accent-rose);">£0.00</h3>
             <div class="sub-text">VAT Collected minus VAT Paid</div>
           </div>
+        </div>
+      </div>
+
+      <!-- EXCEL TICKET SALES UPLOAD & BREAKDOWN SECTION -->
+      <div class="table-card" style="margin-bottom: 24px;">
+        <div class="table-header">
+          <span>📈 Actual Ticket Sales (Uploaded from Excel / CSV)</span>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <label style="font-size: 11px; color: var(--text-muted); font-weight: 600;">Sort By:</label>
+            <select id="ticketSortSelect" onchange="buildTables()" style="padding: 4px 8px; font-size: 11px;">
+              <option value="default">Default (Weekend → Friday → Saturday)</option>
+              <option value="qtyDesc">Ticket Quantity (High to Low)</option>
+              <option value="revDesc">Revenue (£) (High to Low)</option>
+            </select>
+            <button onclick="triggerTicketExcelUpload()" class="action-btn" style="padding: 4px 10px; font-size: 11px;">📤 Upload Excel / CSV</button>
+            <input type="file" id="ticketExcelFileInput" accept=".xlsx, .xls, .csv" style="display:none;" onchange="handleTicketExcelUpload(event)">
+          </div>
+        </div>
+        <div style="padding: 12px 20px; font-size: 11px; color: var(--text-muted); background: var(--input-bg); border-bottom: 1px solid var(--border-color);">
+          💡 Expected columns in your Excel/CSV: <b>Ticket Type</b> (or Category/Name), <b>Quantity Sold</b> (or Qty), and <b>Revenue (£)</b> (or Price/Total).
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Ticket Category / Type</th>
+                <th>Day / Session</th>
+                <th style="text-align: center;">Qty Sold</th>
+                <th style="text-align: right;">Total Revenue (£)</th>
+              </tr>
+            </thead>
+            <tbody id="uploadedTicketSalesBody">
+              <tr><td colspan="4" style="text-align:center; color:var(--text-muted); font-style:italic; padding: 16px;">No ticket sales file uploaded yet. Upload an Excel or CSV file above to populate.</td></tr>
+            </tbody>
+          </table>
         </div>
       </div>
 
@@ -1026,6 +1064,7 @@
     let usersRegistry = {};
     let auditLogsList = [];
     let currentCaptchaSolution = 7;
+    let uploadedTicketSalesRows = [];
 
     // THEME TOGGLE LOGIC
     function toggleTheme() {
@@ -1039,7 +1078,6 @@
       }
     }
 
-    // Initialize saved theme on load
     if (localStorage.getItem('sif27_theme') === 'light') {
       document.documentElement.classList.add('light-theme');
     }
@@ -1416,6 +1454,7 @@
           djData = val.djData ? val.djData : [...defaultDjs];
           notesData = val.notesData ? val.notesData : [...defaultNotes];
           if (val.barMultipliers) barMultipliers = val.barMultipliers;
+          if (val.uploadedTicketSalesRows) uploadedTicketSalesRows = val.uploadedTicketSalesRows;
           userRolesMap = val.userRoles ? val.userRoles : {};
           usersRegistry = val.usersRegistry ? val.usersRegistry : {};
           auditLogsList = val.auditLogs ? Object.values(val.auditLogs) : [];
@@ -1444,7 +1483,7 @@
     }
 
     function saveAllToFirebase() {
-      const payload = { actualSalesData, budgetData, targetData, sponsorshipData, planData, rolesData, djData, notesData, barMultipliers, userRoles: userRolesMap, usersRegistry };
+      const payload = { actualSalesData, budgetData, targetData, sponsorshipData, planData, rolesData, djData, notesData, barMultipliers, uploadedTicketSalesRows, userRoles: userRolesMap, usersRegistry };
       db.ref('sif27_festival_data').update(payload);
     }
 
@@ -1522,6 +1561,58 @@
       if (targetBtn) targetBtn.classList.add('active');
     }
 
+    function triggerTicketExcelUpload() {
+      document.getElementById('ticketExcelFileInput').click();
+    }
+
+    function handleTicketExcelUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          const firstSheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[firstSheetName];
+          const jsonRows = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+
+          if (jsonRows.length === 0) {
+            alert("⚠️ The uploaded spreadsheet appears to be empty.");
+            return;
+          }
+
+          uploadedTicketSalesRows = [];
+          jsonRows.forEach(row => {
+            // Flexible column header mapping
+            const typeKey = Object.keys(row).find(k => /type|name|category|ticket/i.test(k)) || Object.keys(row)[0];
+            const qtyKey = Object.keys(row).find(k => /qty|quantity|sold|count/i.test(k)) || Object.keys(row)[1];
+            const revKey = Object.keys(row).find(k => /rev|revenue|price|total|amount/i.test(k)) || Object.keys(row)[2];
+
+            const type = row[typeKey] ? String(row[typeKey]).trim() : "General Ticket";
+            const qty = parseInt(row[qtyKey]) || 0;
+            const rev = parseFloat(String(row[revKey] || "").replace(/[^0-9.-]+/g,"")) || 0;
+
+            let day = "Saturday 31st July";
+            const tLower = type.toLowerCase();
+            if (tLower.includes('weekend') || tLower.includes('wknd')) day = "Weekend Pass";
+            else if (tLower.includes('fri') || tLower.includes('friday')) day = "Friday 30th July";
+
+            uploadedTicketSalesRows.push({ type, day, qty, rev });
+          });
+
+          saveAllToFirebase();
+          logActivity(currentUserEmail, `Uploaded ticket sales spreadsheet (${file.name})`);
+          buildTables();
+          alert("✅ Ticket sales successfully imported and parsed from Excel/CSV!");
+        } catch (err) {
+          alert("❌ Error reading Excel file. Please ensure it is a valid .xlsx or .csv file.");
+          console.error(err);
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
     function buildTables() {
       try {
         buildCalendarMatrix();
@@ -1531,6 +1622,54 @@
         const role = getUserRole();
         const isAdmin = currentUserEmail.includes('james.dunn@ultrafunkula');
         const isDirector = role === 'director' || isAdmin;
+
+        // RENDER UPLOADED TICKET SALES TABLE WITH SORTING
+        const ticketBody = document.getElementById('uploadedTicketSalesBody');
+        const sortMode = document.getElementById('ticketSortSelect') ? document.getElementById('ticketSortSelect').value : 'default';
+
+        if (ticketBody) {
+          if (uploadedTicketSalesRows.length === 0) {
+            ticketBody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--text-muted); font-style:italic; padding: 16px;">No ticket sales file uploaded yet. Upload an Excel or CSV file above to populate.</td></tr>`;
+          } else {
+            let sortedRows = [...uploadedTicketSalesRows];
+            
+            if (sortMode === 'qtyDesc') {
+              sortedRows.sort((a, b) => b.qty - a.qty);
+            } else if (sortMode === 'revDesc') {
+              sortedRows.sort((a, b) => b.rev - a.rev);
+            } else {
+              // Default sort: Weekend -> Friday -> Saturday
+              const getRank = (d) => {
+                if (d.includes('Weekend')) return 1;
+                if (d.includes('Friday')) return 2;
+                return 3;
+              };
+              sortedRows.sort((a, b) => getRank(a.day) - getRank(b.day));
+            }
+
+            let tHtml = '';
+            let totalUploadedQty = 0;
+            let totalUploadedRev = 0;
+
+            sortedRows.forEach(r => {
+              totalUploadedQty += r.qty;
+              totalUploadedRev += r.rev;
+              tHtml += `<tr>
+                <td style="font-weight:bold; color:var(--accent-blue);">${r.type}</td>
+                <td style="color:var(--text-muted);">${r.day}</td>
+                <td style="text-align:center; font-weight:bold;">${r.qty}</td>
+                <td style="text-align:right; font-weight:bold; color:var(--accent-green);">${formatGBP(r.rev)}</td>
+              </tr>`;
+            });
+
+            tHtml += `<tr class="total-row">
+              <td colspan="2" style="text-transform: uppercase;">Total Uploaded Ticket Sales</td>
+              <td style="text-align:center; color:var(--accent-blue);">${totalUploadedQty} Tickets</td>
+              <td style="text-align:right; color:var(--accent-green);">${formatGBP(totalUploadedRev)}</td>
+            </tr>`;
+            ticketBody.innerHTML = tHtml;
+          }
+        }
 
         let friTicketRev = 0, friTicketQty = 0;
         let satTicketRev = 0, satTicketQty = 0;
@@ -2479,7 +2618,7 @@
     }
 
     function exportToJSON() {
-      const payload = { actualSalesData, budgetData, targetData, sponsorshipData, planData, rolesData, djData, notesData, barMultipliers, userRoles: userRolesMap, usersRegistry };
+      const payload = { actualSalesData, budgetData, targetData, sponsorshipData, planData, rolesData, djData, notesData, barMultipliers, uploadedTicketSalesRows, userRoles: userRolesMap, usersRegistry };
       const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -2507,6 +2646,7 @@
           if (imported.djData) djData = imported.djData;
           if (imported.notesData) notesData = imported.notesData;
           if (imported.barMultipliers) barMultipliers = imported.barMultipliers;
+          if (imported.uploadedTicketSalesRows) uploadedTicketSalesRows = imported.uploadedTicketSalesRows;
           if (imported.userRoles) userRolesMap = imported.userRoles;
           if (imported.usersRegistry) usersRegistry = imported.usersRegistry;
           saveAllToFirebase();
