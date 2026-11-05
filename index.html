@@ -102,9 +102,6 @@
     @media(max-width: 900px) { .notes-board-grid { grid-template-columns: 1fr; } }
     .note-form-card { background: #0f172a; border: 1px solid var(--border-color); border-radius: 10px; padding: 16px; height: fit-content; }
     .note-card { background: #1e293b; border: 1px solid var(--border-color); border-radius: 10px; padding: 16px; margin-bottom: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
-    .star-rating-box { display: flex; gap: 4px; align-items: center; margin-top: 8px; }
-    .star-btn { background: none; border: none; font-size: 16px; cursor: pointer; color: var(--border-color); padding: 0; }
-    .star-btn.rated { color: var(--accent-amber); }
 
     /* Login Modal Overlay */
     #loginOverlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(4px); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; }
@@ -1031,7 +1028,6 @@
         .then((userCredential) => {
           const key = email.replace(/\./g, '_');
           
-          // BYPASS APPROVAL CHECK FOR JAMES DUNN
           if (email.includes('james.dunn@ultrafunkula')) {
             db.ref(`sif27_festival_data/userRoles/${key}`).set('admin');
             document.getElementById('loginOverlay').style.display = 'none';
@@ -1399,6 +1395,7 @@
             statusEl.style.borderColor = "#10b981";
           }
         } else {
+          // If database is empty, push default datasets immediately
           saveAllToFirebase();
         }
         applyRolePermissions();
@@ -1487,7 +1484,6 @@
 
     function buildTables() {
       try {
-        syncActCostsToBudget();
         buildCalendarMatrix();
         buildTimelineChart();
         buildNotesBoard();
@@ -1906,329 +1902,214 @@
       }
     }
 
-    // MODALS & ACTIONS
-    function openActualModal() {
-      document.getElementById('actFriQty').value = actualSalesData.friQty || 0;
-      document.getElementById('actFriRev').value = actualSalesData.friRev || 0;
-      document.getElementById('actSatQty').value = actualSalesData.satQty || 0;
-      document.getElementById('actSatRev').value = actualSalesData.satRev || 0;
-      document.getElementById('actWkndQty').value = actualSalesData.wkndQty || 0;
-      document.getElementById('actWkndRev').value = actualSalesData.wkndRev || 0;
-      document.getElementById('actBarRev').value = actualSalesData.barRev || 0;
-      document.getElementById('actualModal').classList.add('active');
-    }
-    function closeActualModal() { document.getElementById('actualModal').classList.remove('active'); }
-    function saveActualSales() {
-      actualSalesData = {
-        friQty: parseInt(document.getElementById('actFriQty').value) || 0,
-        friRev: parseFloat(document.getElementById('actFriRev').value) || 0,
-        satQty: parseInt(document.getElementById('actSatQty').value) || 0,
-        satRev: parseFloat(document.getElementById('actSatRev').value) || 0,
-        wkndQty: parseInt(document.getElementById('actWkndQty').value) || 0,
-        wkndRev: parseFloat(document.getElementById('actWkndRev').value) || 0,
-        barRev: parseFloat(document.getElementById('actBarRev').value) || 0
-      };
-      saveAllToFirebase();
-      logActivity(currentUserEmail, "Updated actual sales data");
-      closeActualModal();
-      buildTables();
-    }
-
-    function openTargetModal(index) {
-      document.getElementById('targetEditIndex').value = index;
-      if (index === -1) {
-        document.getElementById('targetModalTitle').innerText = "Add Ticket Target";
-        document.getElementById('tModalDay').value = "Friday 30th July";
-        document.getElementById('tModalType').value = "";
-        document.getElementById('tModalQty').value = "";
-        document.getElementById('tModalPrice').value = "";
+    // HELPER SUPPORT FUNCTIONS
+    function updateBudgetInline(idx, field, el) {
+      if (field === 'net' || field === 'update') {
+        budgetData[idx][field] = parseFloat(el.value) || 0;
       } else {
-        document.getElementById('targetModalTitle').innerText = "Edit Ticket Target";
-        const item = targetData[index];
-        document.getElementById('tModalDay').value = item.day;
-        document.getElementById('tModalType').value = item.type;
-        document.getElementById('tModalQty').value = item.qty;
-        document.getElementById('tModalPrice').value = item.price;
+        budgetData[idx][field] = el.value;
       }
-      document.getElementById('targetModal').classList.add('active');
-    }
-    function closeTargetModal() { document.getElementById('targetModal').classList.remove('active'); }
-    function saveTargetItem() {
-      const idx = parseInt(document.getElementById('targetEditIndex').value);
-      const newItem = {
-        day: document.getElementById('tModalDay').value,
-        type: document.getElementById('tModalType').value,
-        qty: parseInt(document.getElementById('tModalQty').value) || 0,
-        price: parseFloat(document.getElementById('tModalPrice').value) || 0
-      };
-      if (idx === -1) targetData.push(newItem);
-      else targetData[idx] = newItem;
       saveAllToFirebase();
-      logActivity(currentUserEmail, `Saved ticket target (${newItem.type})`);
-      closeTargetModal();
       buildTables();
     }
-    function deleteTargetItem(index) {
-      if (confirm('Delete this ticket target line?')) {
-        targetData.splice(index, 1);
+
+    function deleteBudgetItem(idx) {
+      if (confirm('Delete this budget item?')) {
+        budgetData.splice(idx, 1);
         saveAllToFirebase();
-        logActivity(currentUserEmail, "Deleted a ticket target");
-        buildTables();
-      }
-    }
-    function resetTargets() {
-      if (confirm('Reset sales targets to default values?')) {
-        targetData = [...defaultTargets];
-        saveAllToFirebase();
-        logActivity(currentUserEmail, "Reset ticket targets");
         buildTables();
       }
     }
 
-    function openSponsorshipModal(index) {
-      document.getElementById('sponsorshipEditIndex').value = index;
-      if (index === -1) {
-        document.getElementById('sponsorshipModalTitle').innerText = "Add Sponsorship";
-        document.getElementById('sModalCompany').value = "";
-        document.getElementById('sModalArea').value = "";
-        document.getElementById('sModalAmount').value = "";
+    function openBudgetModal(idx) {
+      if (idx === -1) {
+        budgetData.push({ item: "New Item", cat: "General", net: 1000, vat: "YES", update: 0, owner: "James Dunn" });
+        saveAllToFirebase();
+        buildTables();
+      }
+    }
+
+    function resetBudget() {
+      if (confirm('Reset budget to default items?')) {
+        budgetData = [...defaultBudget];
+        saveAllToFirebase();
+        buildTables();
+      }
+    }
+
+    function updateBarMultiplier(el, day) {
+      barMultipliers[day] = parseFloat(el.value) || 0;
+      saveAllToFirebase();
+      buildTables();
+    }
+
+    function toggleTaskCompleted(idx, el) {
+      planData[idx].completed = el.checked;
+      saveAllToFirebase();
+      buildTables();
+    }
+
+    function updateUserRoleFromAdmin(key, el) {
+      userRolesMap[key] = el.value;
+      saveAllToFirebase();
+      logActivity(currentUserEmail, `Updated user role for key ${key} to ${el.value}`);
+      buildTables();
+    }
+
+    function clearAuditLogs() {
+      if (confirm('Clear audit logs?')) {
+        auditLogsList = [];
+        db.ref('sif27_festival_data/auditLogs').remove();
+        buildTables();
+      }
+    }
+
+    function switchCalDay(day) {
+      currentCalDay = day;
+      const btnFri = document.getElementById('calBtnFri');
+      const btnSat = document.getElementById('calBtnSat');
+      if (day.includes('Friday')) {
+        btnFri.style.background = 'var(--accent-blue)';
+        btnSat.style.background = '#0f172a';
       } else {
-        document.getElementById('sponsorshipModalTitle').innerText = "Edit Sponsorship";
-        const item = sponsorshipData[index];
-        document.getElementById('sModalCompany').value = item.company;
-        document.getElementById('sModalArea').value = item.area;
-        document.getElementById('sModalAmount').value = item.amount;
+        btnSat.style.background = 'var(--accent-blue)';
+        btnFri.style.background = '#0f172a';
       }
-      document.getElementById('sponsorshipModal').classList.add('active');
-    }
-    function closeSponsorshipModal() { document.getElementById('sponsorshipModal').classList.remove('active'); }
-    function saveSponsorshipItem() {
-      const idx = parseInt(document.getElementById('sponsorshipEditIndex').value);
-      const newItem = {
-        company: document.getElementById('sModalCompany').value.trim(),
-        area: document.getElementById('sModalArea').value.trim(),
-        amount: parseFloat(document.getElementById('sModalAmount').value) || 0
-      };
-      if (!newItem.company) { alert('Please enter a company name.'); return; }
-      if (idx === -1) sponsorshipData.push(newItem);
-      else sponsorshipData[idx] = newItem;
-      saveAllToFirebase();
-      logActivity(currentUserEmail, `Saved sponsorship (${newItem.company})`);
-      closeSponsorshipModal();
-      buildTables();
-    }
-    function deleteSponsorshipItem(index) {
-      if (confirm('Delete this sponsorship item?')) {
-        sponsorshipData.splice(index, 1);
-        saveAllToFirebase();
-        logActivity(currentUserEmail, "Deleted sponsorship");
-        buildTables();
-      }
-    }
-    function resetSponsorships() {
-      if (confirm('Reset sponsorships to default values?')) {
-        sponsorshipData = [...defaultSponsorships];
-        saveAllToFirebase();
-        logActivity(currentUserEmail, "Reset sponsorships");
-        buildTables();
-      }
+      buildCalendarMatrix();
     }
 
-    function openPlanModal(index) {
-      document.getElementById('planEditIndex').value = index;
-      const item = planData[index];
-      document.getElementById('pModalTask').value = item.task;
-      document.getElementById('pModalP1').value = item.p1 || '';
-      document.getElementById('pModalP2').value = item.p2 || '';
-      document.getElementById('pModalP3').value = item.p3 || '';
-      document.getElementById('pModalUpdate').value = item.update || '';
-      document.getElementById('pModalSteps').value = item.steps || '';
-      document.getElementById('pModalStepsOwner').value = item.stepsOwner || '';
-      document.getElementById('pModalStepsDate').value = item.stepsDate || '';
-      document.getElementById('planModal').classList.add('active');
-    }
-    function closePlanModal() { document.getElementById('planModal').classList.remove('active'); }
-    function savePlanItem() {
-      const idx = parseInt(document.getElementById('planEditIndex').value);
-      planData[idx].p1 = document.getElementById('pModalP1').value;
-      planData[idx].p2 = document.getElementById('pModalP2').value;
-      planData[idx].p3 = document.getElementById('pModalP3').value;
-      planData[idx].update = document.getElementById('pModalUpdate').value;
-      planData[idx].steps = document.getElementById('pModalSteps').value;
-      planData[idx].stepsOwner = document.getElementById('pModalStepsOwner').value;
-      planData[idx].stepsDate = document.getElementById('pModalStepsDate').value;
-      saveAllToFirebase();
-      logActivity(currentUserEmail, `Updated project task "${planData[idx].task}"`);
-      closePlanModal();
-      buildTables();
+    function buildCalendarMatrix() {
+      const matrixBody = document.getElementById('calendarMatrixBody');
+      if (!matrixBody) return;
+      const stages = ["Lighthouse (Main Stage)", "Cactus (Live Stage)", "The Causeway (DnB stage)", "The Sand Bar (Disco stage)"];
+      const slots = currentCalDay.includes('Friday') 
+        ? ["16:00 - 17:30", "17:30 - 19:00", "19:00 - 20:30", "20:30 - 22:00", "22:00 - 23:00"]
+        : ["13:00 - 15:00", "15:00 - 17:00", "17:00 - 19:00", "19:00 - 21:00", "21:00 - 23:00"];
+
+      let html = '';
+      slots.forEach(slot => {
+        html += `<tr><td style="font-weight:bold; color:var(--text-muted); width:140px;">${slot}</td>`;
+        stages.forEach(stage => {
+          const matchingAct = djData.find(a => (a.day || "").trim() === currentCalDay && (a.stage || "").trim() === stage && (a.time || "").includes(slot.slice(0, 5)));
+          if (matchingAct) {
+            html += `<td style="background:rgba(225,29,72,0.15); border:1px solid var(--accent-rose);"><b style="color:var(--accent-rose);">${matchingAct.name}</b><br><span style="font-size:10px; color:var(--text-muted);">${matchingAct.type}</span></td>`;
+          } else {
+            html += `<td style="color:var(--text-muted); font-style:italic;">Available</td>`;
+          }
+        });
+        html += `</tr>`;
+      });
+      matrixBody.innerHTML = html;
     }
 
-    function openPlanAddModal() {
-      document.getElementById('pAddTaskName').value = '';
-      document.getElementById('pAddP1').value = '';
-      document.getElementById('pAddP2').value = '';
-      document.getElementById('pAddP3').value = '';
-      document.getElementById('pAddUpdate').value = '';
-      document.getElementById('pAddSteps').value = '';
-      document.getElementById('pAddStepsOwner').value = '';
-      document.getElementById('pAddStepsDate').value = '';
-      document.getElementById('planAddModal').classList.add('active');
-    }
-    function closePlanAddModal() { document.getElementById('planAddModal').classList.remove('active'); }
+    function buildTimelineChart() {
+      const container = document.getElementById('timelineBody');
+      if (!container) return;
 
-    function saveNewPlanItem() {
-      const section = document.getElementById('pAddSection').value;
-      const taskName = document.getElementById('pAddTaskName').value.trim();
-      if (!taskName) { alert('Please enter a task name.'); return; }
+      const tasksToMap = [
+        { name: "Fencing & Infrastructure", start: 0, dur: 3, color: "var(--accent-blue)" },
+        { name: "Licensing & SAG Approval", start: 1, dur: 2, color: "var(--accent-purple)" },
+        { name: "Marketing & Ticket Sales", start: 0, dur: 5, color: "var(--accent-green)" },
+        { name: "Sponsorships & Partners", start: 1, dur: 3, color: "var(--accent-amber)" },
+        { name: "DJs & Acts Booking", start: 2, dur: 3, color: "var(--accent-rose)" },
+        { name: "Production, Sound & Lights", start: 3, dur: 3, color: "var(--accent-blue)" },
+        { name: "Site Build & Operations", start: 4, dur: 2, color: "var(--accent-purple)" }
+      ];
 
-      const newTask = {
-        task: taskName,
-        p1: document.getElementById('pAddP1').value.trim(),
-        p2: document.getElementById('pAddP2').value.trim(),
-        p3: document.getElementById('pAddP3').value.trim(),
-        update: document.getElementById('pAddUpdate').value.trim(),
-        steps: document.getElementById('pAddSteps').value.trim(),
-        stepsOwner: document.getElementById('pAddStepsOwner').value.trim(),
-        stepsDate: document.getElementById('pAddStepsDate').value.trim(),
-        completed: false
-      };
-
-      let insertIndex = planData.findIndex(r => r.section === section);
-      if (insertIndex !== -1) {
-        insertIndex++;
-        while (insertIndex < planData.length && !planData[insertIndex].section) { insertIndex++; }
-        planData.splice(insertIndex, 0, newTask);
-      } else {
-        planData.push({ section: section });
-        planData.push(newTask);
-      }
-
-      saveAllToFirebase();
-      logActivity(currentUserEmail, `Added new task "${taskName}" under ${section}`);
-      closePlanAddModal();
-      buildTables();
+      let html = '';
+      tasksToMap.forEach(t => {
+        const leftPct = (t.start / 6) * 100;
+        const widthPct = (t.dur / 6) * 100;
+        html += `<div class="timeline-task-row">
+          <div class="timeline-task-name">${t.name}</div>
+          <div class="timeline-track">
+            <div class="timeline-grid-line"></div>
+            <div class="timeline-grid-line"></div>
+            <div class="timeline-grid-line"></div>
+            <div class="timeline-grid-line"></div>
+            <div class="timeline-grid-line"></div>
+            <div class="timeline-bar" style="left: ${leftPct}%; width: ${widthPct}%; background: ${t.color};">${t.name}</div>
+          </div>
+        </div>`;
+      });
+      container.innerHTML = html;
     }
 
-    function deletePlanItem(index) {
-      if (confirm('Delete this task?')) {
-        const name = planData[index].task;
-        planData.splice(index, 1);
-        saveAllToFirebase();
-        logActivity(currentUserEmail, `Deleted task "${name}"`);
-        buildTables();
-      }
-    }
-    function resetPlan() {
-      if (confirm('Reset project plan?')) {
-        planData = [...defaultPlan];
-        saveAllToFirebase();
-        logActivity(currentUserEmail, "Reset project plan");
-        buildTables();
-      }
-    }
+    function buildNotesBoard() {
+      const feed = document.getElementById('notesFeedContainer');
+      if (!feed) return;
+      const search = (document.getElementById('notesSearchInput').value || "").toLowerCase();
+      const sortVal = document.getElementById('notesSortSelect').value;
 
-    function openRolesModal(index) {
-      document.getElementById('rolesEditIndex').value = index;
-      const item = rolesData[index];
-      document.getElementById('rModalTask').value = item.task;
-      document.getElementById('rModalM1').value = item.m1 || '';
-      document.getElementById('rModalM2').value = item.m2 || '';
-      document.getElementById('rModalM3').value = item.m3 || '';
-      document.getElementById('rolesModal').classList.add('active');
-    }
-    function closeRolesModal() { document.getElementById('rolesModal').classList.remove('active'); }
-    function saveRolesItem() {
-      const idx = parseInt(document.getElementById('rolesEditIndex').value);
-      rolesData[idx].m1 = document.getElementById('rModalM1').value;
-      rolesData[idx].m2 = document.getElementById('rModalM2').value;
-      rolesData[idx].m3 = document.getElementById('rModalM3').value;
-      saveAllToFirebase();
-      logActivity(currentUserEmail, `Updated role assignment for "${rolesData[idx].task}"`);
-      closeRolesModal();
-      buildTables();
-    }
-    function resetRoles() {
-      if (confirm('Reset roles?')) {
-        rolesData = [...defaultRoles];
-        saveAllToFirebase();
-        logActivity(currentUserEmail, "Reset roles matrix");
-        buildTables();
-      }
-    }
-
-    function openDjModal(index) {
-      document.getElementById('djEditIndex').value = index;
-      if (index === -1) {
-        document.getElementById('djModalTitle').innerText = "Add New Act";
-        document.getElementById('djName').value = '';
-        document.getElementById('djType').value = 'DJ';
-        document.getElementById('djCost').value = '';
-        document.getElementById('djVat').value = 'YES';
-        document.getElementById('djStage').value = 'Lighthouse (Main Stage)';
-        document.getElementById('djDay').value = 'Friday 30th July';
-        updateTimeSlots();
-        document.getElementById('djDrinks').value = '';
-        document.getElementById('djFood').value = '';
-      } else {
-        document.getElementById('djModalTitle').innerText = "Edit Act";
-        const act = djData[index];
-        document.getElementById('djName').value = act.name;
-        document.getElementById('djType').value = act.type;
-        document.getElementById('djCost').value = act.cost;
-        document.getElementById('djVat').value = act.vat;
-        document.getElementById('djStage').value = act.stage || 'Lighthouse (Main Stage)';
-        document.getElementById('djDay').value = act.day;
-        updateTimeSlots(act.time);
-        document.getElementById('djDrinks').value = act.drinks;
-        document.getElementById('djFood').value = act.food;
-      }
-      document.getElementById('djModal').classList.add('active');
-    }
-    function closeDjModal() { document.getElementById('djModal').classList.remove('active'); }
-
-    function saveDjItem() {
-      const idx = parseInt(document.getElementById('djEditIndex').value);
-      const stage = document.getElementById('djStage').value;
-      const day = document.getElementById('djDay').value;
-      const time = document.getElementById('djTime').value;
-
-      const newAct = {
-        name: document.getElementById('djName').value,
-        type: document.getElementById('djType').value,
-        cost: parseFloat(document.getElementById('djCost').value) || 0,
-        vat: document.getElementById('djVat').value,
-        stage: stage,
-        day: day,
-        time: time,
-        drinks: document.getElementById('djDrinks').value,
-        food: document.getElementById('djFood').value
-      };
-
-      if (idx === -1) djData.push(newAct);
-      else djData[idx] = newAct;
+      let filtered = notesData.filter(n => (n.text || "").toLowerCase().includes(search) || (n.dept || "").toLowerCase().includes(search));
       
+      filtered.sort((a, b) => {
+        if (sortVal === 'dateDesc') return b.timestamp - a.timestamp;
+        return 0;
+      });
+
+      if (filtered.length === 0) {
+        feed.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding:20px; font-style:italic;">No ideas found.</div>`;
+        return;
+      }
+
+      let html = '';
+      filtered.forEach(note => {
+        const dateStr = new Date(note.timestamp).toLocaleString('en-GB');
+        html += `<div class="note-card">
+          <div>
+            <div style="display:flex; gap:8px; align-items:center; margin-bottom:6px;">
+              <span class="badge" style="background:rgba(56,189,248,0.15); color:#38bdf8; border-color:#38bdf8;">${note.dept}</span>
+              <span style="font-size:10px; color:var(--text-muted);">${note.author || 'Staff'} • ${dateStr}</span>
+            </div>
+            <p style="font-size:13px; color:var(--text-main); line-height:1.4; white-space:pre-wrap;">${note.text}</p>
+          </div>
+          <button onclick="deleteNote(${note.id})" class="edit-btn" style="background:rgba(225,29,72,0.2); color:#fda4af; border-color:var(--border-color);">Del</button>
+        </div>`;
+      });
+      feed.innerHTML = html;
+    }
+
+    function submitNewNote() {
+      const dept = document.getElementById('noteDept').value;
+      const text = document.getElementById('noteContent').value.trim();
+      if (!text) { alert('Please enter note content.'); return; }
+
+      notesData.push({
+        id: Date.now(),
+        dept: dept,
+        text: text,
+        author: currentUserEmail,
+        timestamp: Date.now(),
+        ratings: {}
+      });
+
+      document.getElementById('noteContent').value = '';
       saveAllToFirebase();
-      logActivity(currentUserEmail, `Saved act/DJ "${newAct.name}"`);
-      closeDjModal();
+      logActivity(currentUserEmail, `Posted new idea under ${dept}`);
       buildTables();
     }
 
-    function deleteDjItem(index) {
-      if (confirm('Delete this act?')) {
-        const name = djData[index].name;
-        djData.splice(index, 1);
+    function deleteNote(id) {
+      if (confirm('Delete this idea?')) {
+        notesData = notesData.filter(n => n.id !== id);
         saveAllToFirebase();
-        logActivity(currentUserEmail, `Deleted act "${name}"`);
         buildTables();
       }
     }
-    function resetDjs() {
-      if (confirm('Reset DJs?')) {
-        djData = [...defaultDjs];
-        saveAllToFirebase();
-        logActivity(currentUserEmail, "Reset DJs line-up");
-        buildTables();
-      }
+
+    function updateTimeSlots(selectedTime) {
+      const day = document.getElementById('djDay').value;
+      const select = document.getElementById('djTime');
+      const slots = day.includes('Friday')
+        ? ["16:00 - 17:30 (1.5 Hours)", "17:30 - 19:00 (1.5 Hours)", "19:00 - 20:30 (1.5 Hours)", "20:30 - 22:00 (1.5 Hours)", "22:00 - 23:00 (1 Hour)"]
+        : ["13:00 - 15:00 (2 Hours)", "15:00 - 17:00 (2 Hours)", "17:00 - 19:00 (2 Hours)", "19:00 - 21:00 (2 Hours)", "21:00 - 23:00 (2 Hours)"];
+      
+      let html = '';
+      slots.forEach(s => {
+        html += `<option value="${s}" ${selectedTime === s ? 'selected' : ''}>${s}</option>`;
+      });
+      select.innerHTML = html;
     }
 
     function exportToJSON() {
@@ -2285,7 +2166,6 @@
       } catch (e) {}
     }
 
-    // Direct event listener bindings
     document.addEventListener('DOMContentLoaded', () => {
       runTimer();
       setInterval(runTimer, 1000);
