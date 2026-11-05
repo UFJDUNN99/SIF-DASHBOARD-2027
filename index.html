@@ -53,7 +53,12 @@
     /* Unified Summary Block Styles */
     .unified-summary-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 24px; margin-bottom: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
     .unified-summary-header { font-size: 16px; font-weight: 800; color: var(--accent-blue); margin-bottom: 18px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
-    .unified-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+    .unified-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 16px; }
+    .unified-grid-bottom { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    @media(max-width: 1100px) {
+      .unified-grid { grid-template-columns: repeat(2, 1fr); }
+      .unified-grid-bottom { grid-template-columns: repeat(1, 1fr); }
+    }
     .summary-item { background: #0f172a; border: 1px solid var(--border-color); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between; }
     .summary-item p { font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 700; letter-spacing: 0.5px; margin-bottom: 6px; }
     .summary-item h3 { font-size: 22px; font-weight: 800; color: var(--text-main); }
@@ -142,7 +147,7 @@
   <div id="signupModal" class="modal">
     <div class="modal-box" style="max-width: 380px;">
       <h3 style="margin-bottom: 12px; font-size: 16px; font-weight: bold; color: var(--accent-blue); text-align: center;">Register New Staff Account</h3>
-      <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 16px; text-align: center;">New accounts default to staff access.</p>
+      <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 16px; text-align: center;">New accounts default to team access.</p>
       
       <div class="form-group">
         <label>Email Address</label>
@@ -187,6 +192,7 @@
       
       <div style="display: flex; align-items: center; gap: 8px; background: #0f172a; padding: 4px 10px; border-radius: 6px; border: 1px solid var(--border-color);">
         <span id="loggedInUserDisplay" style="font-size: 11px; font-weight: bold; color: var(--accent-blue);">User</span>
+        <span id="loggedInRoleDisplay" class="badge" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; border-color: #38bdf8;">Role</span>
         <button onclick="handleLogout()" style="background: rgba(225, 29, 72, 0.2); color: #fda4af; border: 1px solid var(--border-color); padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: bold;">Log Out</button>
       </div>
     </div>
@@ -202,6 +208,7 @@
     <button onclick="openTab('roles')" id="btn-roles" class="tab-btn">🛡️ Roles</button>
     <button onclick="openTab('djs')" id="btn-djs" class="tab-btn">🎧 DJs & Production</button>
     <button onclick="openTab('notes')" id="btn-notes" class="tab-btn">💡 Ideas Board</button>
+    <button onclick="openTab('admin')" id="btn-admin" class="tab-btn" style="display: none; color: var(--accent-amber);">👑 Admin Controls</button>
   </nav>
 
   <main>
@@ -212,50 +219,49 @@
       <div class="unified-summary-card" id="adminSummaryBlock">
         <div class="unified-summary-header">
           <span>📊 Executive Financial & VAT Summary</span>
-          <button onclick="openActualModal()" class="edit-btn">+ Log Actuals</button>
+          <button onclick="openActualModal()" class="edit-btn" id="logActualsBtn">+ Log Actuals</button>
         </div>
+        
+        <!-- Top Row: Total Forecasted Income, Budget, Profit, Current Sales -->
         <div class="unified-grid">
-          <!-- 1. Total Forecasted Income -->
           <div class="summary-item">
             <p>1. Total Forecasted Income</p>
             <h3 id="dashTotalIncome" style="color: var(--accent-blue);">£0.00</h3>
             <div class="sub-text">Tickets + Bar + Sponsorship</div>
           </div>
-          <!-- 2. Budget Allocation -->
           <div class="summary-item">
             <p>2. Budget Allocation</p>
             <h3 id="dashBudInc" style="color: var(--accent-purple);">£0.00</h3>
             <div id="dashBudSpent" class="sub-text">Spent: £0.00 | Remaining: £0.00</div>
           </div>
-          <!-- 3. VAT Collected -->
           <div class="summary-item">
-            <p>3. VAT Collected</p>
-            <h3 id="dashTotalVatCollected" style="color: var(--accent-amber);">£0.00</h3>
-            <div class="sub-text">From Tickets, Bar & Sponsorships</div>
-          </div>
-          <!-- 4. VAT Paid -->
-          <div class="summary-item">
-            <p>4. VAT Paid</p>
-            <h3 id="dashTotalVatPaid" style="color: var(--accent-amber);">£0.00</h3>
-            <div class="sub-text">Total VAT on Budget Expenses</div>
-          </div>
-          <!-- 5. VAT to Pay to HMRC -->
-          <div class="summary-item">
-            <p>5. VAT to Pay to HMRC</p>
-            <h3 id="dashNetVatLiability" style="color: var(--accent-rose);">£0.00</h3>
-            <div class="sub-text">VAT Collected minus VAT Paid</div>
-          </div>
-          <!-- 6. Profit Forecast -->
-          <div class="summary-item">
-            <p>6. Profit Forecast</p>
+            <p>3. Profit Forecast</p>
             <h3 id="dashVariance">£0.00</h3>
             <div class="sub-text">Income - Budget - VAT to Pay to HMRC</div>
           </div>
-          <!-- 7. Actual Sales -->
           <div class="summary-item">
-            <p>7. Actual Sales</p>
+            <p>4. Actual Sales</p>
             <h3 id="dashActualRevenue" style="color: var(--accent-green);">£0.00</h3>
             <div id="dashTicketCounts" class="sub-text">Tickets: £0 | Bar: £0</div>
+          </div>
+        </div>
+
+        <!-- Bottom Row: VAT Collected, VAT Paid, VAT due to HMRC -->
+        <div class="unified-grid-bottom">
+          <div class="summary-item">
+            <p>5. VAT Collected</p>
+            <h3 id="dashTotalVatCollected" style="color: var(--accent-amber);">£0.00</h3>
+            <div class="sub-text">From Tickets, Bar & Sponsorships</div>
+          </div>
+          <div class="summary-item">
+            <p>6. VAT Paid</p>
+            <h3 id="dashTotalVatPaid" style="color: var(--accent-amber);">£0.00</h3>
+            <div class="sub-text">Total VAT on Budget Expenses</div>
+          </div>
+          <div class="summary-item">
+            <p>7. VAT due to HMRC</p>
+            <h3 id="dashNetVatLiability" style="color: var(--accent-rose);">£0.00</h3>
+            <div class="sub-text">VAT Collected minus VAT Paid</div>
           </div>
         </div>
       </div>
@@ -362,7 +368,7 @@
       <div class="table-card">
         <div class="table-header">
           <span>Festival Budget Line Items (Directly Editable)</span>
-          <div style="display: flex; gap: 8px;">
+          <div style="display: flex; gap: 8px;" id="budgetActionBtns">
             <button class="action-btn" onclick="openBudgetModal(-1)">+ Add Item</button>
             <button onclick="resetBudget()" style="background: #0f172a; color: var(--text-main); border: 1px solid var(--border-color); padding: 6px 10px; border-radius: 6px;">Reset Default</button>
           </div>
@@ -379,7 +385,7 @@
                 <th style="text-align: right;">Inc. VAT (£)</th>
                 <th style="text-align: right;">Actual Spent (£)</th>
                 <th style="text-align: center;">Owner</th>
-                <th style="text-align: center;">Action</th>
+                <th style="text-align: center;" class="admin-col-header">Action</th>
               </tr>
             </thead>
             <tbody id="budgetBody"></tbody>
@@ -453,7 +459,7 @@
       <div class="table-card" style="margin-bottom: 20px;">
         <div class="table-header">
           <span>🤝 Sponsorship & Partner Income (Editable)</span>
-          <div style="display: flex; gap: 8px;">
+          <div style="display: flex; gap: 8px;" id="sponsorshipActionBtns">
             <button class="action-btn" onclick="openSponsorshipModal(-1)">+ Add Sponsorship</button>
             <button onclick="resetSponsorships()" style="background: #0f172a; color: var(--text-main); border: 1px solid var(--border-color); padding: 6px 10px; border-radius: 6px;">Reset Default</button>
           </div>
@@ -467,7 +473,7 @@
                 <th style="text-align: right;">Excl. VAT (£)</th>
                 <th style="text-align: right;">VAT Amount (£)</th>
                 <th style="text-align: right;">Amount Incl. VAT (£)</th>
-                <th style="text-align: center;">Action</th>
+                <th style="text-align: center;" class="admin-col-header">Action</th>
               </tr>
             </thead>
             <tbody id="sponsorshipBody"></tbody>
@@ -502,7 +508,7 @@
       <div class="table-card">
         <div class="table-header">
           <span>Sales Target & Ticket Pricing Matrix (Editable)</span>
-          <div style="display: flex; gap: 8px;">
+          <div style="display: flex; gap: 8px;" id="targetActionBtns">
             <button class="action-btn" onclick="openTargetModal(-1)">+ Add Ticket Target</button>
             <button onclick="resetTargets()" style="background: #0f172a; color: var(--text-main); border: 1px solid var(--border-color); padding: 6px 10px; border-radius: 6px;">Reset Default</button>
           </div>
@@ -518,7 +524,7 @@
                 <th style="text-align: right;">VAT Amount (£)</th>
                 <th style="text-align: right;">Price Incl. VAT (£)</th>
                 <th style="text-align: right;">Total Income (£)</th>
-                <th style="text-align: center;">Action</th>
+                <th style="text-align: center;" class="admin-col-header">Action</th>
               </tr>
             </thead>
             <tbody id="targetBody"></tbody>
@@ -532,7 +538,7 @@
       <div class="table-card">
         <div class="table-header">
           <span>Project Plan & Operational Tasks (Editable & Checkable)</span>
-          <div style="display: flex; gap: 8px;">
+          <div style="display: flex; gap: 8px;" id="planActionBtns">
             <button class="action-btn" onclick="openPlanAddModal()">+ Add Task / Project</button>
             <button onclick="resetPlan()" style="background: #0f172a; color: var(--text-main); border: 1px solid var(--border-color); padding: 6px 10px; border-radius: 6px;">Reset Default</button>
           </div>
@@ -550,7 +556,7 @@
                 <th>Next Steps</th>
                 <th>Next Steps Owner</th>
                 <th>Next Steps Date</th>
-                <th style="text-align: center;">Action</th>
+                <th style="text-align: center;" class="admin-col-header">Action</th>
               </tr>
             </thead>
             <tbody id="planBody"></tbody>
@@ -588,7 +594,7 @@
       <div class="table-card">
         <div class="table-header">
           <span>Roles & Responsibilities Matrix (Editable)</span>
-          <button onclick="resetRoles()" style="background: #0f172a; color: var(--text-main); border: 1px solid var(--border-color); padding: 6px 10px; border-radius: 6px;">Reset Default</button>
+          <button onclick="resetRoles()" style="background: #0f172a; color: var(--text-main); border: 1px solid var(--border-color); padding: 6px 10px; border-radius: 6px;" id="resetRolesBtn">Reset Default</button>
         </div>
         <div class="table-wrap">
           <table>
@@ -598,7 +604,7 @@
                 <th>Management Lead (1)</th>
                 <th>Secondary Lead (2)</th>
                 <th>Support (3)</th>
-                <th style="text-align: center;">Action</th>
+                <th style="text-align: center;" class="admin-col-header">Action</th>
               </tr>
             </thead>
             <tbody id="rolesBody"></tbody>
@@ -636,7 +642,7 @@
       <div class="table-card">
         <div class="table-header">
           <span>DJs & Production Line-Up (Editable)</span>
-          <div style="display: flex; gap: 8px;">
+          <div style="display: flex; gap: 8px;" id="djActionBtns">
             <button class="action-btn" onclick="openDjModal(-1)">+ Add Act</button>
             <button onclick="resetDjs()" style="background: #0f172a; color: var(--text-main); border: 1px solid var(--border-color); padding: 6px 10px; border-radius: 6px;">Reset Default</button>
           </div>
@@ -656,7 +662,7 @@
                 <th>Time Slot</th>
                 <th>Drinks Package</th>
                 <th>Food Package</th>
-                <th style="text-align: center;">Action</th>
+                <th style="text-align: center;" class="admin-col-header">Action</th>
               </tr>
             </thead>
             <tbody id="djBody"></tbody>
@@ -713,6 +719,49 @@
         </div>
       </div>
     </div>
+
+    <!-- TAB 9: ADMIN CONTROLS (JAMES DUNN ONLY) -->
+    <div id="tab-admin" class="tab-content">
+      <div class="table-card" style="margin-bottom: 24px;">
+        <div class="table-header">
+          <span>👑 Staff User Permission & Role Management</span>
+          <span style="font-size: 11px; color: var(--text-muted);">Assign staff access levels (Admin / Director / Team)</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Staff Email Address</th>
+                <th>Last Login Timestamp</th>
+                <th style="text-align: center;">Assigned Role Level</th>
+                <th style="text-align: center;">Action</th>
+              </tr>
+            </thead>
+            <tbody id="adminUsersBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="table-card">
+        <div class="table-header">
+          <span>📜 System Activity & Change Log</span>
+          <button onclick="clearAuditLogs()" class="edit-btn" style="background: rgba(225,29,72,0.2); color:#fda4af; border-color:var(--border-color);">Clear Logs</button>
+        </div>
+        <div class="table-wrap" style="max-height: 400px; overflow-y: auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>Timestamp</th>
+                <th>User Email</th>
+                <th>Action Description</th>
+              </tr>
+            </thead>
+            <tbody id="auditLogsBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
   </main>
 
   <!-- MODALS -->
@@ -942,17 +991,12 @@
     const auth = firebase.auth();
     const db = firebase.database();
 
-    const adminEmails = [
-      "james.dunn@ultrafunkula.co.uk",
-      "matthew.prevett@ultrafunkula.co.uk",
-      "kevin@secretisland.com",
-      "ben@secretisland.com"
-    ];
-
     let currentUserEmail = "";
+    let userRolesMap = {}; // { email: 'admin' | 'director' | 'team' }
+    let auditLogs = []; // [{ timestamp, email, action }]
 
     function handleLogin() {
-      const email = document.getElementById('loginEmail').value.trim();
+      const email = document.getElementById('loginEmail').value.trim().toLowerCase();
       const password = document.getElementById('loginPassword').value;
       const errorEl = document.getElementById('loginError');
 
@@ -965,6 +1009,7 @@
       auth.signInWithEmailAndPassword(email, password)
         .then((userCredential) => {
           document.getElementById('loginOverlay').style.display = 'none';
+          recordUserLogin(email);
         })
         .catch((error) => {
           errorEl.innerText = error.message;
@@ -990,7 +1035,7 @@
     }
 
     function handleSignup() {
-      const email = document.getElementById('signupEmail').value.trim();
+      const email = document.getElementById('signupEmail').value.trim().toLowerCase();
       const password = document.getElementById('signupPassword').value;
       const errorEl = document.getElementById('signupError');
 
@@ -1004,6 +1049,7 @@
         .then((userCredential) => {
           closeSignupModal();
           document.getElementById('loginOverlay').style.display = 'none';
+          recordUserLogin(email, 'team');
         })
         .catch((error) => {
           errorEl.innerText = error.message;
@@ -1011,9 +1057,42 @@
         });
     }
 
+    function recordUserLogin(email, defaultRole = 'team') {
+      const dbRef = db.ref('sif27_festival_data/usersRegistry');
+      dbRef.once('snapshot', (snapshot) => {
+        // handled via realtime sync
+      });
+      db.ref(`sif27_festival_data/usersRegistry/${email.replace(/\./g, '_')}`).update({
+        email: email,
+        lastLogin: new Date().toISOString()
+      });
+
+      // Default role assignments if not set
+      db.ref('sif27_festival_data/userRoles').once('value', (snapshot) => {
+        let roles = snapshot.val() || {};
+        if (email === 'james.dunn@ultrafunkula.co.uk') {
+          roles[email.replace(/\./g, '_')] = 'admin';
+        } else if (!roles[email.replace(/\./g, '_')]) {
+          roles[email.replace(/\./g, '_')] = defaultRole;
+        }
+        db.ref('sif27_festival_data/userRoles').set(roles);
+      });
+
+      logActivity(email, `Logged in successfully`);
+    }
+
+    function logActivity(email, actionDesc) {
+      const newLog = {
+        timestamp: new Date().toLocaleString('en-GB'),
+        email: email || currentUserEmail || 'System',
+        action: actionDesc
+      };
+      db.ref('sif27_festival_data/auditLogs').push(newLog);
+    }
+
     auth.onAuthStateChanged((user) => {
       if (user) {
-        currentUserEmail = user.email;
+        currentUserEmail = user.email.toLowerCase();
         document.getElementById('loginOverlay').style.display = 'none';
         document.getElementById('loggedInUserDisplay').innerText = currentUserEmail;
         initFirebaseSync();
@@ -1229,6 +1308,8 @@
     let notesData = [...defaultNotes];
     let currentCalDay = "Friday 30th July";
     let barMultipliers = { Friday: 35.00, Saturday: 65.00, Weekend: 100.00 };
+    let usersRegistry = {};
+    let auditLogsList = [];
 
     function initFirebaseSync() {
       const dbRef = db.ref('sif27_festival_data');
@@ -1247,11 +1328,14 @@
           djData = val.djData ? val.djData : [...defaultDjs];
           notesData = val.notesData ? val.notesData : [...defaultNotes];
           if (val.barMultipliers) barMultipliers = val.barMultipliers;
+          userRolesMap = val.userRoles ? val.userRoles : {};
+          usersRegistry = val.usersRegistry ? val.usersRegistry : {};
+          auditLogsList = val.auditLogs ? Object.values(val.auditLogs) : [];
 
-          if (!val.actualSalesData || !val.budgetData) {
-            saveAllToFirebase();
+          if (currentUserEmail === 'james.dunn@ultrafunkula.co.uk') {
+            userRolesMap[currentUserEmail.replace(/\./g, '_')] = 'admin';
           }
-          
+
           if (statusEl) {
             statusEl.innerText = "🟢 Live Sync Active";
             statusEl.style.background = "rgba(16, 185, 129, 0.15)";
@@ -1261,31 +1345,81 @@
         } else {
           saveAllToFirebase();
         }
+        applyRolePermissions();
         buildTables();
       }, (error) => {
         const statusEl = document.getElementById('syncStatus');
         if (statusEl) {
           statusEl.innerText = "🔴 Sync Error";
-          statusEl.style.background = "rgba(225, 29, 72, 0.15)";
-          statusEl.style.color = "#fda4af";
         }
       });
     }
 
     function saveAllToFirebase() {
-      const payload = { actualSalesData, budgetData, targetData, sponsorshipData, planData, rolesData, djData, notesData, barMultipliers };
-      db.ref('sif27_festival_data').set(payload);
+      const payload = { actualSalesData, budgetData, targetData, sponsorshipData, planData, rolesData, djData, notesData, barMultipliers, userRoles: userRolesMap, usersRegistry };
+      db.ref('sif27_festival_data').update(payload);
     }
 
     function formatGBP(num) {
       return '£' + (num || 0).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
 
-    function openTab(tabName) {
-      const isAdmin = adminEmails.includes(currentUserEmail);
+    function getUserRole() {
+      if (currentUserEmail === 'james.dunn@ultrafunkula.co.uk') return 'admin';
+      const key = currentUserEmail.replace(/\./g, '_');
+      return userRolesMap[key] || 'team';
+    }
 
-      if (!isAdmin && tabName !== 'plan' && tabName !== 'timeline' && tabName !== 'djs' && tabName !== 'notes' && tabName !== 'dash') {
-        alert(`⚠️ Access Restricted\n\nRestricted users can view the Dashboard, Project Plan, Project Timeline, DJs, and Ideas Board tabs.`);
+    function applyRolePermissions() {
+      const role = getUserRole();
+      const roleBadge = document.getElementById('loggedInRoleDisplay');
+      roleBadge.innerText = role.toUpperCase();
+
+      const isAdmin = (currentUserEmail === 'james.dunn@ultrafunkula.co.uk');
+      const isDirector = role === 'director' || isAdmin;
+      const isTeam = role === 'team' && !isAdmin;
+
+      // Tab buttons visibility
+      document.getElementById('btn-budget').style.display = isDirector ? 'block' : 'none';
+      document.getElementById('btn-target').style.display = isDirector ? 'block' : 'none';
+      document.getElementById('btn-roles').style.display = isDirector ? 'block' : 'none';
+      document.getElementById('btn-admin').style.display = isAdmin ? 'block' : 'none';
+
+      // Summary block & revenue card visibility
+      document.getElementById('adminSummaryBlock').style.display = isDirector ? 'block' : 'none';
+      document.getElementById('adminRevenueCard').style.display = isDirector ? 'block' : 'none';
+      document.getElementById('logActualsBtn').style.display = isDirector ? 'inline-block' : 'none';
+
+      // Action buttons hide/show for team vs director/admin
+      ['budgetActionBtns', 'sponsorshipActionBtns', 'targetActionBtns', 'planActionBtns'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = isDirector ? 'flex' : 'none';
+      });
+
+      // Hide table action headers for team members
+      document.querySelectorAll('.admin-col-header').forEach(th => {
+        th.style.display = isDirector ? 'table-cell' : 'none';
+      });
+
+      // If team member tries to view restricted tab, default to Dashboard or Project Plan
+      const activeTab = document.querySelector('.tab-content.active');
+      if (activeTab && activeTab.id === 'tab-admin' && !isAdmin) {
+        openTab('dash');
+      } else if (activeTab && (activeTab.id === 'tab-budget' || activeTab.id === 'tab-target') && isTeam) {
+        openTab('dash');
+      }
+    }
+
+    function openTab(tabName) {
+      const isAdmin = (currentUserEmail === 'james.dunn@ultrafunkula.co.uk');
+      const role = getUserRole();
+
+      if (tabName === 'admin' && !isAdmin) {
+        alert("⚠️ Access Restricted: Admin tab is exclusive to James Dunn.");
+        return;
+      }
+      if ((tabName === 'budget' || tabName === 'target') && role === 'team' && !isAdmin) {
+        alert("⚠️ Access Restricted: Team members can view Dashboard, Project Plan, Timeline, DJs, and Ideas Board.");
         return;
       }
 
@@ -1358,6 +1492,7 @@
     function toggleTaskCompleted(index, checkbox) {
       planData[index].completed = checkbox.checked;
       saveAllToFirebase();
+      logActivity(currentUserEmail, `Toggled task completion for "${planData[index].task}" to ${checkbox.checked}`);
       buildTables();
     }
 
@@ -1494,6 +1629,7 @@
       notesData.push(newNote);
       document.getElementById('noteContent').value = '';
       saveAllToFirebase();
+      logActivity(currentUserEmail, `Posted new idea in ${dept}`);
       buildNotesBoard();
     }
 
@@ -1511,6 +1647,7 @@
       if (confirm('Are you sure you want to delete this idea post?')) {
         notesData = notesData.filter(n => n.id !== noteId);
         saveAllToFirebase();
+        logActivity(currentUserEmail, `Deleted an idea post`);
         buildNotesBoard();
       }
     }
@@ -1595,6 +1732,7 @@
       const val = parseFloat(inputEl.value) || 0;
       barMultipliers[day] = val;
       saveAllToFirebase();
+      logActivity(currentUserEmail, `Updated ${day} bar multiplier to £${val}`);
       buildTables();
     }
 
@@ -1605,13 +1743,31 @@
       }
       budgetData[index][field] = val;
       saveAllToFirebase();
+      logActivity(currentUserEmail, `Updated budget item "${budgetData[index].item}" (${field})`);
       buildTables();
     }
 
     function deleteBudgetItem(index) {
       if (confirm('Delete this budget item?')) {
+        const name = budgetData[index].item;
         budgetData.splice(index, 1);
         saveAllToFirebase();
+        logActivity(currentUserEmail, `Deleted budget item "${name}"`);
+        buildTables();
+      }
+    }
+
+    function updateUserRoleFromAdmin(emailKey, selectEl) {
+      const newRole = selectEl.value;
+      userRolesMap[emailKey] = newRole;
+      saveAllToFirebase();
+      logActivity(currentUserEmail, `Changed user role for ${emailKey.replace(/_/g, '.')} to ${newRole}`);
+      buildTables();
+    }
+
+    function clearAuditLogs() {
+      if (confirm('Clear all audit logs?')) {
+        db.ref('sif27_festival_data/auditLogs').remove();
         buildTables();
       }
     }
@@ -1623,14 +1779,9 @@
         buildTimelineChart();
         buildNotesBoard();
 
-        const isAdmin = adminEmails.includes(currentUserEmail);
-
-        document.getElementById('btn-budget').style.display = isAdmin ? 'block' : 'none';
-        document.getElementById('btn-target').style.display = isAdmin ? 'block' : 'none';
-        document.getElementById('btn-roles').style.display = isAdmin ? 'block' : 'none';
-
-        document.getElementById('adminSummaryBlock').style.display = isAdmin ? 'block' : 'none';
-        document.getElementById('adminRevenueCard').style.display = isAdmin ? 'block' : 'none';
+        const role = getUserRole();
+        const isAdmin = (currentUserEmail === 'james.dunn@ultrafunkula.co.uk');
+        const isDirector = role === 'director' || isAdmin;
 
         let friTicketRev = 0, friTicketQty = 0;
         let satTicketRev = 0, satTicketQty = 0;
@@ -1668,10 +1819,8 @@
         const satBarTotal = satTicketQty * (barMultipliers.Saturday || 65.00);
         const wkndBarTotal = wkndTicketQty * (barMultipliers.Weekend || 100.00);
         const totalBarForecast = friBarTotal + satBarTotal + wkndBarTotal;
-
         const totalCombinedTicketRev = friTicketRev + satTicketRev + wkndTicketRev;
 
-        // Sponsorship totals calculation
         let totalSponsorshipInc = 0;
         let totalSponsorshipVat = 0;
         let sponsorshipTableHtml = '';
@@ -1689,10 +1838,10 @@
             <td style="text-align:right; color:var(--text-muted);">${formatGBP(exclAmt)}</td>
             <td style="text-align:right; color:var(--text-muted);">${formatGBP(vatAmt)}</td>
             <td style="text-align:right; font-weight:bold; color:var(--accent-green);">${formatGBP(incAmt)}</td>
-            <td style="text-align:center;">
+            ${isDirector ? `<td style="text-align:center;">
               <button class="edit-btn" onclick="openSponsorshipModal(${idx})">Edit</button>
               <button class="edit-btn" onclick="deleteSponsorshipItem(${idx})" style="background:rgba(225,29,72,0.2); color:#fda4af; border-color:var(--border-color); margin-left:4px;">Del</button>
-            </td>
+            </td>` : ''}
           </tr>`;
         });
 
@@ -1701,24 +1850,22 @@
           <td style="text-align:right; color:var(--text-muted);">${formatGBP(totalSponsorshipInc - totalSponsorshipVat)}</td>
           <td style="text-align:right; color:var(--text-muted);">${formatGBP(totalSponsorshipVat)}</td>
           <td style="text-align:right; color:var(--accent-green); font-weight:bold;">${formatGBP(totalSponsorshipInc)}</td>
-          <td></td>
+          ${isDirector ? '<td></td>' : ''}
         </tr>`;
 
         const sBody = document.getElementById('sponsorshipBody');
         if (sBody) sBody.innerHTML = sponsorshipTableHtml;
 
         const grandTotalCombined = totalCombinedTicketRev + totalBarForecast + totalSponsorshipInc;
-
-        // VAT Collected (20% standard VAT included across tickets, bar spend, and sponsorships)
         const totalVatCollected = (totalCombinedTicketRev / 6) + (totalBarForecast / 6) + totalSponsorshipVat;
 
         document.getElementById('friBarMultiplier').value = barMultipliers.Friday || 35.00;
         document.getElementById('satBarMultiplier').value = barMultipliers.Saturday || 65.00;
         document.getElementById('wkndBarMultiplier').value = barMultipliers.Weekend || 100.00;
 
-        document.getElementById('friBarCalcOutput').innerText = `Calculated Bar Total (${friTicketQty} attendees × £${(barMultipliers.Friday||35.00).toFixed(2)}): ${formatGBP(friBarTotal)}`;
-        document.getElementById('satBarCalcOutput').innerText = `Calculated Bar Total (${satTicketQty} attendees × £${(barMultipliers.Saturday||65.00).toFixed(2)}): ${formatGBP(satBarTotal)}`;
-        document.getElementById('wkndBarCalcOutput').innerText = `Calculated Bar Total (${wkndTicketQty} attendees × £${(barMultipliers.Weekend||100.00).toFixed(2)}): ${formatGBP(wkndBarTotal)}`;
+        document.getElementById('friBarCalcOutput').innerText = `Calculated Bar Total (${friTicketQty} attendees): ${formatGBP(friBarTotal)}`;
+        document.getElementById('satBarCalcOutput').innerText = `Calculated Bar Total (${satTicketQty} attendees): ${formatGBP(satBarTotal)}`;
+        document.getElementById('wkndBarCalcOutput').innerText = `Calculated Bar Total (${wkndTicketQty} attendees): ${formatGBP(wkndBarTotal)}`;
 
         document.getElementById('blockFriTicket').innerText = formatGBP(friTicketRev);
         document.getElementById('blockSatTicket').innerText = formatGBP(satTicketRev);
@@ -1749,40 +1896,27 @@
         document.getElementById('topBudgetInc').innerText = formatGBP(bIncTotal);
         document.getElementById('topBudgetSpent').innerText = formatGBP(bSpentTotal);
 
-        // VAT to Pay to HMRC = VAT Collected - VAT Paid
         const netVatLiability = totalVatCollected - bVatAmtTotal;
-        
-        // Profit Forecast = Income - Budget - VAT to Pay to HMRC
         const profitVariance = totalIncomeForecast - bIncTotal - netVatLiability;
 
-        if (isAdmin) {
-          // Populate unified summary cards in exact requested order:
-          // 1. Total Forecasted Income
+        if (isDirector) {
           document.getElementById('dashTotalIncome').innerText = formatGBP(totalIncomeForecast);
-          
-          // 2. Budget Allocation
           document.getElementById('dashBudInc').innerText = formatGBP(bIncTotal);
           document.getElementById('dashBudSpent').innerText = `Spent: ${formatGBP(bSpentTotal)} | Remaining: ${formatGBP(bIncTotal - bSpentTotal)}`;
           
-          // 3. VAT Collected
-          document.getElementById('dashTotalVatCollected').innerText = formatGBP(totalVatCollected);
-          
-          // 4. VAT Paid
-          document.getElementById('dashTotalVatPaid').innerText = formatGBP(bVatAmtTotal);
-          
-          // 5. VAT to Pay to HMRC
-          const liabilityEl = document.getElementById('dashNetVatLiability');
-          liabilityEl.innerText = formatGBP(netVatLiability);
-          liabilityEl.style.color = netVatLiability >= 0 ? 'var(--accent-rose)' : 'var(--accent-green)';
-          
-          // 6. Profit Forecast
           const varEl = document.getElementById('dashVariance');
           varEl.innerText = formatGBP(profitVariance);
           varEl.style.color = profitVariance >= 0 ? 'var(--accent-green)' : 'var(--accent-rose)';
-          
-          // 7. Actual Sales
+
           document.getElementById('dashActualRevenue').innerText = formatGBP(totalActualRevenue);
           document.getElementById('dashTicketCounts').innerHTML = `Tickets: <b>£${(actualSalesData.friRev + actualSalesData.satRev + actualSalesData.wkndRev).toLocaleString()}</b> | Bar: <b>£${(actualSalesData.barRev || 0).toLocaleString()}</b>`;
+
+          document.getElementById('dashTotalVatCollected').innerText = formatGBP(totalVatCollected);
+          document.getElementById('dashTotalVatPaid').innerText = formatGBP(bVatAmtTotal);
+          
+          const liabilityEl = document.getElementById('dashNetVatLiability');
+          liabilityEl.innerText = formatGBP(netVatLiability);
+          liabilityEl.style.color = netVatLiability >= 0 ? 'var(--accent-rose)' : 'var(--accent-green)';
 
           let revTableHtml = `
             <tr><td>Friday Event</td><td style="text-align:right;">${formatGBP(friTicketRev)}</td><td style="text-align:right;">${formatGBP(friBarTotal)}</td><td style="text-align:right; font-weight:bold;">${formatGBP(friTicketRev + friBarTotal)}</td></tr>
@@ -1795,13 +1929,7 @@
 
         const frontStageFilter = document.getElementById('frontStageFilter');
         const currentFilterVal = frontStageFilter ? frontStageFilter.value : "ALL";
-        
-        const officialStages = [
-          "Lighthouse (Main Stage)",
-          "Cactus (Live Stage)",
-          "The Causeway (DnB stage)",
-          "The Sand Bar (Disco stage)"
-        ];
+        const officialStages = ["Lighthouse (Main Stage)", "Cactus (Live Stage)", "The Causeway (DnB stage)", "The Sand Bar (Disco stage)"];
 
         if (frontStageFilter) {
           let filterHtml = `<option value="ALL">All Stages (${djData.length} Acts)</option>`;
@@ -1817,7 +1945,7 @@
           const filteredDjs = djData.filter(row => {
             const st = (row.stage || "Lighthouse (Main Stage)").trim();
             return selectedStage === "ALL" || st === selectedStage;
-          }).sort((a, b) => (a.stage || '').localeCompare(b.stage || ''));
+          });
 
           if (filteredDjs.length === 0) {
             dashStageBody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted); font-style:italic; padding: 16px;">No DJs or acts found.</td></tr>`;
@@ -1865,13 +1993,13 @@
           leadHtml += `<tr>
             <td style="font-weight:bold; color:var(--accent-blue);">${name}</td>
             <td style="text-align:center; font-weight:bold; color:${count > 0 ? 'var(--accent-rose)' : 'var(--text-muted)'};">${count} Outstanding</td>
-            <td style="text-align:right;"><span class="badge" style="${count > 0 ? 'background:rgba(225,29,72,0.15); color:#fda4af; border-color:var(--border-color);' : ''}">${count > 0 ? 'Action Needed' : 'Up to Date'}</span></td>
+            <td style="text-align:right;"><span class="badge">${count > 0 ? 'Action Needed' : 'Up to Date'}</span></td>
           </tr>`;
         }
         document.getElementById('leadWorkloadBody').innerHTML = leadHtml;
 
         const bBody = document.getElementById('budgetBody');
-        if (bBody && isAdmin) {
+        if (bBody && isDirector) {
           let bHtml = '';
           budgetData.forEach((row, idx) => {
             const netVal = parseFloat(row.net) || 0;
@@ -1911,7 +2039,7 @@
         }
 
         const tBody = document.getElementById('targetBody');
-        if (tBody && isAdmin) {
+        if (tBody && isDirector) {
           let tHtml = '';
           targetData.forEach((row, idx) => {
             const incPrice = parseFloat(row.price) || 0;
@@ -1935,7 +2063,7 @@
           });
           tHtml += `<tr class="total-row">
             <td colspan="2" style="text-transform: uppercase;">Total Sales Targets Summary</td>
-            <td style="text-align:center; color:var(--accent-blue); font-weight:bold;">${friTicketQty + satTicketQty + wkndTicketQty} Tickets (Excl. Parking)</td>
+            <td style="text-align:center; color:var(--accent-blue); font-weight:bold;">${friTicketQty + satTicketQty + wkndTicketQty} Tickets</td>
             <td colspan="3" style="text-align:right;">Calculated on Inclusive Prices:</td>
             <td style="text-align:right; color:var(--accent-green); font-weight:bold;">${formatGBP(totalSalesRevenue)}</td>
             <td></td>
@@ -1950,68 +2078,30 @@
           planData.forEach((row, idx) => {
             if (row.section) {
               currentSection = row.section;
-              const hasUncompleted = planData.some(r => !r.section && getTaskOriginalSection(r) === currentSection && !r.completed);
-              if (hasUncompleted) {
-                pHtml += `<tr class="section-row"><td colspan="10">📁 ${currentSection}</td></tr>`;
-              }
-            } else if (!row.completed) {
-              const rowSection = getTaskOriginalSection(row);
-              if (rowSection === currentSection) {
-                pHtml += `<tr>
-                  <td style="text-align:center;"><input type="checkbox" onchange="toggleTaskCompleted(${idx}, this)" ${row.completed ? 'checked' : ''} style="cursor:pointer; width:16px; height:16px;"></td>
-                  <td style="font-weight:600;">${row.task}</td>
-                  <td style="text-align:center;"><span class="badge" style="background:rgba(225,29,72,0.15); color:#fda4af; border-color:var(--border-color);">${row.p1 || '-'}</span></td>
-                  <td style="text-align:center;"><span class="badge" style="background:rgba(139,92,246,0.15); color:#c4b5fd; border-color:var(--border-color);">${row.p2 || '-'}</span></td>
-                  <td style="text-align:center; color:var(--text-muted);">${row.p3 || '-'}</td>
-                  <td style="color:var(--accent-amber); font-style:${row.update ? 'normal' : 'italic'};">${row.update || 'No update'}</td>
-                  <td style="color:var(--text-main);">${row.steps || '-'}</td>
-                  <td style="color:var(--text-muted);">${row.stepsOwner || '-'}</td>
-                  <td style="color:var(--text-muted); white-space:nowrap;">${row.stepsDate || '-'}</td>
-                  <td style="text-align:center;">
-                    <button class="edit-btn" onclick="openPlanModal(${idx})">Edit</button>
-                    ${isAdmin ? `<button class="edit-btn" onclick="deletePlanItem(${idx})" style="background:rgba(225,29,72,0.2); color:#fda4af; border-color:var(--border-color); margin-left:4px;">Del</button>` : ''}
-                  </td>
-                </tr>`;
-              }
-            }
-          });
-
-          const completedTasks = planData.map((r, i) => ({ ...r, originalIndex: i })).filter(r => !r.section && r.completed);
-          if (completedTasks.length > 0) {
-            pHtml += `<tr class="section-row" style="background:rgba(16,185,129,0.15); color:#a7f3d0;"><td colspan="10">✅ Completed Tasks (${completedTasks.length})</td></tr>`;
-            completedTasks.forEach(row => {
-              pHtml += `<tr class="completed-row">
-                <td style="text-align:center;"><input type="checkbox" onchange="toggleTaskCompleted(${row.originalIndex}, this)" checked style="cursor:pointer; width:16px; height:16px;"></td>
+              pHtml += `<tr class="section-row"><td colspan="10">📁 ${currentSection}</td></tr>`;
+            } else {
+              pHtml += `<tr>
+                <td style="text-align:center;"><input type="checkbox" onchange="toggleTaskCompleted(${idx}, this)" ${row.completed ? 'checked' : ''} style="cursor:pointer; width:16px; height:16px;"></td>
                 <td style="font-weight:600;">${row.task}</td>
                 <td style="text-align:center;"><span class="badge">${row.p1 || '-'}</span></td>
                 <td style="text-align:center;"><span class="badge">${row.p2 || '-'}</span></td>
-                <td style="text-align:center;">${row.p3 || '-'}</td>
-                <td>${row.update || '-'}</td>
-                <td>${row.steps || '-'}</td>
-                <td>${row.stepsOwner || '-'}</td>
-                <td style="white-space:nowrap;">${row.stepsDate || '-'}</td>
-                <td style="text-align:center;">
-                  <button class="edit-btn" onclick="openPlanModal(${row.originalIndex})">Edit</button>
-                  ${isAdmin ? `<button class="edit-btn" onclick="deletePlanItem(${row.originalIndex})" style="background:rgba(225,29,72,0.2); color:#fda4af; border-color:var(--border-color); margin-left:4px;">Del</button>` : ''}
-                </td>
+                <td style="text-align:center; color:var(--text-muted);">${row.p3 || '-'}</td>
+                <td style="color:var(--accent-amber);">${row.update || 'No update'}</td>
+                <td style="color:var(--text-main);">${row.steps || '-'}</td>
+                <td style="color:var(--text-muted);">${row.stepsOwner || '-'}</td>
+                <td style="color:var(--text-muted); white-space:nowrap;">${row.stepsDate || '-'}</td>
+                ${isDirector ? `<td style="text-align:center;">
+                  <button class="edit-btn" onclick="openPlanModal(${idx})">Edit</button>
+                  <button class="edit-btn" onclick="deletePlanItem(${idx})" style="background:rgba(225,29,72,0.2); color:#fda4af; border-color:var(--border-color); margin-left:4px;">Del</button>
+                </td>` : ''}
               </tr>`;
-            });
-          }
-
+            }
+          });
           pBody.innerHTML = pHtml;
         }
 
-        function getTaskOriginalSection(taskRow) {
-          let currentSec = "";
-          for (let r of planData) {
-            if (r.section) currentSec = r.section;
-            if (r === taskRow) return currentSec;
-          }
-          return "";
-        }
-
         const rBody = document.getElementById('rolesBody');
-        if (rBody && isAdmin) {
+        if (rBody && isDirector) {
           let rHtml = '';
           rolesData.forEach((row, idx) => {
             if (row.section) {
@@ -2041,7 +2131,7 @@
               <td style="font-weight:bold; color:var(--accent-rose);">${row.name}</td>
               <td><span class="badge">${row.type}</span></td>
               <td style="text-align:right;">${formatGBP(baseCost)}</td>
-              <td style="text-align:center;"><span class="badge ${row.vat === 'YES' ? 'badge-yes' : ''}">${row.vat}</span></td>
+              <td style="text-align:center;"><span class="badge">${row.vat}</span></td>
               <td style="text-align:right; color:var(--text-muted);">${formatGBP(vatAmount)}</td>
               <td style="text-align:right; font-weight:bold; color:var(--accent-green);">${formatGBP(totalIncCost)}</td>
               <td>${row.stage || '-'}</td>
@@ -2049,13 +2139,49 @@
               <td style="font-weight:600; color:var(--accent-blue);">${row.time || '-'}</td>
               <td>${row.drinks || '-'}</td>
               <td>${row.food || '-'}</td>
-              <td style="text-align:center;">
+              ${isDirector ? `<td style="text-align:center;">
                 <button class="edit-btn" onclick="openDjModal(${idx})">Edit</button>
                 <button class="edit-btn" onclick="deleteDjItem(${idx})" style="background:rgba(225,29,72,0.2); color:#fda4af; border-color:var(--border-color); margin-left:4px;">Del</button>
-              </td>
+              </td>` : ''}
             </tr>`;
           });
           djBody.innerHTML = djHtml;
+        }
+
+        // Build Admin Tab Content if Admin
+        if (isAdmin) {
+          const uBody = document.getElementById('adminUsersBody');
+          let uHtml = '';
+          for (const [key, reg] of Object.entries(usersRegistry)) {
+            const email = reg.email || key.replace(/_/g, '.');
+            const lastLog = reg.lastLogin ? new Date(reg.lastLogin).toLocaleString('en-GB') : 'Never';
+            const currentR = userRolesMap[key] || (email === 'james.dunn@ultrafunkula.co.uk' ? 'admin' : 'team');
+
+            uHtml += `<tr>
+              <td style="font-weight:bold; color:var(--accent-blue);">${email}</td>
+              <td style="color:var(--text-muted);">${lastLog}</td>
+              <td style="text-align:center;">
+                <select onchange="updateUserRoleFromAdmin('${key}', this)" style="padding:4px 8px;">
+                  <option value="admin" ${currentR === 'admin' ? 'selected' : ''}>Admin</option>
+                  <option value="director" ${currentR === 'director' ? 'selected' : ''}>Director</option>
+                  <option value="team" ${currentR === 'team' ? 'selected' : ''}>Team</option>
+                </select>
+              </td>
+              <td style="text-align:center;"><span class="badge">${currentR.toUpperCase()}</span></td>
+            </tr>`;
+          }
+          uBody.innerHTML = uHtml || `<tr><td colspan="4" style="text-align:center; color:var(--text-muted);">No registered users recorded yet.</td></tr>`;
+
+          const lBody = document.getElementById('auditLogsBody');
+          let lHtml = '';
+          auditLogsList.slice().reverse().forEach(log => {
+            lHtml += `<tr>
+              <td style="color:var(--text-muted); white-space:nowrap;">${log.timestamp}</td>
+              <td style="font-weight:bold; color:var(--accent-blue);">${log.email}</td>
+              <td>${log.action}</td>
+            </tr>`;
+          });
+          lBody.innerHTML = lHtml || `<tr><td colspan="3" style="text-align:center; color:var(--text-muted);">No audit logs recorded yet.</td></tr>`;
         }
 
       } catch (err) {
@@ -2086,6 +2212,7 @@
         barRev: parseFloat(document.getElementById('actBarRev').value) || 0
       };
       saveAllToFirebase();
+      logActivity(currentUserEmail, "Updated actual sales data");
       closeActualModal();
       buildTables();
     }
@@ -2120,6 +2247,7 @@
       if (idx === -1) targetData.push(newItem);
       else targetData[idx] = newItem;
       saveAllToFirebase();
+      logActivity(currentUserEmail, `Saved ticket target (${newItem.type})`);
       closeTargetModal();
       buildTables();
     }
@@ -2127,6 +2255,7 @@
       if (confirm('Delete this ticket target line?')) {
         targetData.splice(index, 1);
         saveAllToFirebase();
+        logActivity(currentUserEmail, "Deleted a ticket target");
         buildTables();
       }
     }
@@ -2134,6 +2263,7 @@
       if (confirm('Reset sales targets to default values?')) {
         targetData = [...defaultTargets];
         saveAllToFirebase();
+        logActivity(currentUserEmail, "Reset ticket targets");
         buildTables();
       }
     }
@@ -2166,6 +2296,7 @@
       if (idx === -1) sponsorshipData.push(newItem);
       else sponsorshipData[idx] = newItem;
       saveAllToFirebase();
+      logActivity(currentUserEmail, `Saved sponsorship (${newItem.company})`);
       closeSponsorshipModal();
       buildTables();
     }
@@ -2173,6 +2304,7 @@
       if (confirm('Delete this sponsorship item?')) {
         sponsorshipData.splice(index, 1);
         saveAllToFirebase();
+        logActivity(currentUserEmail, "Deleted sponsorship");
         buildTables();
       }
     }
@@ -2180,6 +2312,7 @@
       if (confirm('Reset sponsorships to default values?')) {
         sponsorshipData = [...defaultSponsorships];
         saveAllToFirebase();
+        logActivity(currentUserEmail, "Reset sponsorships");
         buildTables();
       }
     }
@@ -2208,6 +2341,7 @@
       planData[idx].stepsOwner = document.getElementById('pModalStepsOwner').value;
       planData[idx].stepsDate = document.getElementById('pModalStepsDate').value;
       saveAllToFirebase();
+      logActivity(currentUserEmail, `Updated project task "${planData[idx].task}"`);
       closePlanModal();
       buildTables();
     }
@@ -2253,14 +2387,17 @@
       }
 
       saveAllToFirebase();
+      logActivity(currentUserEmail, `Added new task "${taskName}" under ${section}`);
       closePlanAddModal();
       buildTables();
     }
 
     function deletePlanItem(index) {
       if (confirm('Delete this task?')) {
+        const name = planData[index].task;
         planData.splice(index, 1);
         saveAllToFirebase();
+        logActivity(currentUserEmail, `Deleted task "${name}"`);
         buildTables();
       }
     }
@@ -2268,6 +2405,7 @@
       if (confirm('Reset project plan?')) {
         planData = [...defaultPlan];
         saveAllToFirebase();
+        logActivity(currentUserEmail, "Reset project plan");
         buildTables();
       }
     }
@@ -2288,6 +2426,7 @@
       rolesData[idx].m2 = document.getElementById('rModalM2').value;
       rolesData[idx].m3 = document.getElementById('rModalM3').value;
       saveAllToFirebase();
+      logActivity(currentUserEmail, `Updated role assignment for "${rolesData[idx].task}"`);
       closeRolesModal();
       buildTables();
     }
@@ -2295,6 +2434,7 @@
       if (confirm('Reset roles?')) {
         rolesData = [...defaultRoles];
         saveAllToFirebase();
+        logActivity(currentUserEmail, "Reset roles matrix");
         buildTables();
       }
     }
@@ -2351,14 +2491,17 @@
       else djData[idx] = newAct;
       
       saveAllToFirebase();
+      logActivity(currentUserEmail, `Saved act/DJ "${newAct.name}"`);
       closeDjModal();
       buildTables();
     }
 
     function deleteDjItem(index) {
       if (confirm('Delete this act?')) {
+        const name = djData[index].name;
         djData.splice(index, 1);
         saveAllToFirebase();
+        logActivity(currentUserEmail, `Deleted act "${name}"`);
         buildTables();
       }
     }
@@ -2366,12 +2509,13 @@
       if (confirm('Reset DJs?')) {
         djData = [...defaultDjs];
         saveAllToFirebase();
+        logActivity(currentUserEmail, "Reset DJs line-up");
         buildTables();
       }
     }
 
     function exportToJSON() {
-      const payload = { actualSalesData, budgetData, targetData, sponsorshipData, planData, rolesData, djData, notesData, barMultipliers };
+      const payload = { actualSalesData, budgetData, targetData, sponsorshipData, planData, rolesData, djData, notesData, barMultipliers, userRoles: userRolesMap, usersRegistry };
       const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -2399,7 +2543,10 @@
           if (imported.djData) djData = imported.djData;
           if (imported.notesData) notesData = imported.notesData;
           if (imported.barMultipliers) barMultipliers = imported.barMultipliers;
+          if (imported.userRoles) userRolesMap = imported.userRoles;
+          if (imported.usersRegistry) usersRegistry = imported.usersRegistry;
           saveAllToFirebase();
+          logActivity(currentUserEmail, "Restored dashboard from backup JSON");
           buildTables();
         } catch (err) { alert('Invalid backup file.'); }
       };
