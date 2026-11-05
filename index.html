@@ -25,35 +25,56 @@
       --accent-amber: #f59e0b;
       --accent-green: #10b981;
       --accent-blue: #38bdf8;
+      --header-bg: #1e293b;
+      --input-bg: #0f172a;
+      --table-stripe: #334155;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+
+    /* LIGHT THEME OVERRIDES */
+    html.light-theme {
+      --bg-color: #f1f5f9;
+      --card-bg: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border-color: #cbd5e1;
+      --accent-rose: #dc2626;
+      --accent-purple: #7c3aed;
+      --accent-amber: #d97706;
+      --accent-green: #059669;
+      --accent-blue: #0284c7;
+      --header-bg: #ffffff;
+      --input-bg: #f8fafc;
+      --table-stripe: #e2e8f0;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; transition: background-color 0.2s ease, color 0.2s ease; }
     body { background-color: var(--bg-color); color: var(--text-main); min-height: 100vh; padding-bottom: 40px; }
     
-    header { background: #1e293b; border-bottom: 1px solid var(--border-color); padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+    header { background: var(--header-bg); border-bottom: 1px solid var(--border-color); padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
     .header-branding { display: flex; align-items: center; gap: 14px; }
     .header-logo { width: 44px; height: 44px; object-fit: cover; border-radius: 50%; border: 2px solid var(--border-color); }
     .header-title h1 { font-size: 20px; font-weight: 800; color: var(--text-main); letter-spacing: 0.5px; }
     .header-title p { font-size: 12px; color: var(--text-muted); }
     .header-controls { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-    .countdown-box { background: #0f172a; border: 1px solid var(--border-color); padding: 6px 14px; font-family: monospace; font-size: 13px; border-radius: 8px; color: var(--text-main); }
+    .countdown-box { background: var(--input-bg); border: 1px solid var(--border-color); padding: 6px 14px; font-family: monospace; font-size: 13px; border-radius: 8px; color: var(--text-main); }
     .countdown-box span { color: var(--accent-amber); font-weight: bold; }
     
-    select, button, input, textarea { background: #0f172a; color: var(--text-main); border: 1px solid var(--border-color); padding: 6px 12px; border-radius: 6px; font-size: 12px; }
+    select, button, input, textarea { background: var(--input-bg); color: var(--text-main); border: 1px solid var(--border-color); padding: 6px 12px; border-radius: 6px; font-size: 12px; }
     button { cursor: pointer; }
-    button:hover { background: #334155; }
+    button:hover { opacity: 0.9; }
 
-    .io-btn { background: #334155; border: 1px solid var(--border-color); font-weight: 600; padding: 6px 10px; border-radius: 6px; font-size: 11px; display: flex; align-items: center; gap: 4px; color: var(--text-main); }
-    .io-btn:hover { background: #475569; }
+    .io-btn { background: var(--border-color); border: 1px solid var(--border-color); font-weight: 600; padding: 6px 10px; border-radius: 6px; font-size: 11px; display: flex; align-items: center; gap: 4px; color: var(--text-main); }
+    .io-btn:hover { opacity: 0.8; }
 
-    nav { background: #1e293b; border-bottom: 1px solid var(--border-color); padding: 0 24px; display: flex; gap: 8px; flex-wrap: wrap; }
+    nav { background: var(--header-bg); border-bottom: 1px solid var(--border-color); padding: 0 24px; display: flex; gap: 8px; flex-wrap: wrap; }
     .tab-btn { background: none; border: none; color: var(--text-muted); padding: 14px 14px; font-size: 12px; font-weight: 600; cursor: pointer; border-bottom: 3px solid transparent; }
-    .tab-btn.active { color: var(--accent-blue); border-bottom-color: var(--accent-blue); background: #0f172a; }
+    .tab-btn.active { color: var(--accent-blue); border-bottom-color: var(--accent-blue); background: var(--bg-color); }
 
     main { max-width: 1450px; margin: 24px auto; padding: 0 20px; }
     .tab-content { display: none; }
     .tab-content.active { display: block; }
 
-    .unified-summary-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 24px; margin-bottom: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+    .unified-summary-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 24px; margin-bottom: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
     .unified-summary-header { font-size: 16px; font-weight: 800; color: var(--accent-blue); margin-bottom: 18px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
     .unified-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 16px; }
     .unified-grid-bottom { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
@@ -61,31 +82,28 @@
       .unified-grid { grid-template-columns: repeat(2, 1fr); }
       .unified-grid-bottom { grid-template-columns: repeat(1, 1fr); }
     }
-    .summary-item { background: #0f172a; border: 1px solid var(--border-color); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between; }
+    .summary-item { background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between; }
     .summary-item p { font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 700; letter-spacing: 0.5px; margin-bottom: 6px; }
     .summary-item h3 { font-size: 22px; font-weight: 800; color: var(--text-main); }
     .summary-item .sub-text { font-size: 10px; color: var(--text-muted); margin-top: 6px; }
 
     .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 20px; margin-bottom: 24px; }
 
-    .table-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-    .table-header { padding: 16px 20px; border-bottom: 1px solid var(--border-color); font-weight: bold; font-size: 15px; display: flex; justify-content: space-between; align-items: center; background: #1e293b; flex-wrap: wrap; gap: 10px; }
+    .table-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .table-header { padding: 16px 20px; border-bottom: 1px solid var(--border-color); font-weight: bold; font-size: 15px; display: flex; justify-content: space-between; align-items: center; background: var(--header-bg); flex-wrap: wrap; gap: 10px; }
     .table-wrap { overflow-x: auto; width: 100%; }
     table { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; }
-    th { background: #0f172a; color: var(--text-muted); text-transform: uppercase; font-size: 11px; padding: 12px 14px; border-bottom: 1px solid var(--border-color); white-space: nowrap; font-weight: 700; }
+    th { background: var(--input-bg); color: var(--text-muted); text-transform: uppercase; font-size: 11px; padding: 12px 14px; border-bottom: 1px solid var(--border-color); white-space: nowrap; font-weight: 700; }
     td { padding: 10px 14px; border-bottom: 1px solid var(--border-color); color: var(--text-main); }
-    tr.section-row td { background: #334155; font-weight: bold; color: var(--accent-blue); font-size: 13px; }
-    tr.total-row td { background: #0f172a !important; font-weight: bold; color: var(--text-main); border-top: 2px solid var(--border-color); }
+    tr.section-row td { background: var(--table-stripe); font-weight: bold; color: var(--accent-blue); font-size: 13px; }
+    tr.total-row td { background: var(--input-bg) !important; font-weight: bold; color: var(--text-main); border-top: 2px solid var(--border-color); }
     
-    .badge { padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; background: #0f172a; color: var(--text-main); display: inline-block; border: 1px solid var(--border-color); }
-    .badge-yes { background: rgba(245, 158, 11, 0.15); color: #fcd34d; border-color: #f59e0b; }
-    .badge-booked { background: rgba(225, 29, 72, 0.15); color: #fda4af; border-color: #e11d48; }
-    .badge-avail { background: rgba(16, 185, 129, 0.15); color: #a7f3d0; border-color: #10b981; }
+    .badge { padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; background: var(--input-bg); color: var(--text-main); display: inline-block; border: 1px solid var(--border-color); }
     
-    .action-btn { background: var(--accent-blue); color: #0f172a; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; }
-    .action-btn:hover { background: #0ea5e9; }
-    .edit-btn { background: #0f172a; color: var(--text-main); border: 1px solid var(--border-color); padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 600; }
-    .edit-btn:hover { background: #334155; }
+    .action-btn { background: var(--accent-blue); color: #fff; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+    .action-btn:hover { opacity: 0.9; }
+    .edit-btn { background: var(--input-bg); color: var(--text-main); border: 1px solid var(--border-color); padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 600; }
+    .edit-btn:hover { background: var(--border-color); }
 
     /* Timeline Styles */
     .timeline-container { padding: 20px; overflow-x: auto; }
@@ -93,33 +111,32 @@
     .timeline-month-col { flex: 1; text-align: center; border-right: 1px dashed var(--border-color); padding: 0 4px; }
     .timeline-task-row { display: flex; align-items: center; border-bottom: 1px solid var(--border-color); padding: 8px 0; font-size: 12px; }
     .timeline-task-name { width: 260px; font-weight: 600; padding-right: 12px; flex-shrink: 0; }
-    .timeline-track { flex-grow: 1; background: #0f172a; border: 1px solid var(--border-color); height: 26px; border-radius: 4px; position: relative; display: flex; }
+    .timeline-track { flex-grow: 1; background: var(--input-bg); border: 1px solid var(--border-color); height: 26px; border-radius: 4px; position: relative; display: flex; }
     .timeline-grid-line { flex: 1; border-right: 1px dashed var(--border-color); height: 100%; }
-    .timeline-bar { height: 100%; border-radius: 3px; position: absolute; display: flex; align-items: center; padding: 0 8px; color: white; font-size: 10px; font-weight: bold; white-space: nowrap; box-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+    .timeline-bar { height: 100%; border-radius: 3px; position: absolute; display: flex; align-items: center; padding: 0 8px; color: white; font-size: 10px; font-weight: bold; white-space: nowrap; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
 
     /* Ideas Board */
     .notes-board-grid { display: grid; grid-template-columns: 320px 1fr; gap: 20px; padding: 20px; }
     @media(max-width: 900px) { .notes-board-grid { grid-template-columns: 1fr; } }
-    .note-form-card { background: #0f172a; border: 1px solid var(--border-color); border-radius: 10px; padding: 16px; height: fit-content; }
-    .note-card { background: #1e293b; border: 1px solid var(--border-color); border-radius: 10px; padding: 16px; margin-bottom: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+    .note-form-card { background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 16px; height: fit-content; }
+    .note-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 16px; margin-bottom: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
 
     /* Login Modal Overlay */
     #loginOverlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(4px); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; }
     .login-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 32px; width: 100%; max-width: 400px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4); }
     .login-card h2 { font-size: 18px; font-weight: 800; color: var(--accent-blue); margin-bottom: 6px; text-align: center; }
     .login-card p { font-size: 12px; color: var(--text-muted); margin-bottom: 20px; text-align: center; }
-    .login-card input { width: 100%; padding: 10px 14px; font-size: 13px; margin-bottom: 12px; border-radius: 8px; border: 1px solid var(--border-color); background: #0f172a; color: var(--text-main); }
-    .login-card button { width: 100%; padding: 10px; font-weight: bold; background: var(--accent-blue); color: #0f172a; border: none; border-radius: 8px; font-size: 13px; cursor: pointer; }
-    .login-card button:hover { background: #0ea5e9; }
+    .login-card input { width: 100%; padding: 10px 14px; font-size: 13px; margin-bottom: 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-main); }
+    .login-card button { width: 100%; padding: 10px; font-weight: bold; background: var(--accent-blue); color: #fff; border: none; border-radius: 8px; font-size: 13px; cursor: pointer; }
     #loginError { color: var(--accent-rose); font-size: 11px; margin-top: 10px; text-align: center; display: none; }
 
     /* Modal */
     .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 10000; align-items: center; justify-content: center; padding: 20px; }
     .modal.active { display: flex !important; }
-    .modal-box { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; width: 100%; max-width: 600px; padding: 24px; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+    .modal-box { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; width: 100%; max-width: 600px; padding: 24px; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.3); color: var(--text-main); }
     .form-group { margin-bottom: 12px; }
     .form-group label { display: block; font-size: 11px; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; }
-    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 8px 12px; background: #0f172a; border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-main); font-size: 12px; }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 8px 12px; background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-main); font-size: 12px; }
   </style>
 </head>
 <body>
@@ -157,7 +174,7 @@
       </div>
       
       <!-- HUMAN VERIFICATION CAPTCHA -->
-      <div class="form-group" style="background: #0f172a; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
+      <div class="form-group" style="background: var(--input-bg); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
         <label style="color: var(--accent-amber); font-weight: bold; margin-bottom: 6px;">🛡️ Human Verification (Anti-Bot)</label>
         <div id="captchaQuestion" style="font-size: 13px; font-weight: bold; margin-bottom: 6px;">What is 4 + 3?</div>
         <input type="number" id="captchaAnswer" placeholder="Enter answer..." required>
@@ -166,7 +183,7 @@
       <div id="signupError" style="color: var(--accent-rose); font-size: 11px; margin-bottom: 10px; display: none;"></div>
 
       <div style="display: flex; gap: 8px; margin-top: 16px;">
-        <button type="button" id="closeSignupBtn" style="background: #0f172a; flex: 1; padding: 8px;">Cancel</button>
+        <button type="button" id="closeSignupBtn" style="background: var(--input-bg); flex: 1; padding: 8px;">Cancel</button>
         <button type="button" id="submitSignupBtn" class="action-btn" style="flex: 1; padding: 8px;">Register</button>
       </div>
     </div>
@@ -183,6 +200,8 @@
     </div>
     
     <div class="header-controls">
+      <button onclick="toggleTheme()" class="io-btn" id="themeToggleBtn" title="Switch Light/Dark Theme">🌙 Theme</button>
+
       <div id="syncStatus" style="font-size: 11px; font-weight: bold; color: var(--accent-amber); background: rgba(245, 158, 11, 0.15); padding: 4px 10px; border-radius: 6px; border: 1px solid var(--border-color);">
         Connecting Live...
       </div>
@@ -195,10 +214,10 @@
       <button onclick="triggerImport()" class="io-btn">📤 Restore JSON</button>
       <input type="file" id="jsonFileInput" accept=".json" style="display:none;" onchange="importFromJSON(event)">
       
-      <div style="display: flex; align-items: center; gap: 8px; background: #0f172a; padding: 4px 10px; border-radius: 6px; border: 1px solid var(--border-color);">
+      <div style="display: flex; align-items: center; gap: 8px; background: var(--input-bg); padding: 4px 10px; border-radius: 6px; border: 1px solid var(--border-color);">
         <span id="loggedInUserDisplay" style="font-size: 11px; font-weight: bold; color: var(--accent-blue);">User</span>
         <span id="loggedInRoleDisplay" class="badge" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; border-color: #38bdf8;">Role</span>
-        <button onclick="handleLogout()" style="background: rgba(225, 29, 72, 0.2); color: #fda4af; border: 1px solid var(--border-color); padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: bold;">Log Out</button>
+        <button onclick="handleLogout()" style="background: rgba(225, 29, 72, 0.2); color: var(--accent-rose); border: 1px solid var(--border-color); padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: bold;">Log Out</button>
       </div>
     </div>
   </header>
@@ -220,39 +239,39 @@
     <!-- TAB 1: EXECUTIVE DASHBOARD -->
     <div id="tab-dash" class="tab-content active">
       
-      <!-- UNIFIED SUMMARY BLOCK -->
+      <!-- UNIFIED SUMMARY BLOCK (VISIBLE TO ALL USERS, SHOWS TICKET SALES ONLY IN CARD #4) -->
       <div class="unified-summary-card" id="adminSummaryBlock">
         <div class="unified-summary-header">
-          <span>📊 Executive Financial & VAT Summary</span>
+          <span id="summaryCardTitle">📊 Executive Financial & VAT Summary</span>
           <button onclick="openActualModal()" class="edit-btn" id="logActualsBtn">+ Log Actuals</button>
         </div>
         
-        <!-- Top Row: Total Forecasted Income, Budget, Profit, Current Sales -->
+        <!-- Top Row: Total Forecasted Income, Budget, Profit, Actual Ticket Sales -->
         <div class="unified-grid">
-          <div class="summary-item">
+          <div class="summary-item" id="sumBox1">
             <p>1. Total Forecasted Income</p>
             <h3 id="dashTotalIncome" style="color: var(--accent-blue);">£0.00</h3>
             <div class="sub-text">Tickets + Bar + Sponsorship</div>
           </div>
-          <div class="summary-item">
+          <div class="summary-item" id="sumBox2">
             <p>2. Budget Allocation</p>
             <h3 id="dashBudInc" style="color: var(--accent-purple);">£0.00</h3>
             <div id="dashBudSpent" class="sub-text">Spent: £0.00 | Remaining: £0.00</div>
           </div>
-          <div class="summary-item">
+          <div class="summary-item" id="sumBox3">
             <p>3. Profit Forecast</p>
             <h3 id="dashVariance">£0.00</h3>
             <div class="sub-text">Income - Budget - VAT to Pay to HMRC</div>
           </div>
           <div class="summary-item">
-            <p>4. Actual Sales</p>
+            <p>4. Actual Ticket Sales</p>
             <h3 id="dashActualRevenue" style="color: var(--accent-green);">£0.00</h3>
-            <div id="dashTicketCounts" class="sub-text">Tickets: £0 | Bar: £0</div>
+            <div id="dashTicketCounts" class="sub-text">Qty Sold: 0 Tickets</div>
           </div>
         </div>
 
-        <!-- Bottom Row: VAT Collected, VAT Paid, VAT due to HMRC -->
-        <div class="unified-grid-bottom">
+        <!-- Bottom Row: VAT Collected, VAT Paid, VAT due to HMRC (Director/Admin only) -->
+        <div class="unified-grid-bottom" id="vatSummaryBottomRow">
           <div class="summary-item">
             <p>5. VAT Collected</p>
             <h3 id="dashTotalVatCollected" style="color: var(--accent-amber);">£0.00</h3>
@@ -294,11 +313,11 @@
           <div class="table-header">📋 Project Plan Task & Lead Status Overview</div>
           <div style="padding: 16px;">
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
-              <div style="background: #0f172a; border: 1px solid var(--border-color); border-radius: 8px; padding: 12px;">
+              <div style="background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px;">
                 <p style="font-size: 10px; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">Total Tasks Outstanding</p>
                 <h3 id="projTotalTasks" style="font-size: 18px; font-weight: 800; color: var(--accent-rose); margin-top: 4px;">0 Tasks</h3>
               </div>
-              <div style="background: #0f172a; border: 1px solid var(--border-color); border-radius: 8px; padding: 12px;">
+              <div style="background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px;">
                 <p style="font-size: 10px; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">Active Progress Completion</p>
                 <h3 id="projProgressRate" style="font-size: 18px; font-weight: 800; color: var(--accent-green); margin-top: 4px;">0%</h3>
               </div>
@@ -375,7 +394,7 @@
           <span>Festival Budget Line Items (Directly Editable)</span>
           <div style="display: flex; gap: 8px;" id="budgetActionBtns">
             <button class="action-btn" onclick="openBudgetModal(-1)">+ Add Item</button>
-            <button onclick="resetBudget()" style="background: #0f172a; color: var(--text-main); border: 1px solid var(--border-color); padding: 6px 10px; border-radius: 6px;">Reset Default</button>
+            <button onclick="resetBudget()" style="background: var(--input-bg); color: var(--text-main); border: 1px solid var(--border-color); padding: 6px 10px; border-radius: 6px;">Reset Default</button>
           </div>
         </div>
         <div class="table-wrap">
@@ -403,9 +422,9 @@
     <div id="tab-target" class="tab-content">
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 20px; margin-bottom: 24px;">
         
-        <div style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; flex-direction: column; justify-content: space-between;">
+        <div style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between;">
           <p style="color: var(--accent-blue); font-size: 13px; font-weight: 800; margin-bottom: 12px; text-transform: uppercase;">🎫 Total Ticket Sales (Daily Breakdown)</p>
-          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 14px; text-align: center; background: #0f172a; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 14px; text-align: center; background: var(--input-bg); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
             <div>
               <span style="font-size: 10px; color: var(--text-muted); display: block; text-transform: uppercase; font-weight: bold;">Friday</span>
               <span id="blockFriTicket" style="font-size: 14px; font-weight: bold; color: var(--accent-blue);">£0.00</span>
@@ -430,9 +449,9 @@
           </div>
         </div>
 
-        <div style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; flex-direction: column; justify-content: space-between;">
+        <div style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between;">
           <p style="color: var(--accent-amber); font-size: 13px; font-weight: 800; margin-bottom: 12px; text-transform: uppercase;">🍻 Bar Spend & Grand Total (Daily Breakdown)</p>
-          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 14px; text-align: center; background: #0f172a; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 14px; text-align: center; background: var(--input-bg); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
             <div>
               <span style="font-size: 10px; color: var(--text-muted); display: block; text-transform: uppercase; font-weight: bold;">Fri Bar</span>
               <span id="blockFriBar" style="font-size: 14px; font-weight: bold; color: var(--accent-amber);">£0.00</span>
@@ -466,7 +485,7 @@
           <span>🤝 Sponsorship & Partner Income (Editable)</span>
           <div style="display: flex; gap: 8px;" id="sponsorshipActionBtns">
             <button class="action-btn" onclick="openSponsorshipModal(-1)">+ Add Sponsorship</button>
-            <button onclick="resetSponsorships()" style="background: #0f172a; color: var(--text-main); border: 1px solid var(--border-color); padding: 6px 10px; border-radius: 6px;">Reset Default</button>
+            <button onclick="resetSponsorships()" style="background: var(--input-bg); color: var(--text-main); border: 1px solid var(--border-color); padding: 6px 10px; border-radius: 6px;">Reset Default</button>
           </div>
         </div>
         <div class="table-wrap">
@@ -492,17 +511,17 @@
           <span style="font-size: 11px; color: var(--text-muted); font-weight: normal;">Multiplier × Ticket Quantities (Excl. Parking)</span>
         </div>
         <div style="padding: 16px; display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px;">
-          <div style="background: #0f172a; border: 1px solid var(--border-color); border-radius: 8px; padding: 14px;">
+          <div style="background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 14px;">
             <label style="font-size: 11px; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 6px;">Friday Bar Spend per Ticket (£)</label>
             <input type="number" step="0.50" id="friBarMultiplier" value="35.00" onchange="updateBarMultiplier(this, 'Friday')" style="font-size: 16px; font-weight: bold; width: 100%;">
             <div id="friBarCalcOutput" style="font-size: 11px; color: var(--accent-green); margin-top: 6px;">Calculated Bar Total: £0.00</div>
           </div>
-          <div style="background: #0f172a; border: 1px solid var(--border-color); border-radius: 8px; padding: 14px;">
+          <div style="background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 14px;">
             <label style="font-size: 11px; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 6px;">Saturday Bar Spend per Ticket (£)</label>
             <input type="number" step="0.50" id="satBarMultiplier" value="65.00" onchange="updateBarMultiplier(this, 'Saturday')" style="font-size: 16px; font-weight: bold; width: 100%;">
             <div id="satBarCalcOutput" style="font-size: 11px; color: var(--accent-green); margin-top: 6px;">Calculated Bar Total: £0.00</div>
           </div>
-          <div style="background: #0f172a; border: 1px solid var(--border-color); border-radius: 8px; padding: 14px;">
+          <div style="background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 14px;">
             <label style="font-size: 11px; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 6px;">Weekend Bar Spend per Ticket (£)</label>
             <input type="number" step="0.50" id="wkndBarMultiplier" value="100.00" onchange="updateBarMultiplier(this, 'Weekend')" style="font-size: 16px; font-weight: bold; width: 100%;">
             <div id="wkndBarCalcOutput" style="font-size: 11px; color: var(--accent-green); margin-top: 6px;">Calculated Bar Total: £0.00</div>
@@ -515,7 +534,7 @@
           <span>Sales Target & Ticket Pricing Matrix (Editable)</span>
           <div style="display: flex; gap: 8px;" id="targetActionBtns">
             <button class="action-btn" onclick="openTargetModal(-1)">+ Add Ticket Target</button>
-            <button onclick="resetTargets()" style="background: #0f172a; color: var(--text-main); border: 1px solid var(--border-color); padding: 6px 10px; border-radius: 6px;">Reset Default</button>
+            <button onclick="resetTargets()" style="background: var(--input-bg); color: var(--text-main); border: 1px solid var(--border-color); padding: 6px 10px; border-radius: 6px;">Reset Default</button>
           </div>
         </div>
         <div class="table-wrap">
@@ -545,7 +564,7 @@
           <span>Project Plan & Operational Tasks (Editable & Checkable)</span>
           <div style="display: flex; gap: 8px;" id="planActionBtns">
             <button class="action-btn" onclick="openPlanAddModal()">+ Add Task / Project</button>
-            <button onclick="resetPlan()" style="background: #0f172a; color: var(--text-main); border: 1px solid var(--border-color); padding: 6px 10px; border-radius: 6px;">Reset Default</button>
+            <button onclick="resetPlan()" style="background: var(--input-bg); color: var(--text-main); border: 1px solid var(--border-color); padding: 6px 10px; border-radius: 6px;">Reset Default</button>
           </div>
         </div>
         <div class="table-wrap">
@@ -599,7 +618,7 @@
       <div class="table-card">
         <div class="table-header">
           <span>Roles & Responsibilities Matrix (Editable)</span>
-          <button onclick="resetRoles()" style="background: #0f172a; color: var(--text-main); border: 1px solid var(--border-color); padding: 6px 10px; border-radius: 6px;" id="resetRolesBtn">Reset Default</button>
+          <button onclick="resetRoles()" style="background: var(--input-bg); color: var(--text-main); border: 1px solid var(--border-color); padding: 6px 10px; border-radius: 6px;" id="resetRolesBtn">Reset Default</button>
         </div>
         <div class="table-wrap">
           <table>
@@ -625,7 +644,7 @@
           <span>📅 Stage & Time Availability Calendar At-A-Glance</span>
           <div style="display: flex; gap: 6px;">
             <button onclick="switchCalDay('Friday 30th July')" id="calBtnFri" class="action-btn" style="padding: 4px 10px; font-size: 11px;">Friday 30th July</button>
-            <button onclick="switchCalDay('Saturday 31st July')" id="calBtnSat" class="action-btn" style="background: #0f172a; color: var(--text-main); border: 1px solid var(--border-color); padding: 4px 10px; font-size: 11px;">Saturday 31st July</button>
+            <button onclick="switchCalDay('Saturday 31st July')" id="calBtnSat" class="action-btn" style="background: var(--input-bg); color: var(--text-main); border: 1px solid var(--border-color); padding: 4px 10px; font-size: 11px;">Saturday 31st July</button>
           </div>
         </div>
         <div class="table-wrap">
@@ -649,7 +668,7 @@
           <span>DJs & Production Line-Up (Editable)</span>
           <div style="display: flex; gap: 8px;" id="djActionBtns">
             <button class="action-btn" onclick="openDjModal(-1)">+ Add Act</button>
-            <button onclick="resetDjs()" style="background: #0f172a; color: var(--text-main); border: 1px solid var(--border-color); padding: 6px 10px; border-radius: 6px;">Reset Default</button>
+            <button onclick="resetDjs()" style="background: var(--input-bg); color: var(--text-main); border: 1px solid var(--border-color); padding: 6px 10px; border-radius: 6px;">Reset Default</button>
           </div>
         </div>
         <div class="table-wrap">
@@ -750,7 +769,7 @@
       <div class="table-card">
         <div class="table-header">
           <span>📜 System Activity & Change Log</span>
-          <button onclick="clearAuditLogs()" class="edit-btn" style="background: rgba(225,29,72,0.2); color:#fda4af; border-color:var(--border-color);">Clear Logs</button>
+          <button onclick="clearAuditLogs()" class="edit-btn" style="background: rgba(225,29,72,0.2); color:var(--accent-rose); border-color:var(--border-color);">Clear Logs</button>
         </div>
         <div class="table-wrap" style="max-height: 400px; overflow-y: auto;">
           <table>
@@ -790,7 +809,7 @@
         <input type="number" step="0.01" id="actBarRev">
       </div>
       <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px;">
-        <button type="button" onclick="closeActualModal()" style="background: #0f172a;">Cancel</button>
+        <button type="button" onclick="closeActualModal()" style="background: var(--input-bg);">Cancel</button>
         <button type="button" onclick="saveActualSales()" class="action-btn">Save Actuals</button>
       </div>
     </div>
@@ -813,7 +832,7 @@
         <div><label>Price inc VAT (£)</label><input type="number" step="0.01" id="tModalPrice" required></div>
       </div>
       <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px;">
-        <button type="button" onclick="closeTargetModal()" style="background: #0f172a;">Cancel</button>
+        <button type="button" onclick="closeTargetModal()" style="background: var(--input-bg);">Cancel</button>
         <button type="button" onclick="saveTargetItem()" class="action-btn">Save Ticket Target</button>
       </div>
     </div>
@@ -836,7 +855,7 @@
         <input type="number" step="0.01" id="sModalAmount" placeholder="17500.00" required>
       </div>
       <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px;">
-        <button type="button" onclick="closeSponsorshipModal()" style="background: #0f172a;">Cancel</button>
+        <button type="button" onclick="closeSponsorshipModal()" style="background: var(--input-bg);">Cancel</button>
         <button type="button" onclick="saveSponsorshipItem()" class="action-btn">Save Sponsorship</button>
       </div>
     </div>
@@ -846,7 +865,7 @@
     <div class="modal-box">
       <h3 style="margin-bottom: 16px; font-size: 16px; font-weight: bold; color: var(--accent-blue);">Edit Task Status</h3>
       <input type="hidden" id="planEditIndex">
-      <div class="form-group"><label>Task</label><input type="text" id="pModalTask" disabled style="color: var(--text-muted); background: #0f172a;"></div>
+      <div class="form-group"><label>Task</label><input type="text" id="pModalTask" disabled style="color: var(--text-muted); background: var(--input-bg);"></div>
       <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
         <div><label>Lead 1</label><input type="text" id="pModalP1"></div>
         <div><label>Lead 2</label><input type="text" id="pModalP2"></div>
@@ -859,7 +878,7 @@
         <div><label>Next Steps Date</label><input type="text" id="pModalStepsDate" placeholder="e.g. 1st Feb 2027"></div>
       </div>
       <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px;">
-        <button type="button" onclick="closePlanModal()" style="background: #0f172a;">Cancel</button>
+        <button type="button" onclick="closePlanModal()" style="background: var(--input-bg);">Cancel</button>
         <button type="button" onclick="savePlanItem()" class="action-btn">Save Changes</button>
       </div>
     </div>
@@ -894,7 +913,7 @@
         <div><label>Next Steps Date</label><input type="text" id="pAddStepsDate" placeholder="e.g. 15th Feb 2027"></div>
       </div>
       <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px;">
-        <button type="button" onclick="closePlanAddModal()" style="background: #0f172a;">Cancel</button>
+        <button type="button" onclick="closePlanAddModal()" style="background: var(--input-bg);">Cancel</button>
         <button type="button" onclick="saveNewPlanItem()" class="action-btn">Add Task</button>
       </div>
     </div>
@@ -904,14 +923,14 @@
     <div class="modal-box">
       <h3 style="margin-bottom: 16px; font-size: 16px; font-weight: bold; color: var(--accent-blue);">Edit Role Assignment</h3>
       <input type="hidden" id="rolesEditIndex">
-      <div class="form-group"><label>Area / Task</label><input type="text" id="rModalTask" disabled style="color: var(--text-muted); background: #0f172a;"></div>
+      <div class="form-group"><label>Area / Task</label><input type="text" id="rModalTask" disabled style="color: var(--text-muted); background: var(--input-bg);"></div>
       <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
         <div><label>Management Lead (1)</label><input type="text" id="rModalM1"></div>
         <div><label>Secondary Lead (2)</label><input type="text" id="rModalM2"></div>
         <div><label>Support (3)</label><input type="text" id="rModalM3"></div>
       </div>
       <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px;">
-        <button type="button" onclick="closeRolesModal()" style="background: #0f172a;">Cancel</button>
+        <button type="button" onclick="closeRolesModal()" style="background: var(--input-bg);">Cancel</button>
         <button type="button" onclick="saveRolesItem()" class="action-btn">Save Changes</button>
       </div>
     </div>
@@ -972,7 +991,7 @@
         </div>
       </div>
       <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px;">
-        <button type="button" onclick="closeDjModal()" style="background: #0f172a;">Cancel</button>
+        <button type="button" onclick="closeDjModal()" style="background: var(--input-bg);">Cancel</button>
         <button type="button" onclick="saveDjItem()" class="action-btn">Save Act</button>
       </div>
     </div>
@@ -1007,6 +1026,28 @@
     let usersRegistry = {};
     let auditLogsList = [];
     let currentCaptchaSolution = 7;
+
+    // THEME TOGGLE LOGIC
+    function toggleTheme() {
+      const htmlEl = document.documentElement;
+      const btn = document.getElementById('themeToggleBtn');
+      if (htmlEl.classList.contains('light-theme')) {
+        htmlEl.classList.remove('light-theme');
+        localStorage.setItem('sif27_theme', 'dark');
+        if (btn) btn.innerText = "🌙 Theme";
+      } else {
+        htmlEl.classList.add('light-theme');
+        localStorage.setItem('sif27_theme', 'light');
+        if (btn) btn.innerText = "☀️ Theme";
+      }
+    }
+
+    // Initialize saved theme on load
+    if (localStorage.getItem('sif27_theme') === 'light') {
+      document.documentElement.classList.add('light-theme');
+      const btn = document.getElementById('themeToggleBtn');
+      if (btn) btn.innerText = "☀️ Theme";
+    }
 
     function handleLogin() {
       const emailEl = document.getElementById('loginEmail');
@@ -1391,11 +1432,10 @@
           if (statusEl) {
             statusEl.innerText = "🟢 Live Sync Active";
             statusEl.style.background = "rgba(16, 185, 129, 0.15)";
-            statusEl.style.color = "#a7f3d0";
-            statusEl.style.borderColor = "#10b981";
+            statusEl.style.color = "var(--accent-green)";
+            statusEl.style.borderColor = "var(--accent-green)";
           }
         } else {
-          // If database is empty, push default datasets immediately
           saveAllToFirebase();
         }
         applyRolePermissions();
@@ -1430,7 +1470,6 @@
 
       const isAdmin = currentUserEmail.includes('james.dunn@ultrafunkula');
       const isDirector = role === 'director' || isAdmin;
-      const isTeam = role === 'team' && !isAdmin;
 
       const setDisplay = (id, val) => { const el = document.getElementById(id); if (el) el.style.display = val; };
 
@@ -1439,9 +1478,14 @@
       setDisplay('btn-roles', isDirector ? 'block' : 'none');
       setDisplay('btn-admin', isAdmin ? 'block' : 'none');
 
-      setDisplay('adminSummaryBlock', isDirector ? 'block' : 'none');
+      setDisplay('sumBox1', isDirector ? 'flex' : 'none');
+      setDisplay('sumBox2', isDirector ? 'flex' : 'none');
+      setDisplay('sumBox3', isDirector ? 'flex' : 'none');
+      setDisplay('vatSummaryBottomRow', isDirector ? 'grid' : 'none');
       setDisplay('adminRevenueCard', isDirector ? 'block' : 'none');
-      setDisplay('logActualsBtn', isDirector ? 'inline-block' : 'none');
+      setDisplay('summaryCardTitle', isDirector ? 'block' : 'none');
+
+      setDisplay('logActualsBtn', 'inline-block');
 
       ['budgetActionBtns', 'sponsorshipActionBtns', 'targetActionBtns', 'planActionBtns'].forEach(id => {
         setDisplay(id, isDirector ? 'flex' : 'none');
@@ -1454,7 +1498,7 @@
       const activeTab = document.querySelector('.tab-content.active');
       if (activeTab && activeTab.id === 'tab-admin' && !isAdmin) {
         openTab('dash');
-      } else if (activeTab && (activeTab.id === 'tab-budget' || activeTab.id === 'tab-target') && isTeam) {
+      } else if (activeTab && (activeTab.id === 'tab-budget' || activeTab.id === 'tab-target') && !isDirector) {
         openTab('dash');
       }
     }
@@ -1462,13 +1506,14 @@
     function openTab(tabName) {
       const isAdmin = currentUserEmail.includes('james.dunn@ultrafunkula');
       const role = getUserRole();
+      const isDirector = role === 'director' || isAdmin;
 
       if (tabName === 'admin' && !isAdmin) {
         alert("⚠️ Access Restricted: Admin tab is exclusive to James Dunn.");
         return;
       }
-      if ((tabName === 'budget' || tabName === 'target') && role === 'team' && !isAdmin) {
-        alert("⚠️ Access Restricted: Team members can view Dashboard, Project Plan, Timeline, DJs, and Ideas Board.");
+      if ((tabName === 'budget' || tabName === 'target') && !isDirector) {
+        alert("⚠️ Access Restricted: Budget & Sales Targets are restricted to Directors & Admins.");
         return;
       }
 
@@ -1549,7 +1594,7 @@
             <td style="text-align:right; font-weight:bold; color:var(--accent-green);">${formatGBP(incAmt)}</td>
             ${isDirector ? `<td style="text-align:center;">
               <button class="edit-btn" onclick="openSponsorshipModal(${idx})">Edit</button>
-              <button class="edit-btn" onclick="deleteSponsorshipItem(${idx})" style="background:rgba(225,29,72,0.2); color:#fda4af; border-color:var(--border-color); margin-left:4px;">Del</button>
+              <button class="edit-btn" onclick="deleteSponsorshipItem(${idx})" style="background:rgba(225,29,72,0.2); color:var(--accent-rose); border-color:var(--border-color); margin-left:4px;">Del</button>
             </td>` : ''}
           </tr>`;
         });
@@ -1589,7 +1634,9 @@
         document.getElementById('topConsolidatedGrandTotal').innerText = formatGBP(grandTotalCombined);
 
         const totalIncomeForecast = totalCombinedTicketRev + totalBarForecast + totalSponsorshipInc;
-        const totalActualRevenue = (actualSalesData.friRev || 0) + (actualSalesData.satRev || 0) + (actualSalesData.wkndRev || 0) + (actualSalesData.barRev || 0);
+        
+        const actualTicketRevenue = (actualSalesData.friRev || 0) + (actualSalesData.satRev || 0) + (actualSalesData.wkndRev || 0);
+        const actualTicketQtyTotal = (actualSalesData.friQty || 0) + (actualSalesData.satQty || 0) + (actualSalesData.wkndQty || 0);
 
         let bNetTotal = 0, bVatAmtTotal = 0, bIncTotal = 0, bSpentTotal = 0;
         budgetData.forEach(row => {
@@ -1608,6 +1655,9 @@
         const netVatLiability = totalVatCollected - bVatAmtTotal;
         const profitVariance = totalIncomeForecast - bIncTotal - netVatLiability;
 
+        document.getElementById('dashActualRevenue').innerText = formatGBP(actualTicketRevenue);
+        document.getElementById('dashTicketCounts').innerHTML = `Tickets Sold: <b>${actualTicketQtyTotal} Qty</b>`;
+
         if (isDirector) {
           document.getElementById('dashTotalIncome').innerText = formatGBP(totalIncomeForecast);
           document.getElementById('dashBudInc').innerText = formatGBP(bIncTotal);
@@ -1616,9 +1666,6 @@
           const varEl = document.getElementById('dashVariance');
           varEl.innerText = formatGBP(profitVariance);
           varEl.style.color = profitVariance >= 0 ? 'var(--accent-green)' : 'var(--accent-rose)';
-
-          document.getElementById('dashActualRevenue').innerText = formatGBP(totalActualRevenue);
-          document.getElementById('dashTicketCounts').innerHTML = `Tickets: <b>£${(actualSalesData.friRev + actualSalesData.satRev + actualSalesData.wkndRev).toLocaleString()}</b> | Bar: <b>£${(actualSalesData.barRev || 0).toLocaleString()}</b>`;
 
           document.getElementById('dashTotalVatCollected').innerText = formatGBP(totalVatCollected);
           document.getElementById('dashTotalVatPaid').innerText = formatGBP(bVatAmtTotal);
@@ -1650,7 +1697,7 @@
 
         const dashStageBody = document.getElementById('dashStageBody');
         if (dashStageBody) {
-          const selectedStage = document.getElementById('frontStageFilter') ? document.getElementById('frontStageFilter').value : "ALL";
+          const selectedStage = document.getElementById('frontStageFilter') ? document.getElementById('frontStageFilter'].value : "ALL";
           const filteredDjs = djData.filter(row => {
             const st = (row.stage || "Lighthouse (Main Stage)").trim();
             return selectedStage === "ALL" || st === selectedStage;
@@ -1731,7 +1778,7 @@
               <td style="text-align:right;"><input type="number" step="0.01" value="${updateVal}" onchange="updateBudgetInline(${idx}, 'update', this)" style="width:100px; text-align:right; padding:4px 8px;"></td>
               <td style="text-align:center;"><input type="text" value="${row.owner || ''}" onchange="updateBudgetInline(${idx}, 'owner', this)" style="width:110px; text-align:center; padding:4px 8px;"></td>
               <td style="text-align:center;">
-                <button class="edit-btn" onclick="deleteBudgetItem(${idx})" style="background:rgba(225,29,72,0.2); color:#fda4af; border-color:var(--border-color);">Del</button>
+                <button class="edit-btn" onclick="deleteBudgetItem(${idx})" style="background:rgba(225,29,72,0.2); color:var(--accent-rose); border-color:var(--border-color);">Del</button>
               </td>
             </tr>`;
           });
@@ -1766,7 +1813,7 @@
               <td style="text-align:right; font-weight:bold; color:var(--accent-green);">${formatGBP(itemTotal)}</td>
               <td style="text-align:center;">
                 <button class="edit-btn" onclick="openTargetModal(${idx})">Edit</button>
-                <button class="edit-btn" onclick="deleteTargetItem(${idx})" style="background:rgba(225,29,72,0.2); color:#fda4af; border-color:var(--border-color); margin-left:4px;">Del</button>
+                <button class="edit-btn" onclick="deleteTargetItem(${idx})" style="background:rgba(225,29,72,0.2); color:var(--accent-rose); border-color:var(--border-color); margin-left:4px;">Del</button>
               </td>
             </tr>`;
           });
@@ -1801,7 +1848,7 @@
                 <td style="color:var(--text-muted); white-space:nowrap;">${row.stepsDate || '-'}</td>
                 ${isDirector ? `<td style="text-align:center;">
                   <button class="edit-btn" onclick="openPlanModal(${idx})">Edit</button>
-                  <button class="edit-btn" onclick="deletePlanItem(${idx})" style="background:rgba(225,29,72,0.2); color:#fda4af; border-color:var(--border-color); margin-left:4px;">Del</button>
+                  <button class="edit-btn" onclick="deletePlanItem(${idx})" style="background:rgba(225,29,72,0.2); color:var(--accent-rose); border-color:var(--border-color); margin-left:4px;">Del</button>
                 </td>` : ''}
               </tr>`;
             }
@@ -1850,7 +1897,7 @@
               <td>${row.food || '-'}</td>
               ${isDirector ? `<td style="text-align:center;">
                 <button class="edit-btn" onclick="openDjModal(${idx})">Edit</button>
-                <button class="edit-btn" onclick="deleteDjItem(${idx})" style="background:rgba(225,29,72,0.2); color:#fda4af; border-color:var(--border-color); margin-left:4px;">Del</button>
+                <button class="edit-btn" onclick="deleteDjItem(${idx})" style="background:rgba(225,29,72,0.2); color:var(--accent-rose); border-color:var(--border-color); margin-left:4px;">Del</button>
               </td>` : ''}
             </tr>`;
           });
@@ -1866,8 +1913,8 @@
             const currentR = userRolesMap[key] || (email.includes('james.dunn@ultrafunkula') ? 'admin' : 'pending');
 
             const statusBadge = currentR === 'pending' 
-              ? `<span class="badge" style="background:rgba(225,29,72,0.2); color:#fda4af; border-color:#e11d48;">⏳ Pending Approval</span>`
-              : `<span class="badge" style="background:rgba(16,185,129,0.2); color:#a7f3d0; border-color:#10b981;">🟢 Live & Active</span>`;
+              ? `<span class="badge" style="background:rgba(225,29,72,0.2); color:var(--accent-rose); border-color:var(--accent-rose);">⏳ Pending Approval</span>`
+              : `<span class="badge" style="background:rgba(16,185,129,0.2); color:var(--accent-green); border-color:var(--accent-green);">🟢 Live & Active</span>`;
 
             uHtml += `<tr>
               <td style="font-weight:bold; color:var(--accent-blue);">${email}</td>
@@ -1902,7 +1949,331 @@
       }
     }
 
-    // HELPER SUPPORT FUNCTIONS
+    // MODALS & ACTIONS
+    function openActualModal() {
+      document.getElementById('actFriQty').value = actualSalesData.friQty || 0;
+      document.getElementById('actFriRev').value = actualSalesData.friRev || 0;
+      document.getElementById('actSatQty').value = actualSalesData.satQty || 0;
+      document.getElementById('actSatRev').value = actualSalesData.satRev || 0;
+      document.getElementById('actWkndQty').value = actualSalesData.wkndQty || 0;
+      document.getElementById('actWkndRev').value = actualSalesData.wkndRev || 0;
+      document.getElementById('actBarRev').value = actualSalesData.barRev || 0;
+      document.getElementById('actualModal').classList.add('active');
+    }
+    function closeActualModal() { document.getElementById('actualModal').classList.remove('active'); }
+    function saveActualSales() {
+      actualSalesData = {
+        friQty: parseInt(document.getElementById('actFriQty').value) || 0,
+        friRev: parseFloat(document.getElementById('actFriRev').value) || 0,
+        satQty: parseInt(document.getElementById('actSatQty').value) || 0,
+        satRev: parseFloat(document.getElementById('actSatRev').value) || 0,
+        wkndQty: parseInt(document.getElementById('actWkndQty').value) || 0,
+        wkndRev: parseFloat(document.getElementById('actWkndRev').value) || 0,
+        barRev: parseFloat(document.getElementById('actBarRev').value) || 0
+      };
+      saveAllToFirebase();
+      logActivity(currentUserEmail, "Updated actual sales data");
+      closeActualModal();
+      buildTables();
+    }
+
+    function openTargetModal(index) {
+      document.getElementById('targetEditIndex').value = index;
+      if (index === -1) {
+        document.getElementById('targetModalTitle').innerText = "Add Ticket Target";
+        document.getElementById('tModalDay').value = "Friday 30th July";
+        document.getElementById('tModalType').value = "";
+        document.getElementById('tModalQty').value = "";
+        document.getElementById('tModalPrice').value = "";
+      } else {
+        document.getElementById('targetModalTitle').innerText = "Edit Ticket Target";
+        const item = targetData[index];
+        document.getElementById('tModalDay').value = item.day;
+        document.getElementById('tModalType').value = item.type;
+        document.getElementById('tModalQty').value = item.qty;
+        document.getElementById('tModalPrice').value = item.price;
+      }
+      document.getElementById('targetModal').classList.add('active');
+    }
+    function closeTargetModal() { document.getElementById('targetModal').classList.remove('active'); }
+    function saveTargetItem() {
+      const idx = parseInt(document.getElementById('targetEditIndex').value);
+      const newItem = {
+        day: document.getElementById('tModalDay').value,
+        type: document.getElementById('tModalType').value,
+        qty: parseInt(document.getElementById('tModalQty').value) || 0,
+        price: parseFloat(document.getElementById('tModalPrice').value) || 0
+      };
+      if (idx === -1) targetData.push(newItem);
+      else targetData[idx] = newItem;
+      saveAllToFirebase();
+      logActivity(currentUserEmail, `Saved ticket target (${newItem.type})`);
+      closeTargetModal();
+      buildTables();
+    }
+    function deleteTargetItem(index) {
+      if (confirm('Delete this ticket target line?')) {
+        targetData.splice(index, 1);
+        saveAllToFirebase();
+        logActivity(currentUserEmail, "Deleted a ticket target");
+        buildTables();
+      }
+    }
+    function resetTargets() {
+      if (confirm('Reset sales targets to default values?')) {
+        targetData = [...defaultTargets];
+        saveAllToFirebase();
+        logActivity(currentUserEmail, "Reset ticket targets");
+        buildTables();
+      }
+    }
+
+    function openSponsorshipModal(index) {
+      document.getElementById('sponsorshipEditIndex').value = index;
+      if (index === -1) {
+        document.getElementById('sponsorshipModalTitle').innerText = "Add Sponsorship";
+        document.getElementById('sModalCompany').value = "";
+        document.getElementById('sModalArea').value = "";
+        document.getElementById('sModalAmount').value = "";
+      } else {
+        document.getElementById('sponsorshipModalTitle').innerText = "Edit Sponsorship";
+        const item = sponsorshipData[index];
+        document.getElementById('sModalCompany').value = item.company;
+        document.getElementById('sModalArea').value = item.area;
+        document.getElementById('sModalAmount').value = item.amount;
+      }
+      document.getElementById('sponsorshipModal').classList.add('active');
+    }
+    function closeSponsorshipModal() { document.getElementById('sponsorshipModal').classList.remove('active'); }
+    function saveSponsorshipItem() {
+      const idx = parseInt(document.getElementById('sponsorshipEditIndex').value);
+      const newItem = {
+        company: document.getElementById('sModalCompany').value.trim(),
+        area: document.getElementById('sModalArea').value.trim(),
+        amount: parseFloat(document.getElementById('sModalAmount').value) || 0
+      };
+      if (!newItem.company) { alert('Please enter a company name.'); return; }
+      if (idx === -1) sponsorshipData.push(newItem);
+      else sponsorshipData[idx] = newItem;
+      saveAllToFirebase();
+      logActivity(currentUserEmail, `Saved sponsorship (${newItem.company})`);
+      closeSponsorshipModal();
+      buildTables();
+    }
+    function deleteSponsorshipItem(index) {
+      if (confirm('Delete this sponsorship item?')) {
+        sponsorshipData.splice(index, 1);
+        saveAllToFirebase();
+        logActivity(currentUserEmail, "Deleted sponsorship");
+        buildTables();
+      }
+    }
+    function resetSponsorships() {
+      if (confirm('Reset sponsorships to default values?')) {
+        sponsorshipData = [...defaultSponsorships];
+        saveAllToFirebase();
+        logActivity(currentUserEmail, "Reset sponsorships");
+        buildTables();
+      }
+    }
+
+    function openPlanModal(index) {
+      document.getElementById('planEditIndex').value = index;
+      const item = planData[index];
+      document.getElementById('pModalTask').value = item.task;
+      document.getElementById('pModalP1').value = item.p1 || '';
+      document.getElementById('pModalP2').value = item.p2 || '';
+      document.getElementById('pModalP3').value = item.p3 || '';
+      document.getElementById('pModalUpdate').value = item.update || '';
+      document.getElementById('pModalSteps').value = item.steps || '';
+      document.getElementById('pModalStepsOwner').value = item.stepsOwner || '';
+      document.getElementById('pModalStepsDate').value = item.stepsDate || '';
+      document.getElementById('planModal').classList.add('active');
+    }
+    function closePlanModal() { document.getElementById('planModal').classList.remove('active'); }
+    function savePlanItem() {
+      const idx = parseInt(document.getElementById('planEditIndex').value);
+      planData[idx].p1 = document.getElementById('pModalP1').value;
+      planData[idx].p2 = document.getElementById('pModalP2').value;
+      planData[idx].p3 = document.getElementById('pModalP3').value;
+      planData[idx].update = document.getElementById('pModalUpdate').value;
+      planData[idx].steps = document.getElementById('pModalSteps').value;
+      planData[idx].stepsOwner = document.getElementById('pModalStepsOwner').value;
+      planData[idx].stepsDate = document.getElementById('pModalStepsDate').value;
+      saveAllToFirebase();
+      logActivity(currentUserEmail, `Updated project task "${planData[idx].task}"`);
+      closePlanModal();
+      buildTables();
+    }
+
+    function openPlanAddModal() {
+      document.getElementById('pAddTaskName').value = '';
+      document.getElementById('pAddP1').value = '';
+      document.getElementById('pAddP2').value = '';
+      document.getElementById('pAddP3').value = '';
+      document.getElementById('pAddUpdate').value = '';
+      document.getElementById('pAddSteps').value = '';
+      document.getElementById('pAddStepsOwner').value = '';
+      document.getElementById('pAddStepsDate').value = '';
+      document.getElementById('planAddModal').classList.add('active');
+    }
+    function closePlanAddModal() { document.getElementById('planAddModal').classList.remove('active'); }
+
+    function saveNewPlanItem() {
+      const section = document.getElementById('pAddSection').value;
+      const taskName = document.getElementById('pAddTaskName').value.trim();
+      if (!taskName) { alert('Please enter a task name.'); return; }
+
+      const newTask = {
+        task: taskName,
+        p1: document.getElementById('pAddP1').value.trim(),
+        p2: document.getElementById('pAddP2').value.trim(),
+        p3: document.getElementById('pAddP3').value.trim(),
+        update: document.getElementById('pAddUpdate').value.trim(),
+        steps: document.getElementById('pAddSteps').value.trim(),
+        stepsOwner: document.getElementById('pAddStepsOwner').value.trim(),
+        stepsDate: document.getElementById('pAddStepsDate').value.trim(),
+        completed: false
+      };
+
+      let insertIndex = planData.findIndex(r => r.section === section);
+      if (insertIndex !== -1) {
+        insertIndex++;
+        while (insertIndex < planData.length && !planData[insertIndex].section) { insertIndex++; }
+        planData.splice(insertIndex, 0, newTask);
+      } else {
+        planData.push({ section: section });
+        planData.push(newTask);
+      }
+
+      saveAllToFirebase();
+      logActivity(currentUserEmail, `Added new task "${taskName}" under ${section}`);
+      closePlanAddModal();
+      buildTables();
+    }
+
+    function deletePlanItem(index) {
+      if (confirm('Delete this task?')) {
+        const name = planData[index].task;
+        planData.splice(index, 1);
+        saveAllToFirebase();
+        logActivity(currentUserEmail, `Deleted task "${name}"`);
+        buildTables();
+      }
+    }
+    function resetPlan() {
+      if (confirm('Reset project plan?')) {
+        planData = [...defaultPlan];
+        saveAllToFirebase();
+        logActivity(currentUserEmail, "Reset project plan");
+        buildTables();
+      }
+    }
+
+    function openRolesModal(index) {
+      document.getElementById('rolesEditIndex').value = index;
+      const item = rolesData[index];
+      document.getElementById('rModalTask').value = item.task;
+      document.getElementById('rModalM1').value = item.m1 || '';
+      document.getElementById('rModalM2').value = item.m2 || '';
+      document.getElementById('rModalM3').value = item.m3 || '';
+      document.getElementById('rolesModal').classList.add('active');
+    }
+    function closeRolesModal() { document.getElementById('rolesModal').classList.remove('active'); }
+    function saveRolesItem() {
+      const idx = parseInt(document.getElementById('rolesEditIndex').value);
+      rolesData[idx].m1 = document.getElementById('rModalM1').value;
+      rolesData[idx].m2 = document.getElementById('rModalM2').value;
+      rolesData[idx].m3 = document.getElementById('rModalM3').value;
+      saveAllToFirebase();
+      logActivity(currentUserEmail, `Updated role assignment for "${rolesData[idx].task}"`);
+      closeRolesModal();
+      buildTables();
+    }
+    function resetRoles() {
+      if (confirm('Reset roles?')) {
+        rolesData = [...defaultRoles];
+        saveAllToFirebase();
+        logActivity(currentUserEmail, "Reset roles matrix");
+        buildTables();
+      }
+    }
+
+    function openDjModal(index) {
+      document.getElementById('djEditIndex').value = index;
+      if (index === -1) {
+        document.getElementById('djModalTitle').innerText = "Add New Act";
+        document.getElementById('djName').value = '';
+        document.getElementById('djType').value = 'DJ';
+        document.getElementById('djCost').value = '';
+        document.getElementById('djVat').value = 'YES';
+        document.getElementById('djStage').value = 'Lighthouse (Main Stage)';
+        document.getElementById('djDay').value = 'Friday 30th July';
+        updateTimeSlots();
+        document.getElementById('djDrinks').value = '';
+        document.getElementById('djFood').value = '';
+      } else {
+        document.getElementById('djModalTitle').innerText = "Edit Act";
+        const act = djData[index];
+        document.getElementById('djName').value = act.name;
+        document.getElementById('djType').value = act.type;
+        document.getElementById('djCost').value = act.cost;
+        document.getElementById('djVat').value = act.vat;
+        document.getElementById('djStage').value = act.stage || 'Lighthouse (Main Stage)';
+        document.getElementById('djDay').value = act.day;
+        updateTimeSlots(act.time);
+        document.getElementById('djDrinks').value = act.drinks;
+        document.getElementById('djFood').value = act.food;
+      }
+      document.getElementById('djModal').classList.add('active');
+    }
+    function closeDjModal() { document.getElementById('djModal').classList.remove('active'); }
+
+    function saveDjItem() {
+      const idx = parseInt(document.getElementById('djEditIndex').value);
+      const stage = document.getElementById('djStage').value;
+      const day = document.getElementById('djDay').value;
+      const time = document.getElementById('djTime').value;
+
+      const newAct = {
+        name: document.getElementById('djName').value,
+        type: document.getElementById('djType').value,
+        cost: parseFloat(document.getElementById('djCost').value) || 0,
+        vat: document.getElementById('djVat').value,
+        stage: stage,
+        day: day,
+        time: time,
+        drinks: document.getElementById('djDrinks').value,
+        food: document.getElementById('djFood').value
+      };
+
+      if (idx === -1) djData.push(newAct);
+      else djData[idx] = newAct;
+      
+      saveAllToFirebase();
+      logActivity(currentUserEmail, `Saved act/DJ "${newAct.name}"`);
+      closeDjModal();
+      buildTables();
+    }
+
+    function deleteDjItem(index) {
+      if (confirm('Delete this act?')) {
+        const name = djData[index].name;
+        djData.splice(index, 1);
+        saveAllToFirebase();
+        logActivity(currentUserEmail, `Deleted act "${name}"`);
+        buildTables();
+      }
+    }
+    function resetDjs() {
+      if (confirm('Reset DJs?')) {
+        djData = [...defaultDjs];
+        saveAllToFirebase();
+        logActivity(currentUserEmail, "Reset DJs line-up");
+        buildTables();
+      }
+    }
+
     function updateBudgetInline(idx, field, el) {
       if (field === 'net' || field === 'update') {
         budgetData[idx][field] = parseFloat(el.value) || 0;
@@ -1970,10 +2341,10 @@
       const btnSat = document.getElementById('calBtnSat');
       if (day.includes('Friday')) {
         btnFri.style.background = 'var(--accent-blue)';
-        btnSat.style.background = '#0f172a';
+        btnSat.style.background = 'var(--input-bg)';
       } else {
         btnSat.style.background = 'var(--accent-blue)';
-        btnFri.style.background = '#0f172a';
+        btnFri.style.background = 'var(--input-bg)';
       }
       buildCalendarMatrix();
     }
@@ -2064,7 +2435,7 @@
             </div>
             <p style="font-size:13px; color:var(--text-main); line-height:1.4; white-space:pre-wrap;">${note.text}</p>
           </div>
-          <button onclick="deleteNote(${note.id})" class="edit-btn" style="background:rgba(225,29,72,0.2); color:#fda4af; border-color:var(--border-color);">Del</button>
+          <button onclick="deleteNote(${note.id})" class="edit-btn" style="background:rgba(225,29,72,0.2); color:var(--accent-rose); border-color:var(--border-color);">Del</button>
         </div>`;
       });
       feed.innerHTML = html;
