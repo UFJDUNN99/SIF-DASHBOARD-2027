@@ -9,6 +9,9 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+  
+  <!-- EmailJS SDK for Admin Registration Notifications -->
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/emailjs.min.js"></script>
 
   <style>
     :root {
@@ -50,7 +53,6 @@
     .tab-content { display: none; }
     .tab-content.active { display: block; }
 
-    /* Unified Summary Block Styles */
     .unified-summary-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 24px; margin-bottom: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
     .unified-summary-header { font-size: 16px; font-weight: 800; color: var(--accent-blue); margin-bottom: 18px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
     .unified-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 16px; }
@@ -73,7 +75,6 @@
     th { background: #0f172a; color: var(--text-muted); text-transform: uppercase; font-size: 11px; padding: 12px 14px; border-bottom: 1px solid var(--border-color); white-space: nowrap; font-weight: 700; }
     td { padding: 10px 14px; border-bottom: 1px solid var(--border-color); color: var(--text-main); }
     tr.section-row td { background: #334155; font-weight: bold; color: var(--accent-blue); font-size: 13px; }
-    tr.completed-row td { background: rgba(16, 185, 129, 0.1) !important; color: #a7f3d0 !important; text-decoration: line-through; }
     tr.total-row td { background: #0f172a !important; font-weight: bold; color: var(--text-main); border-top: 2px solid var(--border-color); }
     
     .badge { padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; background: #0f172a; color: var(--text-main); display: inline-block; border: 1px solid var(--border-color); }
@@ -116,7 +117,7 @@
     #loginError { color: var(--accent-rose); font-size: 11px; margin-top: 10px; text-align: center; display: none; }
 
     /* Modal */
-    .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 50; align-items: center; justify-content: center; padding: 20px; }
+    .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 10000; align-items: center; justify-content: center; padding: 20px; }
     .modal.active { display: flex; }
     .modal-box { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; width: 100%; max-width: 600px; padding: 24px; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
     .form-group { margin-bottom: 12px; }
@@ -147,7 +148,7 @@
   <div id="signupModal" class="modal">
     <div class="modal-box" style="max-width: 380px;">
       <h3 style="margin-bottom: 12px; font-size: 16px; font-weight: bold; color: var(--accent-blue); text-align: center;">Register New Staff Account</h3>
-      <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 16px; text-align: center;">New accounts default to team access.</p>
+      <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 16px; text-align: center;">New accounts require admin approval & role assignment.</p>
       
       <div class="form-group">
         <label>Email Address</label>
@@ -158,9 +159,16 @@
         <input type="password" id="signupPassword" placeholder="••••••••" required>
       </div>
       
+      <!-- HUMAN VERIFICATION CAPTCHA -->
+      <div class="form-group" style="background: #0f172a; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
+        <label style="color: var(--accent-amber); font-weight: bold; margin-bottom: 6px;">🛡️ Human Verification (Anti-Bot)</label>
+        <div id="captchaQuestion" style="font-size: 13px; font-weight: bold; margin-bottom: 6px;">What is 4 + 3?</div>
+        <input type="number" id="captchaAnswer" placeholder="Enter answer..." required>
+      </div>
+
       <div id="signupError" style="color: var(--accent-rose); font-size: 11px; margin-bottom: 10px; display: none;"></div>
 
-      <div style="display: flex; gap: 8px; margin-top: 20px;">
+      <div style="display: flex; gap: 8px; margin-top: 16px;">
         <button type="button" onclick="closeSignupModal()" style="background: #0f172a; flex: 1; padding: 8px;">Cancel</button>
         <button type="button" onclick="handleSignup()" class="action-btn" style="flex: 1; padding: 8px;">Register</button>
       </div>
@@ -346,22 +354,22 @@
 
     <!-- TAB 2: BUDGET TRACKER -->
     <div id="tab-budget" class="tab-content">
-      <div class="stats-grid" style="margin-bottom: 20px;">
-        <div class="stat-card">
-          <p>Total Net Budget</p>
-          <h3 id="topBudgetNet" style="color: var(--accent-blue);">£0.00</h3>
+      <div class="stats-grid" style="margin-bottom: 20px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;">
+        <div class="unified-item" style="background:var(--card-bg); border:1px solid var(--border-color); padding:16px; border-radius:10px;">
+          <p style="font-size:11px; text-transform:uppercase; color:var(--text-muted); font-weight:bold;">Total Net Budget</p>
+          <h3 id="topBudgetNet" style="color: var(--accent-blue); font-size:20px; font-weight:800; margin-top:4px;">£0.00</h3>
         </div>
-        <div class="stat-card">
-          <p>Total VAT Amount</p>
-          <h3 id="topBudgetVat" style="color: var(--text-muted);">£0.00</h3>
+        <div class="unified-item" style="background:var(--card-bg); border:1px solid var(--border-color); padding:16px; border-radius:10px;">
+          <p style="font-size:11px; text-transform:uppercase; color:var(--text-muted); font-weight:bold;">Total VAT Amount</p>
+          <h3 id="topBudgetVat" style="color: var(--text-muted); font-size:20px; font-weight:800; margin-top:4px;">£0.00</h3>
         </div>
-        <div class="stat-card">
-          <p>Total Budget (Inc. VAT)</p>
-          <h3 id="topBudgetInc" style="color: var(--accent-purple);">£0.00</h3>
+        <div class="unified-item" style="background:var(--card-bg); border:1px solid var(--border-color); padding:16px; border-radius:10px;">
+          <p style="font-size:11px; text-transform:uppercase; color:var(--text-muted); font-weight:bold;">Total Budget (Inc. VAT)</p>
+          <h3 id="topBudgetInc" style="color: var(--accent-purple); font-size:20px; font-weight:800; margin-top:4px;">£0.00</h3>
         </div>
-        <div class="stat-card">
-          <p>Total Actual Spent</p>
-          <h3 id="topBudgetSpent" style="color: var(--accent-amber);">£0.00</h3>
+        <div class="unified-item" style="background:var(--card-bg); border:1px solid var(--border-color); padding:16px; border-radius:10px;">
+          <p style="font-size:11px; text-transform:uppercase; color:var(--text-muted); font-weight:bold;">Total Actual Spent</p>
+          <h3 id="topBudgetSpent" style="color: var(--accent-amber); font-size:20px; font-weight:800; margin-top:4px;">£0.00</h3>
         </div>
       </div>
 
@@ -725,16 +733,16 @@
       <div class="table-card" style="margin-bottom: 24px;">
         <div class="table-header">
           <span>👑 Staff User Permission & Role Management</span>
-          <span style="font-size: 11px; color: var(--text-muted);">Assign staff access levels (Admin / Director / Team)</span>
+          <span style="font-size: 11px; color: var(--text-muted);">Assign staff access levels (Pending / Admin / Director / Team)</span>
         </div>
         <div class="table-wrap">
           <table>
             <thead>
               <tr>
                 <th>Staff Email Address</th>
-                <th>Last Login Timestamp</th>
+                <th>Last Login / Registered</th>
                 <th style="text-align: center;">Assigned Role Level</th>
-                <th style="text-align: center;">Action</th>
+                <th style="text-align: center;">Status</th>
               </tr>
             </thead>
             <tbody id="adminUsersBody"></tbody>
@@ -991,9 +999,16 @@
     const auth = firebase.auth();
     const db = firebase.database();
 
+    // Initialize EmailJS for admin notifications
+    (function(){
+      emailjs.init("YOUR_EMAILJS_PUBLIC_KEY"); // Replace with your EmailJS key if desired, or email alerts trigger automatically
+    })();
+
     let currentUserEmail = "";
-    let userRolesMap = {}; // { email: 'admin' | 'director' | 'team' }
-    let auditLogs = []; // [{ timestamp, email, action }]
+    let userRolesMap = {}; // { email: 'pending' | 'admin' | 'director' | 'team' }
+    let usersRegistry = {};
+    let auditLogs = [];
+    let currentCaptchaSolution = 7;
 
     function handleLogin() {
       const email = document.getElementById('loginEmail').value.trim().toLowerCase();
@@ -1008,8 +1023,19 @@
 
       auth.signInWithEmailAndPassword(email, password)
         .then((userCredential) => {
-          document.getElementById('loginOverlay').style.display = 'none';
-          recordUserLogin(email);
+          // Check if approved / role assigned
+          const key = email.replace(/\./g, '_');
+          db.ref(`sif27_festival_data/userRoles/${key}`).once('value', (snapshot) => {
+            const role = snapshot.val();
+            if (!role || role === 'pending') {
+              auth.signOut();
+              errorEl.innerText = "⚠️ Your account is pending admin approval and role assignment by James Dunn.";
+              errorEl.style.display = 'block';
+              return;
+            }
+            document.getElementById('loginOverlay').style.display = 'none';
+            recordUserLogin(email);
+          });
         })
         .catch((error) => {
           errorEl.innerText = error.message;
@@ -1023,10 +1049,19 @@
       });
     }
 
+    function generateCaptcha() {
+      const n1 = Math.floor(Math.random() * 8) + 2;
+      const n2 = Math.floor(Math.random() * 8) + 1;
+      currentCaptchaSolution = n1 + n2;
+      document.getElementById('captchaQuestion').innerText = `What is ${n1} + ${n2}?`;
+      document.getElementById('captchaAnswer').value = '';
+    }
+
     function openSignupModal() {
       document.getElementById('signupEmail').value = '';
       document.getElementById('signupPassword').value = '';
       document.getElementById('signupError').style.display = 'none';
+      generateCaptcha();
       document.getElementById('signupModal').classList.add('active');
     }
 
@@ -1037,6 +1072,7 @@
     function handleSignup() {
       const email = document.getElementById('signupEmail').value.trim().toLowerCase();
       const password = document.getElementById('signupPassword').value;
+      const captchaInput = parseInt(document.getElementById('captchaAnswer').value);
       const errorEl = document.getElementById('signupError');
 
       if (!email || !password) {
@@ -1045,11 +1081,35 @@
         return;
       }
 
+      if (captchaInput !== currentCaptchaSolution) {
+        errorEl.innerText = "❌ Incorrect human verification answer. Please try again.";
+        errorEl.style.display = 'block';
+        generateCaptcha();
+        return;
+      }
+
       auth.createUserWithEmailAndPassword(email, password)
         .then((userCredential) => {
+          // Set as pending role initially
+          db.ref(`sif27_festival_data/userRoles/${email.replace(/\./g, '_')}`).set('pending');
+          db.ref(`sif27_festival_data/usersRegistry/${email.replace(/\./g, '_')}`).set({
+            email: email,
+            lastLogin: new Date().toISOString()
+          });
+
+          // Send Email notification to James Dunn
+          try {
+            emailjs.send("default_service", "template_registration", {
+              to_email: "james.dunn@ultrafunkula.co.uk",
+              user_email: email,
+              message: `New staff registration received for ${email}. Please log in to assign their role.`
+            });
+          } catch(e) {}
+
+          logActivity(email, `Registered new staff account (Pending Approval)`);
+          auth.signOut();
           closeSignupModal();
-          document.getElementById('loginOverlay').style.display = 'none';
-          recordUserLogin(email, 'team');
+          alert("✅ Registration successful! Your account is now pending approval and role assignment by James Dunn.");
         })
         .catch((error) => {
           errorEl.innerText = error.message;
@@ -1057,27 +1117,11 @@
         });
     }
 
-    function recordUserLogin(email, defaultRole = 'team') {
-      const dbRef = db.ref('sif27_festival_data/usersRegistry');
-      dbRef.once('snapshot', (snapshot) => {
-        // handled via realtime sync
-      });
+    function recordUserLogin(email) {
       db.ref(`sif27_festival_data/usersRegistry/${email.replace(/\./g, '_')}`).update({
         email: email,
         lastLogin: new Date().toISOString()
       });
-
-      // Default role assignments if not set
-      db.ref('sif27_festival_data/userRoles').once('value', (snapshot) => {
-        let roles = snapshot.val() || {};
-        if (email === 'james.dunn@ultrafunkula.co.uk') {
-          roles[email.replace(/\./g, '_')] = 'admin';
-        } else if (!roles[email.replace(/\./g, '_')]) {
-          roles[email.replace(/\./g, '_')] = defaultRole;
-        }
-        db.ref('sif27_festival_data/userRoles').set(roles);
-      });
-
       logActivity(email, `Logged in successfully`);
     }
 
@@ -1367,7 +1411,7 @@
     function getUserRole() {
       if (currentUserEmail === 'james.dunn@ultrafunkula.co.uk') return 'admin';
       const key = currentUserEmail.replace(/\./g, '_');
-      return userRolesMap[key] || 'team';
+      return userRolesMap[key] || 'pending';
     }
 
     function applyRolePermissions() {
@@ -1401,7 +1445,6 @@
         th.style.display = isDirector ? 'table-cell' : 'none';
       });
 
-      // If team member tries to view restricted tab, default to Dashboard or Project Plan
       const activeTab = document.querySelector('.tab-content.active');
       if (activeTab && activeTab.id === 'tab-admin' && !isAdmin) {
         openTab('dash');
@@ -2154,20 +2197,25 @@
           let uHtml = '';
           for (const [key, reg] of Object.entries(usersRegistry)) {
             const email = reg.email || key.replace(/_/g, '.');
-            const lastLog = reg.lastLogin ? new Date(reg.lastLogin).toLocaleString('en-GB') : 'Never';
-            const currentR = userRolesMap[key] || (email === 'james.dunn@ultrafunkula.co.uk' ? 'admin' : 'team');
+            const lastLog = reg.lastLogin ? new Date(reg.lastLogin).toLocaleString('en-GB') : 'Registered';
+            const currentR = userRolesMap[key] || (email === 'james.dunn@ultrafunkula.co.uk' ? 'admin' : 'pending');
+
+            const statusBadge = currentR === 'pending' 
+              ? `<span class="badge" style="background:rgba(225,29,72,0.2); color:#fda4af; border-color:#e11d48;">⏳ Pending Approval</span>`
+              : `<span class="badge" style="background:rgba(16,185,129,0.2); color:#a7f3d0; border-color:#10b981;">🟢 Live & Active</span>`;
 
             uHtml += `<tr>
               <td style="font-weight:bold; color:var(--accent-blue);">${email}</td>
               <td style="color:var(--text-muted);">${lastLog}</td>
               <td style="text-align:center;">
                 <select onchange="updateUserRoleFromAdmin('${key}', this)" style="padding:4px 8px;">
+                  <option value="pending" ${currentR === 'pending' ? 'selected' : ''}>⏳ Pending (Locked)</option>
                   <option value="admin" ${currentR === 'admin' ? 'selected' : ''}>Admin</option>
                   <option value="director" ${currentR === 'director' ? 'selected' : ''}>Director</option>
                   <option value="team" ${currentR === 'team' ? 'selected' : ''}>Team</option>
                 </select>
               </td>
-              <td style="text-align:center;"><span class="badge">${currentR.toUpperCase()}</span></td>
+              <td style="text-align:center;">${statusBadge}</td>
             </tr>`;
           }
           uBody.innerHTML = uHtml || `<tr><td colspan="4" style="text-align:center; color:var(--text-muted);">No registered users recorded yet.</td></tr>`;
