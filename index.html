@@ -1349,8 +1349,6 @@
     let notesData = [...defaultNotes];
     let currentCalDay = "Friday 30th July";
     let barMultipliers = { Friday: 35.00, Saturday: 65.00, Weekend: 100.00 };
-    let usersRegistry = {};
-    let auditLogsList = [];
 
     function initFirebaseSync() {
       const dbRef = db.ref('sif27_festival_data');
@@ -2608,52 +2606,37 @@
       } catch (e) {}
     }
 
-    // Robust event bindings for login & signup buttons
-    window.addEventListener('DOMContentLoaded', () => {
+    // Direct event listener bindings
+    document.addEventListener('DOMContentLoaded', () => {
       runTimer();
       setInterval(runTimer, 1000);
 
-      const loginSubmitBtn = document.getElementById('loginSubmitBtn');
-      if (loginSubmitBtn) {
-        loginSubmitBtn.addEventListener('click', (e) => {
+      document.getElementById('loginSubmitBtn').onclick = (e) => {
+        e.preventDefault();
+        handleLogin();
+      };
+
+      document.getElementById('loginPassword').onkeydown = (e) => {
+        if (e.key === 'Enter') {
           e.preventDefault();
           handleLogin();
-        });
-      }
+        }
+      };
 
-      const loginPasswordInput = document.getElementById('loginPassword');
-      if (loginPasswordInput) {
-        loginPasswordInput.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter') {
-            e.preventDefault();
-            handleLogin();
-          }
-        });
-      }
+      document.getElementById('openSignupBtn').onclick = (e) => {
+        e.preventDefault();
+        openSignupModal();
+      };
 
-      const openBtn = document.getElementById('openSignupBtn');
-      if (openBtn) {
-        openBtn.addEventListener('click', (e) => {
-          e.preventDefault();
-          openSignupModal();
-        });
-      }
+      document.getElementById('closeSignupBtn').onclick = (e) => {
+        e.preventDefault();
+        closeSignupModal();
+      };
 
-      const closeBtn = document.getElementById('closeSignupBtn');
-      if (closeBtn) {
-        closeBtn.addEventListener('click', (e) => {
-          e.preventDefault();
-          closeSignupModal();
-        });
-      }
-
-      const submitBtn = document.getElementById('submitSignupBtn');
-      if (submitBtn) {
-        submitBtn.addEventListener('click', (e) => {
-          e.preventDefault();
-          handleSignup();
-        });
-      }
+      document.getElementById('submitSignupBtn').onclick = (e) => {
+        e.preventDefault();
+        handleSignup();
+      };
     });
   </script>
 </body>
