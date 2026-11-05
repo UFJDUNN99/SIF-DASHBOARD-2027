@@ -360,30 +360,66 @@
 
     <!-- TAB 3: SALES TARGETS -->
     <div id="tab-target" class="tab-content">
-      <!-- SALES TARGETS SUMMARY TOP 2 AMALGAMATED BLOCKS -->
-      <div class="stats-grid" style="margin-bottom: 20px; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));">
-        <!-- BLOCK 1: TOTAL COMBINED TICKET SALES -->
+      <!-- SALES TARGETS SUMMARY TOP 2 AMALGAMATED BLOCKS WITH DAILY BREAKDOWNS -->
+      <div class="stats-grid" style="margin-bottom: 20px; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));">
+        
+        <!-- BLOCK 1: TICKET SALES BREAKDOWN -->
         <div class="stat-card" style="border: 2px solid var(--accent-blue);">
-          <p style="color: var(--accent-blue);">Total Combined Ticket Sales (Fri + Sat + Weekend)</p>
-          <h3 id="topConsolidatedTicketRev" style="color: var(--accent-green); font-size: 28px;">£0.00</h3>
-          <p id="topConsolidatedTicketQty" style="font-size: 11px; color: var(--text-muted); margin-top: 6px;">0 Total Tickets (Excl. Parking)</p>
-        </div>
-
-        <!-- BLOCK 2: TOTAL BAR SPEND & GRAND TOTAL COMBINED -->
-        <div class="stat-card" style="background: linear-gradient(135deg, #1e293b, #0f172a); border: 2px solid var(--accent-amber);">
-          <p style="color: var(--accent-amber);">Total Bar Spend & Grand Total Combined Weekend Sales</p>
-          <div style="display: flex; justify-content: space-between; align-items: baseline; margin-top: 6px; flex-wrap: wrap; gap: 10px;">
+          <p style="color: var(--accent-blue); font-size: 12px; margin-bottom: 10px;">🎫 Total Ticket Sales (Daily Breakdown)</p>
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 10px; text-align: center; background: #0f172a; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color);">
             <div>
-              <span style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; display: block;">Total Bar Forecast</span>
-              <span id="topConsolidatedBarRev" style="font-size: 20px; font-weight: 800; color: var(--accent-amber);">£0.00</span>
+              <span style="font-size: 10px; color: var(--text-muted); display: block;">Friday</span>
+              <span id="blockFriTicket" style="font-size: 13px; font-weight: bold; color: var(--accent-blue);">£0.00</span>
             </div>
-            <div style="text-align: right;">
-              <span style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; display: block;">Grand Total Combined</span>
-              <span id="topConsolidatedGrandTotal" style="font-size: 26px; font-weight: 800; color: var(--accent-green);">£0.00</span>
+            <div>
+              <span style="font-size: 10px; color: var(--text-muted); display: block;">Saturday</span>
+              <span id="blockSatTicket" style="font-size: 13px; font-weight: bold; color: var(--accent-blue);">£0.00</span>
+            </div>
+            <div>
+              <span style="font-size: 10px; color: var(--text-muted); display: block;">Weekend</span>
+              <span id="blockWkndTicket" style="font-size: 13px; font-weight: bold; color: var(--accent-blue);">£0.00</span>
             </div>
           </div>
-          <p style="font-size: 10px; color: var(--text-muted); margin-top: 8px;">Amalgamated across Friday, Saturday & Weekend passes</p>
+          <div style="display: flex; justify-content: space-between; align-items: baseline;">
+            <div>
+              <span style="font-size: 10px; color: var(--text-muted); text-transform: uppercase;">Combined Total</span>
+              <h3 id="topConsolidatedTicketRev" style="color: var(--accent-green); font-size: 22px; margin-top: 2px;">£0.00</h3>
+            </div>
+            <div style="text-align: right;">
+              <span id="topConsolidatedTicketQty" style="font-size: 11px; color: var(--text-muted);">0 Total Tickets</span>
+            </div>
+          </div>
         </div>
+
+        <!-- BLOCK 2: BAR SPEND & GRAND TOTAL BREAKDOWN -->
+        <div class="stat-card" style="background: linear-gradient(135deg, #1e293b, #0f172a); border: 2px solid var(--accent-amber);">
+          <p style="color: var(--accent-amber); font-size: 12px; margin-bottom: 10px;">🍻 Bar Spend & Grand Total (Daily Breakdown)</p>
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 10px; text-align: center; background: #0f172a; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color);">
+            <div>
+              <span style="font-size: 10px; color: var(--text-muted); display: block;">Fri Bar</span>
+              <span id="blockFriBar" style="font-size: 13px; font-weight: bold; color: var(--accent-amber);">£0.00</span>
+            </div>
+            <div>
+              <span style="font-size: 10px; color: var(--text-muted); display: block;">Sat Bar</span>
+              <span id="blockSatBar" style="font-size: 13px; font-weight: bold; color: var(--accent-amber);">£0.00</span>
+            </div>
+            <div>
+              <span style="font-size: 10px; color: var(--text-muted); display: block;">Wknd Bar</span>
+              <span id="blockWkndBar" style="font-size: 13px; font-weight: bold; color: var(--accent-amber);">£0.00</span>
+            </div>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: baseline;">
+            <div>
+              <span style="font-size: 10px; color: var(--text-muted); text-transform: uppercase;">Total Bar Forecast</span>
+              <span id="topConsolidatedBarRev" style="font-size: 16px; font-weight: 800; color: var(--accent-amber); display: block;">£0.00</span>
+            </div>
+            <div style="text-align: right;">
+              <span style="font-size: 10px; color: var(--text-muted); text-transform: uppercase;">Grand Total Combined</span>
+              <span id="topConsolidatedGrandTotal" style="font-size: 22px; font-weight: 800; color: var(--accent-green); display: block;">£0.00</span>
+            </div>
+          </div>
+        </div>
+
       </div>
 
       <!-- BAR SALES MULTIPLIER CONFIGURATION CARD -->
@@ -1546,10 +1582,16 @@
         document.getElementById('satBarCalcOutput').innerText = `Calculated Bar Total (${satTicketQty} attendees × £${(barMultipliers.Saturday||65.00).toFixed(2)}): ${formatGBP(satBarTotal)}`;
         document.getElementById('wkndBarCalcOutput').innerText = `Calculated Bar Total (${wkndTicketQty} attendees × £${(barMultipliers.Weekend||100.00).toFixed(2)}): ${formatGBP(wkndBarTotal)}`;
 
-        // Update Sales Target Top Consolidated Blocks
+        // Update Sales Target Top Consolidated Blocks with Daily Breakdowns
+        document.getElementById('blockFriTicket').innerText = formatGBP(friTicketRev);
+        document.getElementById('blockSatTicket').innerText = formatGBP(satTicketRev);
+        document.getElementById('blockWkndTicket').innerText = formatGBP(wkndTicketRev);
         document.getElementById('topConsolidatedTicketRev').innerText = formatGBP(totalCombinedTicketRev);
-        document.getElementById('topConsolidatedTicketQty').innerText = `${totalQtyExclParking} Total Festival Tickets (Fri: ${friTicketQty} | Sat: ${satTicketQty} | Wknd: ${wkndTicketQty})`;
-        
+        document.getElementById('topConsolidatedTicketQty').innerText = `${totalQtyExclParking} Total Tickets`;
+
+        document.getElementById('blockFriBar').innerText = formatGBP(friBarTotal);
+        document.getElementById('blockSatBar').innerText = formatGBP(satBarTotal);
+        document.getElementById('blockWkndBar').innerText = formatGBP(wkndBarTotal);
         document.getElementById('topConsolidatedBarRev').innerText = formatGBP(totalBarForecast);
         document.getElementById('topConsolidatedGrandTotal').innerText = formatGBP(grandTotalCombined);
 
@@ -2179,8 +2221,7 @@
           if (imported.barMultipliers) barMultipliers = imported.barMultipliers;
           saveAllToFirebase();
           buildTables();
-          alert('Data restored successfully!');
-        } catch (err) { alert('Invalid backup file.'); }
+      } catch (err) { alert('Invalid backup file.'); }
       };
       reader.readAsText(file);
     }
