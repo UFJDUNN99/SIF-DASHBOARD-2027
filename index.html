@@ -220,7 +220,7 @@
         <div class="stat-card">
           <p>Total VAT Collected (Forecast)</p>
           <h3 id="dashTotalVatCollected" style="color: var(--accent-amber);">£0.00</h3>
-          <p style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">Included in Ticket & Bar Revenue</p>
+          <p style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">Included in Tickets, Bar & Sponsorships</p>
         </div>
         <div class="stat-card">
           <p>Budget Allocation (Inc. VAT)</p>
@@ -421,6 +421,32 @@
           </div>
         </div>
 
+      </div>
+
+      <!-- SPONSORSHIP INCOME MATRIX BLOCK -->
+      <div class="table-card" style="margin-bottom: 20px;">
+        <div class="table-header">
+          <span>🤝 Sponsorship & Partner Income (Editable)</span>
+          <div style="display: flex; gap: 8px;">
+            <button class="action-btn" onclick="openSponsorshipModal(-1)">+ Add Sponsorship</button>
+            <button onclick="resetSponsorships()" style="background: #0f172a; color: var(--text-main); border: 1px solid var(--border-color); padding: 6px 10px; border-radius: 6px;">Reset Default</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Company Name</th>
+                <th>Area Sponsored</th>
+                <th style="text-align: right;">Excl. VAT (£)</th>
+                <th style="text-align: right;">VAT Amount (£)</th>
+                <th style="text-align: right;">Amount Incl. VAT (£)</th>
+                <th style="text-align: center;">Action</th>
+              </tr>
+            </thead>
+            <tbody id="sponsorshipBody"></tbody>
+          </table>
+        </div>
       </div>
 
       <div class="table-card" style="margin-bottom: 20px;">
@@ -709,6 +735,29 @@
       <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px;">
         <button type="button" onclick="closeTargetModal()" style="background: #0f172a;">Cancel</button>
         <button type="button" onclick="saveTargetItem()" class="action-btn">Save Ticket Target</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="sponsorshipModal" class="modal">
+    <div class="modal-box">
+      <h3 id="sponsorshipModalTitle" style="margin-bottom: 16px; font-size: 16px; font-weight: bold; color: var(--accent-blue);">Add Sponsorship</h3>
+      <input type="hidden" id="sponsorshipEditIndex">
+      <div class="form-group">
+        <label>Company Name</label>
+        <input type="text" id="sModalCompany" placeholder="e.g. Red Bull" required>
+      </div>
+      <div class="form-group">
+        <label>Area Sponsored</label>
+        <input type="text" id="sModalArea" placeholder="e.g. Main Stage / VIP Lounge" required>
+      </div>
+      <div class="form-group">
+        <label>Amount Including VAT (£)</label>
+        <input type="number" step="0.01" id="sModalAmount" placeholder="17500.00" required>
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px;">
+        <button type="button" onclick="closeSponsorshipModal()" style="background: #0f172a;">Cancel</button>
+        <button type="button" onclick="saveSponsorshipItem()" class="action-btn">Save Sponsorship</button>
       </div>
     </div>
   </div>
@@ -1018,6 +1067,10 @@
       { day: "Saturday 31st July", type: "Car Park", qty: 87, price: 10 }
     ];
 
+    const defaultSponsorships = [
+      { company: "Red Bull", area: "Main Stage & VIP Bar", amount: 17500 }
+    ];
+
     const defaultPlan = [
       { section: "Infrastructure" },
       { task: "Fencing", p1: "JD", p2: "-", p3: "-", update: "need to book", steps: "get them booked", stepsOwner: "james dunn", stepsDate: "1st Feb 2027", completed: false },
@@ -1143,6 +1196,7 @@
     let actualSalesData = { ...defaultActualSales };
     let budgetData = [...defaultBudget];
     let targetData = [...defaultTargets];
+    let sponsorshipData = [...defaultSponsorships];
     let planData = [...defaultPlan];
     let rolesData = [...defaultRoles];
     let djData = [...defaultDjs];
@@ -1161,6 +1215,7 @@
           actualSalesData = val.actualSalesData ? val.actualSalesData : { ...defaultActualSales };
           budgetData = val.budgetData ? val.budgetData : [...defaultBudget];
           targetData = val.targetData ? val.targetData : [...defaultTargets];
+          sponsorshipData = val.sponsorshipData ? val.sponsorshipData : [...defaultSponsorships];
           planData = val.planData ? val.planData : [...defaultPlan];
           rolesData = val.rolesData ? val.rolesData : [...defaultRoles];
           djData = val.djData ? val.djData : [...defaultDjs];
@@ -1192,7 +1247,7 @@
     }
 
     function saveAllToFirebase() {
-      const payload = { actualSalesData, budgetData, targetData, planData, rolesData, djData, notesData, barMultipliers };
+      const payload = { actualSalesData, budgetData, targetData, sponsorshipData, planData, rolesData, djData, notesData, barMultipliers };
       db.ref('sif27_festival_data').set(payload);
     }
 
@@ -1574,10 +1629,47 @@
         const totalBarForecast = friBarTotal + satBarTotal + wkndBarTotal;
 
         const totalCombinedTicketRev = friTicketRev + satTicketRev + wkndTicketRev;
-        const grandTotalCombined = totalCombinedTicketRev + totalBarForecast;
 
-        // Total VAT Collected calculation (20% standard VAT included across tickets and bar spend)
-        const totalVatCollected = (totalCombinedTicketRev / 6) + (totalBarForecast / 6);
+        // Sponsorship totals calculation
+        let totalSponsorshipInc = 0;
+        let totalSponsorshipVat = 0;
+        let sponsorshipTableHtml = '';
+
+        sponsorshipData.forEach((row, idx) => {
+          const incAmt = parseFloat(row.amount) || 0;
+          const exclAmt = incAmt / 1.2;
+          const vatAmt = incAmt - exclAmt;
+          totalSponsorshipInc += incAmt;
+          totalSponsorshipVat += vatAmt;
+
+          sponsorshipTableHtml += `<tr>
+            <td style="font-weight:bold; color:var(--accent-blue);">${row.company}</td>
+            <td>${row.area}</td>
+            <td style="text-align:right; color:var(--text-muted);">${formatGBP(exclAmt)}</td>
+            <td style="text-align:right; color:var(--text-muted);">${formatGBP(vatAmt)}</td>
+            <td style="text-align:right; font-weight:bold; color:var(--accent-green);">${formatGBP(incAmt)}</td>
+            <td style="text-align:center;">
+              <button class="edit-btn" onclick="openSponsorshipModal(${idx})">Edit</button>
+              <button class="edit-btn" onclick="deleteSponsorshipItem(${idx})" style="background:rgba(225,29,72,0.2); color:#fda4af; border-color:var(--border-color); margin-left:4px;">Del</button>
+            </td>
+          </tr>`;
+        });
+
+        sponsorshipTableHtml += `<tr class="total-row">
+          <td colspan="2" style="text-transform: uppercase;">Total Sponsorship Summary</td>
+          <td style="text-align:right; color:var(--text-muted);">${formatGBP(totalSponsorshipInc - totalSponsorshipVat)}</td>
+          <td style="text-align:right; color:var(--text-muted);">${formatGBP(totalSponsorshipVat)}</td>
+          <td style="text-align:right; color:var(--accent-green); font-weight:bold;">${formatGBP(totalSponsorshipInc)}</td>
+          <td></td>
+        </tr>`;
+
+        const sBody = document.getElementById('sponsorshipBody');
+        if (sBody) sBody.innerHTML = sponsorshipTableHtml;
+
+        const grandTotalCombined = totalCombinedTicketRev + totalBarForecast + totalSponsorshipInc;
+
+        // Total VAT Collected calculation (20% standard VAT included across tickets, bar spend, and sponsorships)
+        const totalVatCollected = (totalCombinedTicketRev / 6) + (totalBarForecast / 6) + totalSponsorshipVat;
 
         document.getElementById('friBarMultiplier').value = barMultipliers.Friday || 35.00;
         document.getElementById('satBarMultiplier').value = barMultipliers.Saturday || 65.00;
@@ -1599,8 +1691,7 @@
         document.getElementById('topConsolidatedBarRev').innerText = formatGBP(totalBarForecast);
         document.getElementById('topConsolidatedGrandTotal').innerText = formatGBP(grandTotalCombined);
 
-        const vendorSponsorTotal = 17500;
-        const totalIncomeForecast = totalCombinedTicketRev + totalBarForecast + vendorSponsorTotal;
+        const totalIncomeForecast = totalCombinedTicketRev + totalBarForecast + totalSponsorshipInc;
         const totalActualRevenue = (actualSalesData.friRev || 0) + (actualSalesData.satRev || 0) + (actualSalesData.wkndRev || 0) + (actualSalesData.barRev || 0);
 
         let bNetTotal = 0, bVatAmtTotal = 0, bIncTotal = 0, bSpentTotal = 0;
@@ -1636,7 +1727,7 @@
             <tr><td>Friday Event</td><td style="text-align:right;">${formatGBP(friTicketRev)}</td><td style="text-align:right;">${formatGBP(friBarTotal)}</td><td style="text-align:right; font-weight:bold;">${formatGBP(friTicketRev + friBarTotal)}</td></tr>
             <tr><td>Saturday Event</td><td style="text-align:right;">${formatGBP(satTicketRev)}</td><td style="text-align:right;">${formatGBP(satBarTotal)}</td><td style="text-align:right; font-weight:bold;">${formatGBP(satTicketRev + satBarTotal)}</td></tr>
             <tr><td>Weekend Passes</td><td style="text-align:right;">${formatGBP(wkndTicketRev)}</td><td style="text-align:right;">${formatGBP(wkndBarTotal)}</td><td style="text-align:right; font-weight:bold;">${formatGBP(wkndTicketRev + wkndBarTotal)}</td></tr>
-            <tr><td>Sponsorship & Vendors</td><td style="text-align:right;">-</td><td style="text-align:right;">-</td><td style="text-align:right; font-weight:bold;">${formatGBP(vendorSponsorTotal)}</td></tr>
+            <tr><td>Sponsorship & Partners</td><td style="text-align:right;">-</td><td style="text-align:right;">-</td><td style="text-align:right; font-weight:bold;">${formatGBP(totalSponsorshipInc)}</td></tr>
           `;
           document.getElementById('dashRevenueBody').innerHTML = revTableHtml;
         }
@@ -1938,19 +2029,6 @@
       buildTables();
     }
 
-    function openBudgetModal(index) {
-      document.getElementById('budgetEditIndex').value = index;
-      document.getElementById('budgetModal').classList.add('active');
-    }
-    function closeBudgetModal() { document.getElementById('budgetModal').classList.remove('active'); }
-    function resetBudget() {
-      if (confirm('Reset budget to default values?')) {
-        budgetData = [...defaultBudget];
-        saveAllToFirebase();
-        buildTables();
-      }
-    }
-
     function openTargetModal(index) {
       document.getElementById('targetEditIndex').value = index;
       if (index === -1) {
@@ -1994,6 +2072,52 @@
     function resetTargets() {
       if (confirm('Reset sales targets to default values?')) {
         targetData = [...defaultTargets];
+        saveAllToFirebase();
+        buildTables();
+      }
+    }
+
+    function openSponsorshipModal(index) {
+      document.getElementById('sponsorshipEditIndex').value = index;
+      if (index === -1) {
+        document.getElementById('sponsorshipModalTitle').innerText = "Add Sponsorship";
+        document.getElementById('sModalCompany').value = "";
+        document.getElementById('sModalArea').value = "";
+        document.getElementById('sModalAmount').value = "";
+      } else {
+        document.getElementById('sponsorshipModalTitle').innerText = "Edit Sponsorship";
+        const item = sponsorshipData[index];
+        document.getElementById('sModalCompany').value = item.company;
+        document.getElementById('sModalArea').value = item.area;
+        document.getElementById('sModalAmount').value = item.amount;
+      }
+      document.getElementById('sponsorshipModal').classList.add('active');
+    }
+    function closeSponsorshipModal() { document.getElementById('sponsorshipModal').classList.remove('active'); }
+    function saveSponsorshipItem() {
+      const idx = parseInt(document.getElementById('sponsorshipEditIndex').value);
+      const newItem = {
+        company: document.getElementById('sModalCompany').value.trim(),
+        area: document.getElementById('sModalArea').value.trim(),
+        amount: parseFloat(document.getElementById('sModalAmount').value) || 0
+      };
+      if (!newItem.company) { alert('Please enter a company name.'); return; }
+      if (idx === -1) sponsorshipData.push(newItem);
+      else sponsorshipData[idx] = newItem;
+      saveAllToFirebase();
+      closeSponsorshipModal();
+      buildTables();
+    }
+    function deleteSponsorshipItem(index) {
+      if (confirm('Delete this sponsorship item?')) {
+        sponsorshipData.splice(index, 1);
+        saveAllToFirebase();
+        buildTables();
+      }
+    }
+    function resetSponsorships() {
+      if (confirm('Reset sponsorships to default values?')) {
+        sponsorshipData = [...defaultSponsorships];
         saveAllToFirebase();
         buildTables();
       }
@@ -2186,7 +2310,7 @@
     }
 
     function exportToJSON() {
-      const payload = { actualSalesData, budgetData, targetData, planData, rolesData, djData, notesData, barMultipliers };
+      const payload = { actualSalesData, budgetData, targetData, sponsorshipData, planData, rolesData, djData, notesData, barMultipliers };
       const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -2208,6 +2332,7 @@
           if (imported.actualSalesData) actualSalesData = imported.actualSalesData;
           if (imported.budgetData) budgetData = imported.budgetData;
           if (imported.targetData) targetData = imported.targetData;
+          if (imported.sponsorshipData) sponsorshipData = imported.sponsorshipData;
           if (imported.planData) planData = imported.planData;
           if (imported.rolesData) rolesData = imported.rolesData;
           if (imported.djData) djData = imported.djData;
