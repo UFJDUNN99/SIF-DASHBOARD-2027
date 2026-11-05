@@ -462,7 +462,9 @@
                 <th>Day / Event</th>
                 <th>Ticket Type</th>
                 <th style="text-align: center;">Target Qty</th>
-                <th style="text-align: right;">Price inc VAT (£)</th>
+                <th style="text-align: right;">Price Excl. VAT (£)</th>
+                <th style="text-align: right;">VAT Amount (£)</th>
+                <th style="text-align: right;">Price Incl. VAT (£)</th>
                 <th style="text-align: right;">Total Income (£)</th>
                 <th style="text-align: center;">Action</th>
               </tr>
@@ -1657,7 +1659,7 @@
 
         const dashStageBody = document.getElementById('dashStageBody');
         if (dashStageBody) {
-          const selectedStage = document.getElementById('frontStageFilter') ? document.getElementById('frontStageFilter').value : "ALL";
+          const selectedStage = document.getElementById('frontStageFilter') ? document.getElementById('frontStageFilter'].value : "ALL";
           const filteredDjs = djData.filter(row => {
             const st = (row.stage || "Lighthouse (Main Stage)").trim();
             return selectedStage === "ALL" || st === selectedStage;
@@ -1756,17 +1758,23 @@
           bBody.innerHTML = bHtml;
         }
 
-        // TAB 3: TARGETS (WITH TOTALS ROW & DELETE BUTTON)
+        // TAB 3: TARGETS (EXCL VAT, VAT, INCL VAT, TOTAL INCOME)
         const tBody = document.getElementById('targetBody');
         if (tBody && isAdmin) {
           let tHtml = '';
           targetData.forEach((row, idx) => {
-            const itemTotal = (row.qty || 0) * (row.price || 0);
+            const incPrice = parseFloat(row.price) || 0;
+            const exclPrice = incPrice / 1.2;
+            const vatPerTicket = incPrice - exclPrice;
+            const itemTotal = (row.qty || 0) * incPrice;
+
             tHtml += `<tr>
               <td style="color:var(--text-muted); font-weight:600;">${row.day}</td>
               <td style="font-weight:bold; color:var(--accent-blue);">${row.type}</td>
               <td style="text-align:center; font-weight:bold;">${row.qty}</td>
-              <td style="text-align:right;">${formatGBP(row.price)}</td>
+              <td style="text-align:right; color:var(--text-muted);">${formatGBP(exclPrice)}</td>
+              <td style="text-align:right; color:var(--text-muted);">${formatGBP(vatPerTicket)}</td>
+              <td style="text-align:right; font-weight:bold;">${formatGBP(incPrice)}</td>
               <td style="text-align:right; font-weight:bold; color:var(--accent-green);">${formatGBP(itemTotal)}</td>
               <td style="text-align:center;">
                 <button class="edit-btn" onclick="openTargetModal(${idx})">Edit</button>
@@ -1778,7 +1786,7 @@
           tHtml += `<tr class="total-row">
             <td colspan="2" style="text-transform: uppercase;">Total Sales Targets Summary</td>
             <td style="text-align:center; color:var(--accent-blue); font-weight:bold;">${friTicketQty + satTicketQty + wkndTicketQty} Tickets (Excl. Parking)</td>
-            <td style="text-align:right;">-</td>
+            <td colspan="3" style="text-align:right;">Calculated on Inclusive Prices:</td>
             <td style="text-align:right; color:var(--accent-green); font-weight:bold;">${formatGBP(totalSalesRevenue)}</td>
             <td></td>
           </tr>`;
@@ -2221,7 +2229,7 @@
           if (imported.barMultipliers) barMultipliers = imported.barMultipliers;
           saveAllToFirebase();
           buildTables();
-      } catch (err) { alert('Invalid backup file.'); }
+        } catch (err) { alert('Invalid backup file.'); }
       };
       reader.readAsText(file);
     }
