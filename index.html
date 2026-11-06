@@ -687,9 +687,6 @@
       <div class="table-card">
         <div class="table-header">
           <span>💡 Department Ideas Board</span>
-          <select id="notesSortSelect" onchange="buildNotesBoard()" style="padding: 4px 6px; font-size: 11px;">
-            <option value="dateDesc">Newest First</option>
-          </select>
         </div>
 
         <div class="notes-board-grid">
@@ -781,7 +778,7 @@
         </select>
       </div>
       <div class="form-group"><label>Ticket Type</label><input type="text" id="tModalType" placeholder="e.g. VIP Adult" required></div>
-      <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+      <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
         <div><label>Quantity</label><input type="number" id="tModalQty" required></div>
         <div><label>Price Inc. VAT (£)</label><input type="number" step="0.01" id="tModalPrice" required></div>
       </div>
@@ -1179,7 +1176,7 @@
     function getUserRole() {
       if (currentUserEmail.includes('james.dunn@ultrafunkula')) return 'admin';
       const key = currentUserEmail.replace(/\./g, '_');
-      return userRolesMap[key] || 'team'; // Default to team so staff can edit plans
+      return userRolesMap[key] || 'team';
     }
 
     function applyRolePermissions() {
@@ -1190,8 +1187,6 @@
       const setDisplay = (id, val) => { const el = document.getElementById(id); if (el) el.style.display = val; };
 
       setDisplay('btn-admin', isAdmin ? 'block' : 'none');
-      
-      // Project Plan is editable by all team members
       setDisplay('planActionBtns', isDirectorOrTeam ? 'flex' : 'none');
 
       document.querySelectorAll('.admin-col-header').forEach(th => {
@@ -1316,7 +1311,6 @@
           document.getElementById('dashVariance').innerText = formatGBP(grandTotal - bInc);
         }
 
-        // Project Plan Task Counts
         let totalTasks = 0, completedTasks = 0, outstanding = 0;
         const leadCounts = { "James Dunn": 0, "Matt Prevett": 0, "Ben Wass": 0, "Darren Wallond": 0, "Tracey Gascoyne": 0, "Mel Chapman": 0 };
         const leadMap = { "JD": "James Dunn", "MP": "Matt Prevett", "BW": "Ben Wass", "DW": "Darren Wallond", "TG": "Tracey Gascoyne", "MC": "Mel Chapman" };
@@ -1342,6 +1336,47 @@
           if (count > 0) leadHtml += `<tr><td>${name}</td><td style="text-align:center;">${count}</td><td style="text-align:right;"><span class="badge">Active</span></td></tr>`;
         }
         document.getElementById('leadWorkloadBody').innerHTML = leadHtml || `<tr><td colspan="3" style="text-align:center; color:var(--text-muted);">All clear</td></tr>`;
+
+        // Render Budget Table
+        const bBody = document.getElementById('budgetBody');
+        if (bBody) {
+          let bHtml = '';
+          budgetData.forEach((row, idx) => {
+            const vat = row.vat === 'YES' ? (row.net || 0) * 0.2 : 0;
+            bHtml += `<tr>
+              <td>${row.item}</td>
+              <td>${row.cat}</td>
+              <td style="text-align:right;">${formatGBP(row.net)}</td>
+              <td style="text-align:center;">${row.vat}</td>
+              <td style="text-align:right;">${formatGBP(vat)}</td>
+              <td style="text-align:right;">${formatGBP((row.net || 0) + vat)}</td>
+              <td style="text-align:right;">${formatGBP(row.update)}</td>
+              <td style="text-align:center;">${row.owner || '-'}</td>
+              <td style="text-align:center;"><button class="edit-btn" onclick="deleteBudgetItem(${idx})">Del</button></td>
+            </tr>`;
+          });
+          bBody.innerHTML = bHtml;
+        }
+
+        // Render Sales Target Table
+        const tBody = document.getElementById('targetBody');
+        if (tBody) {
+          let tHtml = '';
+          targetData.forEach((row, idx) => {
+            const tot = (row.qty || 0) * (row.price || 0);
+            tHtml += `<tr>
+              <td>${row.day}</td>
+              <td>${row.type}</td>
+              <td style="text-align:center;">${row.qty}</td>
+              <td style="text-align:right;">${formatGBP(row.price / 1.2)}</td>
+              <td style="text-align:right;">${formatGBP(row.price - (row.price / 1.2))}</td>
+              <td style="text-align:right;">${formatGBP(row.price)}</td>
+              <td style="text-align:right;">${formatGBP(tot)}</td>
+              <td style="text-align:center;"><button class="edit-btn" onclick="deleteTargetItem(${idx})">Del</button></td>
+            </tr>`;
+          });
+          tBody.innerHTML = tHtml;
+        }
 
         // Render Plan Table
         const pBody = document.getElementById('planBody');
@@ -1469,6 +1504,16 @@
       closeTargetModal();
       buildTables();
     }
+    function deleteTargetItem(idx) {
+      targetData.splice(idx, 1);
+      saveAllToFirebase();
+      buildTables();
+    }
+    function resetTargets() {
+      targetData = [...defaultTargets];
+      saveAllToFirebase();
+      buildTables();
+    }
 
     function openSponsorshipModal(idx) { document.getElementById('sponsorshipModal').classList.add('active'); }
     function closeSponsorshipModal() { document.getElementById('sponsorshipModal').classList.remove('active'); }
@@ -1476,6 +1521,27 @@
       sponsorshipData.push({ company: document.getElementById('sModalCompany').value, area: document.getElementById('sModalArea').value, amount: parseFloat(document.getElementById('sModalAmount').value) || 0 });
       saveAllToFirebase();
       closeSponsorshipModal();
+      buildTables();
+    }
+    function resetSponsorships() {
+      sponsorshipData = [...defaultSponsorships];
+      saveAllToFirebase();
+      buildTables();
+    }
+
+    function openBudgetModal(idx) {
+      budgetData.push({ item: "New Expense", cat: "General", net: 1000, vat: "YES", update: 0, owner: "James Dunn" });
+      saveAllToFirebase();
+      buildTables();
+    }
+    function deleteBudgetItem(idx) {
+      budgetData.splice(idx, 1);
+      saveAllToFirebase();
+      buildTables();
+    }
+    function resetBudget() {
+      budgetData = [...defaultBudget];
+      saveAllToFirebase();
       buildTables();
     }
 
@@ -1501,6 +1567,11 @@
       if (idx === -1) djData.push(act); else djData[idx] = act;
       saveAllToFirebase();
       closeDjModal();
+      buildTables();
+    }
+    function resetDjs() {
+      djData = [...defaultDjs];
+      saveAllToFirebase();
       buildTables();
     }
 
@@ -1562,6 +1633,8 @@
       saveAllToFirebase();
       buildNotesBoard();
     }
+    function resetPlan() { planData = [...defaultPlan]; saveAllToFirebase(); buildTables(); }
+    function resetRoles() { rolesData = [...defaultRoles]; saveAllToFirebase(); buildTables(); }
 
     function runTimer() {
       const target = new Date('July 30, 2027 12:00:00').getTime();
