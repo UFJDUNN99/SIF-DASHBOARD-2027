@@ -587,7 +587,10 @@
       <div class="table-card">
         <div class="table-header">
           <span>🛡️ Roles & Responsibilities Matrix</span>
-          <button onclick="resetRoles()" class="edit-btn">Reset</button>
+          <div style="display: flex; gap: 6px;">
+            <button class="action-btn" onclick="openRolesModal(-1)">+ Add Role</button>
+            <button onclick="resetRoles()" class="edit-btn">Reset</button>
+          </div>
         </div>
         <div class="table-wrap">
           <table>
@@ -597,7 +600,7 @@
                 <th>Lead (1)</th>
                 <th>Secondary (2)</th>
                 <th>Support (3)</th>
-                <th style="text-align: center;" class="admin-col-header">Action</th>
+                <th style="text-align: center;">Action</th>
               </tr>
             </thead>
             <tbody id="rolesBody"></tbody>
@@ -717,10 +720,12 @@
                 <th>Staff Email</th>
                 <th>Last Login</th>
                 <th style="text-align: center;">Role</th>
-                <th style="text-align: center;">Status</th>
+                <th style="text-align: center;">Status / Action</th>
               </tr>
             </thead>
-            <tbody id="adminUsersBody"></tbody>
+            <tbody id="adminUsersBody">
+              <tr><td colspan="4" style="text-align:center; color:var(--text-muted); padding:14px;">Loading staff registries...</td></tr>
+            </tbody>
           </table>
         </div>
       </div>
@@ -728,7 +733,7 @@
       <div class="table-card">
         <div class="table-header">
           <span>📜 System Activity Audit Logs</span>
-          <button onclick="clearAuditLogs()" class="edit-btn">Clear</button>
+          <button onclick="clearAuditLogs()" class="edit-btn">Clear Logs</button>
         </div>
         <div class="table-wrap" style="max-height: 300px; overflow-y: auto;">
           <table>
@@ -739,7 +744,9 @@
                 <th>Action</th>
               </tr>
             </thead>
-            <tbody id="auditLogsBody"></tbody>
+            <tbody id="auditLogsBody">
+              <tr><td colspan="3" style="text-align:center; color:var(--text-muted); padding:14px;">No audit logs recorded yet.</td></tr>
+            </tbody>
           </table>
         </div>
       </div>
@@ -848,7 +855,7 @@
     <div class="modal-box">
       <h3 style="margin-bottom: 14px; font-size: 15px; font-weight: bold; color: var(--accent-blue);">Edit Role Assignment</h3>
       <input type="hidden" id="rolesEditIndex">
-      <div class="form-group"><label>Area</label><input type="text" id="rModalTask" disabled style="color: var(--text-muted); background: var(--input-bg);"></div>
+      <div class="form-group"><label>Area / Task</label><input type="text" id="rModalTask" placeholder="e.g. Fencing" required></div>
       <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px;">
         <div><label>Lead (1)</label><input type="text" id="rModalM1"></div>
         <div><label>Secondary (2)</label><input type="text" id="rModalM2"></div>
@@ -1094,7 +1101,11 @@
       { section: "Infrastructure" },
       { task: "Fencing", m1: "James Dunn", m2: "-", m3: "-" },
       { section: "Facilities" },
-      { task: "Toilets", m1: "Darren Wallond", m2: "James Dunn", m3: "-" }
+      { task: "Toilets", m1: "Darren Wallond", m2: "James Dunn", m3: "-" },
+      { section: "Production" },
+      { task: "Stage & Sound", m1: "James Dunn", m2: "Matt Prevett", m3: "-" },
+      { section: "Marketing" },
+      { task: "Socials & Branding", m1: "Ben Wass", m2: "-", m3: "-" }
     ];
 
     const defaultDjs = [
@@ -1222,6 +1233,8 @@
         buildCalendarMatrix();
         buildTimelineAccordion();
         buildNotesBoard();
+        buildRolesTable();
+        buildAdminPanel();
 
         const role = getUserRole();
         const isAdmin = currentUserEmail.includes('james.dunn@ultrafunkula');
@@ -1538,6 +1551,134 @@
       } catch (e) { console.error(e); }
     }
 
+    // Roles & Admin Tables Rendering
+    function buildRolesTable() {
+      const rBody = document.getElementById('rolesBody');
+      if (!rBody) return;
+      let html = '';
+      rolesData.forEach((row, idx) => {
+        if (row.section) {
+          html += `<tr class="section-row"><td colspan="5">📁 ${row.section}</td></tr>`;
+        } else {
+          html += `<tr>
+            <td style="font-weight:600;">${row.task}</td>
+            <td><span class="badge" style="color:var(--accent-blue);">${row.m1 || '-'}</span></td>
+            <td><span class="badge" style="color:var(--accent-purple);">${row.m2 || '-'}</span></td>
+            <td>${row.m3 || '-'}</td>
+            <td style="text-align:center;">
+              <button class="edit-btn" onclick="openRolesModal(${idx})">Edit</button>
+              <button class="edit-btn" onclick="deleteRolesItem(${idx})" style="background:rgba(225,29,72,0.2); color:var(--accent-rose); border-color:var(--border-color); margin-left:4px;">Del</button>
+            </td>
+          </tr>`;
+        }
+      });
+      rBody.innerHTML = html;
+    }
+
+    function openRolesModal(idx) {
+      document.getElementById('rolesEditIndex').value = idx;
+      if (idx === -1) {
+        document.getElementById('rModalTask').value = '';
+        document.getElementById('rModalM1').value = '';
+        document.getElementById('rModalM2').value = '';
+        document.getElementById('rModalM3').value = '';
+      } else {
+        const item = rolesData[idx];
+        document.getElementById('rModalTask').value = item.task || '';
+        document.getElementById('rModalM1').value = item.m1 || '';
+        document.getElementById('rModalM2').value = item.m2 || '';
+        document.getElementById('rModalM3').value = item.m3 || '';
+      }
+      document.getElementById('rolesModal').classList.add('active');
+    }
+    function closeRolesModal() { document.getElementById('rolesModal').classList.remove('active'); }
+    function saveRolesItem() {
+      const idx = parseInt(document.getElementById('rolesEditIndex').value);
+      const newItem = {
+        task: document.getElementById('rModalTask').value.trim(),
+        m1: document.getElementById('rModalM1').value.trim(),
+        m2: document.getElementById('rModalM2').value.trim(),
+        m3: document.getElementById('rModalM3').value.trim()
+      };
+      if (idx === -1) rolesData.push(newItem); else rolesData[idx] = newItem;
+      saveAllToFirebase();
+      closeRolesModal();
+      buildRolesTable();
+    }
+    function deleteRolesItem(idx) {
+      rolesData.splice(idx, 1);
+      saveAllToFirebase();
+      buildRolesTable();
+    }
+    function resetRoles() {
+      rolesData = [...defaultRoles];
+      saveAllToFirebase();
+      buildRolesTable();
+    }
+
+    function buildAdminPanel() {
+      const uBody = document.getElementById('adminUsersBody');
+      if (uBody) {
+        let uHtml = '';
+        const allKeys = Object.keys(usersRegistry);
+        if (allKeys.length === 0) {
+          uHtml = `<tr><td colspan="4" style="text-align:center; color:var(--text-muted); padding:14px;">No registered users found.</td></tr>`;
+        } else {
+          allKeys.forEach(k => {
+            const u = usersRegistry[k];
+            const emailKey = u.email.replace(/\./g, '_');
+            const role = userRolesMap[emailKey] || 'team';
+            uHtml += `<tr>
+              <td><b>${u.email}</b></td>
+              <td style="color:var(--text-muted);">${new Date(u.lastLogin || Date.now()).toLocaleString('en-GB')}</td>
+              <td style="text-align:center;"><span class="badge" style="color:var(--accent-blue);">${role}</span></td>
+              <td style="text-align:center;">
+                <select onchange="updateUserRole('${u.email}', this.value)" style="padding: 3px 6px; font-size: 11px;">
+                  <option value="pending" ${role==='pending'?'selected':''}>Pending</option>
+                  <option value="team" ${role==='team'?'selected':''}>Team Member</option>
+                  <option value="director" ${role==='director'?'selected':''}>Director</option>
+                  <option value="admin" ${role==='admin'?'selected':''}>Admin</option>
+                </select>
+              </td>
+            </tr>`;
+          });
+        }
+        uBody.innerHTML = uHtml;
+      }
+
+      const lBody = document.getElementById('auditLogsBody');
+      if (lBody) {
+        let lHtml = '';
+        if (auditLogsList.length === 0) {
+          lHtml = `<tr><td colspan="3" style="text-align:center; color:var(--text-muted); padding:14px;">No audit logs recorded yet.</td></tr>`;
+        } else {
+          auditLogsList.slice().reverse().forEach(log => {
+            lHtml += `<tr>
+              <td style="color:var(--text-muted); white-space:nowrap;">${log.timestamp}</td>
+              <td style="font-weight:bold; color:var(--accent-purple);">${log.email}</td>
+              <td>${log.action}</td>
+            </tr>`;
+          });
+        }
+        lBody.innerHTML = lHtml;
+      }
+    }
+
+    function updateUserRole(email, newRole) {
+      const key = email.replace(/\./g, '_');
+      db.ref(`sif27_festival_data/userRoles/${key}`).set(newRole);
+      logActivity(currentUserEmail, `Updated role for ${email} to ${newRole}`);
+      alert(`✅ Updated ${email} role to ${newRole}`);
+    }
+
+    function clearAuditLogs() {
+      if (confirm("Are you sure you want to clear audit logs?")) {
+        db.ref('sif27_festival_data/auditLogs').remove();
+        auditLogsList = [];
+        buildAdminPanel();
+      }
+    }
+
     // Modal & Edit Handlers
     function openPlanModal(idx) {
       document.getElementById('planEditIndex').value = idx;
@@ -1833,7 +1974,6 @@
       buildNotesBoard();
     }
     function resetPlan() { planData = [...defaultPlan]; saveAllToFirebase(); buildTables(); }
-    function resetRoles() { rolesData = [...defaultRoles]; saveAllToFirebase(); buildTables(); }
 
     function runTimer() {
       const target = new Date('July 30, 2027 12:00:00').getTime();
