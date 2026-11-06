@@ -135,7 +135,7 @@
       <button type="button" id="loginSubmitBtn">Log In to Dashboard</button>
       <div id="loginError"></div>
 
-      <div style="margin-top: 14px; text-align: center; border-top: 1px solid #334155; padding-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+      <div style="margin-top: 14px; text-align: center; border-top: 1px solid #334155; padding-top: 10px;">
         <button type="button" onclick="emergencyBypass()" style="background: none; border: none; color: #f59e0b; font-size: 11px; font-weight: bold; cursor: pointer;">⚠️ Emergency Bypass</button>
       </div>
     </div>
@@ -173,14 +173,21 @@
 
   <main>
     <!-- TAB 1: EXECUTIVE DASHBOARD -->
+    <main>
+    <!-- TAB 1: EXECUTIVE DASHBOARD -->
     <div id="tab-dash" class="tab-content active">
       <div class="unified-summary-card">
-        <div class="unified-summary-header"><span>📊 Executive Financial Summary</span></div>
+        <div class="unified-summary-header"><span>📊 Executive Financial & VAT Summary</span></div>
         <div class="unified-grid">
           <div class="summary-item"><p>Total Income</p><h3 id="dashTotalIncome" style="color: var(--accent-blue);">£0.00</h3></div>
           <div class="summary-item"><p>Budget Allocation</p><h3 id="dashBudInc" style="color: var(--accent-purple);">£0.00</h3></div>
           <div class="summary-item"><p>Profit Forecast</p><h3 id="dashVariance">£0.00</h3></div>
           <div class="summary-item"><p>Actual Ticket Sales</p><h3 id="dashActualRevenue" style="color: var(--accent-green);">£0.00</h3></div>
+        </div>
+        <div class="unified-grid-bottom" style="margin-top: 12px;">
+          <div class="summary-item"><p>VAT Collected</p><h3 id="dashVatColl" style="color: var(--accent-amber);">£0.00</h3></div>
+          <div class="summary-item"><p>VAT Paid</p><h3 id="dashVatPaid" style="color: var(--accent-amber);">£0.00</h3></div>
+          <div class="summary-item"><p>Net VAT Liability</p><h3 id="dashNetVat" style="color: var(--accent-rose);">£0.00</h3></div>
         </div>
       </div>
     </div>
@@ -269,7 +276,7 @@
       </div>
     </div>
 
-    <!-- TAB 3: SALES TARGETS -->
+    <!-- TAB 3: SALES & TICKETS -->
     <div id="tab-target" class="tab-content">
       <div class="table-card">
         <div class="table-header">
@@ -307,6 +314,30 @@
 
     <!-- TAB 5: DJS & PRODUCTION -->
     <div id="tab-djs" class="tab-content">
+      <div class="table-card" style="margin-bottom: 20px;">
+        <div class="table-header">
+          <span>📅 Stage Availability Calendar</span>
+          <div style="display: flex; gap: 4px;">
+            <button onclick="switchCalDay('Friday 30th July')" id="calBtnFri" class="action-btn" style="padding: 3px 8px; font-size: 10px;">Friday</button>
+            <button onclick="switchCalDay('Saturday 31st July')" id="calBtnSat" class="action-btn" style="background: var(--input-bg); color: var(--text-main); border: 1px solid var(--border-color); padding: 3px 8px; font-size: 10px;">Saturday</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Time Slot</th>
+                <th>Lighthouse (Main)</th>
+                <th>Cactus (Live)</th>
+                <th>Causeway (DnB)</th>
+                <th>Sand Bar (Disco)</th>
+              </tr>
+            </thead>
+            <tbody id="calendarMatrixBody"></tbody>
+          </table>
+        </div>
+      </div>
+
       <div class="table-card">
         <div class="table-header">
           <span>🎧 DJs & Production Line-Up</span>
@@ -412,6 +443,7 @@
     let djData = [...defaultDjs];
     let planData = [...defaultPlan];
     let targetData = [...defaultTargets];
+    let currentCalDay = "Friday 30th July";
     let adminSocialsPortalUrl = "https://lookerstudio.google.com/";
 
     function initFirebaseSync() {
@@ -470,28 +502,33 @@
       buildTargetTable();
       buildDjTable();
       buildExecutiveSummary();
+      buildCalendarMatrix();
     }
 
     function buildExecutiveSummary() {
       let totalIncome = 0;
-      let totalSpent = 0;
       let totalBudInc = 0;
-      let actualTicketRev = 0;
+      let totalVatColl = 0;
+      let totalVatPaid = 0;
 
       targetData.forEach(t => {
-        totalIncome += (t.qty || 0) * (t.price || 0);
+        const rev = (t.qty || 0) * (t.price || 0);
+        totalIncome += rev;
+        totalVatColl += rev * 0.16667;
       });
 
       budgetData.forEach(b => {
         const v = b.vat === 'YES' ? (b.net || 0) * 0.2 : 0;
         totalBudInc += ((b.net || 0) + v);
-        totalSpent += (b.update || 0);
+        totalVatPaid += v;
       });
 
       if(document.getElementById('dashTotalIncome')) document.getElementById('dashTotalIncome').innerText = formatGBP(totalIncome);
       if(document.getElementById('dashBudInc')) document.getElementById('dashBudInc').innerText = formatGBP(totalBudInc);
       if(document.getElementById('dashVariance')) document.getElementById('dashVariance').innerText = formatGBP(totalIncome - totalBudInc);
-      if(document.getElementById('dashActualRevenue')) document.getElementById('dashActualRevenue').innerText = formatGBP(actualTicketRev);
+      if(document.getElementById('dashVatColl')) document.getElementById('dashVatColl').innerText = formatGBP(totalVatColl);
+      if(document.getElementById('dashVatPaid')) document.getElementById('dashVatPaid').innerText = formatGBP(totalVatPaid);
+      if(document.getElementById('dashNetVat')) document.getElementById('dashNetVat').innerText = formatGBP(totalVatColl - totalVatPaid);
     }
 
     function buildBudgetTable() {
@@ -621,6 +658,30 @@
         </tr>`;
       });
       tbody.innerHTML = html;
+    }
+
+    function buildCalendarMatrix() {
+      const tbody = document.getElementById('calendarMatrixBody');
+      if (!tbody) return;
+      const slots = ["14:00 - 16:00", "16:00 - 18:00", "18:00 - 20:00", "20:00 - 22:00", "22:00 - 00:00"];
+      let html = '';
+      slots.forEach(slot => {
+        html += `<tr>
+          <td style="font-weight:bold; font-family:monospace;">${slot}</td>`;
+        ["Lighthouse (Main Stage)", "Cactus (Live Stage)", "Causeway (DnB Stage)", "Sand Bar (Disco Stage)"].forEach(stage => {
+          const act = djData.find(d => d.day === currentCalDay && d.stage === stage);
+          html += `<td>${act ? `<span class="badge" style="background:rgba(56,189,248,0.15); color:var(--accent-blue);">${act.name}</span>` : '<span style="color:var(--text-muted);">-</span>'}</td>`;
+        });
+        html += `</tr>`;
+      });
+      tbody.innerHTML = html;
+    }
+
+    function switchCalDay(day) {
+      currentCalDay = day;
+      if(document.getElementById('calBtnFri')) document.getElementById('calBtnFri').style.background = day.includes('Friday') ? 'var(--accent-blue)' : 'var(--input-bg)';
+      if(document.getElementById('calBtnSat')) document.getElementById('calBtnSat').style.background = day.includes('Saturday') ? 'var(--accent-blue)' : 'var(--input-bg)';
+      buildCalendarMatrix();
     }
 
     function updateLinePaymentPlan(idx, monthsVal) {
