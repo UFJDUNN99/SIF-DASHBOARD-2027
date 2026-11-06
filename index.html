@@ -1589,6 +1589,20 @@
         const isAdmin = currentUserEmail.includes('james.dunn@ultrafunkula');
         const isDirector = role === 'director' || isAdmin;
 
+        // AUTOMATICALLY SYNC TOTAL DJ COSTS TO BUDGET
+        let totalDjsIncCost = 0;
+        djData.forEach(act => {
+          const base = parseFloat(act.cost) || 0;
+          const inc = act.vat === 'YES' ? base * 1.2 : base;
+          totalDjsIncCost += inc;
+        });
+
+        // Find and update the "Event DJ or Act fee" row in the budget
+        const djBudgetIndex = budgetData.findIndex(b => /DJ|Act fee/i.test(b.item));
+        if (djBudgetIndex !== -1) {
+          budgetData[djBudgetIndex].update = totalDjsIncCost;
+        }
+
         let uploadedTotalQty = 0;
         let uploadedTotalRev = 0;
         uploadedTicketSalesRows.forEach(r => {
@@ -1832,6 +1846,7 @@
             const vatAmt = row.vat === 'YES' ? netVal * 0.2 : 0;
             const inc = netVal + vatAmt;
             const updateVal = parseFloat(row.update) || 0;
+            const isDjRow = /DJ|Act fee/i.test(row.item);
 
             bHtml += `<tr>
               <td><input type="text" value="${row.item}" onchange="updateBudgetInline(${idx}, 'item', this)" style="width:100%; padding:4px 8px;"></td>
@@ -1845,7 +1860,12 @@
               </td>
               <td style="text-align:right; color:var(--text-muted);">${formatGBP(vatAmt)}</td>
               <td style="text-align:right; font-weight:600; color:var(--accent-purple);">${formatGBP(inc)}</td>
-              <td style="text-align:right;"><input type="number" step="0.01" value="${updateVal}" onchange="updateBudgetInline(${idx}, 'update', this)" style="width:100px; text-align:right; padding:4px 8px;"></td>
+              <td style="text-align:right;">
+                ${isDjRow 
+                  ? `<span style="font-weight:bold; color:var(--accent-green); padding:4px 8px; display:inline-block;">${formatGBP(updateVal)} <small style="color:var(--text-muted);">(Synced)</small></span>`
+                  : `<input type="number" step="0.01" value="${updateVal}" onchange="updateBudgetInline(${idx}, 'update', this)" style="width:100px; text-align:right; padding:4px 8px;">`
+                }
+              </td>
               <td style="text-align:center;"><input type="text" value="${row.owner || ''}" onchange="updateBudgetInline(${idx}, 'owner', this)" style="width:110px; text-align:center; padding:4px 8px;"></td>
               <td style="text-align:center;">
                 <button class="edit-btn" onclick="deleteBudgetItem(${idx})" style="background:rgba(225,29,72,0.2); color:var(--accent-rose); border-color:var(--border-color);">Del</button>
