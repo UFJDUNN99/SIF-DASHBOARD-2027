@@ -33,7 +33,6 @@
       --table-stripe: #334155;
     }
 
-    /* LIGHT THEME OVERRIDES */
     html.light-theme {
       --bg-color: #f1f5f9;
       --card-bg: #ffffff;
@@ -473,7 +472,7 @@
         <div class="table-header">
           <span>🤝 Sponsorship & Partner Income</span>
           <div style="display: flex; gap: 6px;" id="sponsorshipActionBtns">
-            <button class="action-btn" onclick="openSponsorshipModal(-1)">+ Add</button>
+            <button class="action-btn" onclick="openSponsorshipModal(-1)">+ Add Sponsorship</button>
             <button onclick="resetSponsorships()" class="edit-btn">Reset</button>
           </div>
         </div>
@@ -1243,6 +1242,7 @@
         const isAdmin = currentUserEmail.includes('james.dunn@ultrafunkula');
         const isDirector = role === 'director' || isAdmin;
 
+        // Auto-sync Total DJ Costs to Budget
         let totalDjsIncCost = 0;
         djData.forEach(act => {
           const base = parseFloat(act.cost) || 0;
@@ -1250,7 +1250,9 @@
         });
 
         const djBudgetIndex = budgetData.findIndex(b => /DJ|Act fee/i.test(b.item));
-        if (djBudgetIndex !== -1) budgetData[djBudgetIndex].update = totalDjsIncCost;
+        if (djBudgetIndex !== -1) {
+          budgetData[djBudgetIndex].update = totalDjsIncCost;
+        }
 
         let uploadedTotalQty = 0, uploadedTotalRev = 0;
         uploadedTicketSalesRows.forEach(r => { uploadedTotalQty += r.qty; uploadedTotalRev += r.rev; });
@@ -1268,12 +1270,21 @@
         }
 
         let totalSalesRevenue = 0, friQty = 0, satQty = 0, wkndQty = 0;
+        let friTicketRev = 0, satTicketRev = 0, wkndTicketRev = 0;
+
         targetData.forEach(row => {
           const itemTotal = (row.qty || 0) * (row.price || 0);
           totalSalesRevenue += itemTotal;
-          if (row.day.includes("Friday")) friQty += row.qty;
-          else if (row.day.includes("Saturday")) satQty += row.qty;
-          else wkndQty += row.qty;
+          if (row.day.includes("Friday")) {
+            friQty += row.qty;
+            friTicketRev += itemTotal;
+          } else if (row.day.includes("Saturday")) {
+            satQty += row.qty;
+            satTicketRev += itemTotal;
+          } else {
+            wkndQty += row.qty;
+            wkndTicketRev += itemTotal;
+          }
         });
 
         const friBar = friQty * barMultipliers.Friday;
@@ -1282,11 +1293,49 @@
         const totalBar = friBar + satBar + wkndBar;
 
         let totalSponsorshipInc = 0;
-        sponsorshipData.forEach(row => totalSponsorshipInc += (row.amount || 0));
+        let totalSponsorshipVat = 0;
+        let sponsorshipTableHtml = '';
+
+        sponsorshipData.forEach((row, idx) => {
+          const incAmt = parseFloat(row.amount) || 0;
+          const exclAmt = incAmt / 1.2;
+          const vatAmt = incAmt - exclAmt;
+          totalSponsorshipInc += incAmt;
+          totalSponsorshipVat += vatAmt;
+
+          sponsorshipTableHtml += `<tr>
+            <td style="font-weight:bold; color:var(--accent-blue);">${row.company}</td>
+            <td>${row.area}</td>
+            <td style="text-align:right; color:var(--text-muted);">${formatGBP(exclAmt)}</td>
+            <td style="text-align:right; color:var(--text-muted);">${formatGBP(vatAmt)}</td>
+            <td style="text-align:right; font-weight:bold; color:var(--accent-green);">${formatGBP(incAmt)}</td>
+            <td style="text-align:center;">
+              <button class="edit-btn" onclick="openSponsorshipModal(${idx})">Edit</button>
+              <button class="edit-btn" onclick="deleteSponsorshipItem(${idx})" style="background:rgba(225,29,72,0.2); color:var(--accent-rose); border-color:var(--border-color); margin-left:4px;">Del</button>
+            </td>
+          </tr>`;
+        });
+        sponsorshipTableHtml += `<tr class="total-row"><td colspan="2" style="text-transform: uppercase;">Total Sponsorship Summary</td><td style="text-align:right; color:var(--text-muted);">${formatGBP(totalSponsorshipInc - totalSponsorshipVat)}</td><td style="text-align:right; color:var(--text-muted);">${formatGBP(totalSponsorshipVat)}</td><td style="text-align:right; color:var(--accent-green); font-weight:bold;">${formatGBP(totalSponsorshipInc)}</td><td></td></tr>`;
+        const sBody = document.getElementById('sponsorshipBody');
+        if (sBody) sBody.innerHTML = sponsorshipTableHtml;
 
         const grandTotal = totalSalesRevenue + totalBar + totalSponsorshipInc;
+        const totalVatCollected = (totalSalesRevenue / 6) + (totalBar / 6) + totalSponsorshipVat;
+
+        document.getElementById('friBarMultiplier').value = barMultipliers.Friday;
+        document.getElementById('satBarMultiplier').value = barMultipliers.Saturday;
+        document.getElementById('wkndBarMultiplier').value = barMultipliers.Weekend;
+
+        document.getElementById('friBarCalcOutput').innerText = `Total: ${formatGBP(friBar)}`;
+        document.getElementById('satBarCalcOutput').innerText = `Total: ${formatGBP(satBar)}`;
+        document.getElementById('wkndBarCalcOutput').innerText = `Total: ${formatGBP(wkndBar)}`;
+
+        document.getElementById('blockFriTicket').innerText = formatGBP(friTicketRev);
+        document.getElementById('blockSatTicket').innerText = formatGBP(satTicketRev);
+        document.getElementById('blockWkndTicket').innerText = formatGBP(wkndTicketRev);
         document.getElementById('topConsolidatedTicketRev').innerText = formatGBP(totalSalesRevenue);
         document.getElementById('topConsolidatedTicketQty').innerText = `${friQty + satQty + wkndQty} Tickets`;
+
         document.getElementById('blockFriBar').innerText = formatGBP(friBar);
         document.getElementById('blockSatBar').innerText = formatGBP(satBar);
         document.getElementById('blockWkndBar').innerText = formatGBP(wkndBar);
@@ -1304,11 +1353,73 @@
         document.getElementById('topBudgetInc').innerText = formatGBP(bInc);
         document.getElementById('topBudgetSpent').innerText = formatGBP(bSpent);
 
+        const netVatLiability = totalVatCollected - bVat;
+        const profitVariance = grandTotal - bInc - netVatLiability;
+
         if (isDirector) {
           document.getElementById('dashTotalIncome').innerText = formatGBP(grandTotal);
           document.getElementById('dashBudInc').innerText = formatGBP(bInc);
           document.getElementById('dashBudSpent').innerText = `Spent: ${formatGBP(bSpent)} | Rem: ${formatGBP(bInc - bSpent)}`;
-          document.getElementById('dashVariance').innerText = formatGBP(grandTotal - bInc);
+          
+          const varEl = document.getElementById('dashVariance');
+          varEl.innerText = formatGBP(profitVariance);
+          varEl.style.color = profitVariance >= 0 ? 'var(--accent-green)' : 'var(--accent-rose)';
+
+          document.getElementById('dashTotalVatCollected').innerText = formatGBP(totalVatCollected);
+          document.getElementById('dashTotalVatPaid').innerText = formatGBP(bVat);
+          
+          const liabilityEl = document.getElementById('dashNetVatLiability');
+          liabilityEl.innerText = formatGBP(netVatLiability);
+          liabilityEl.style.color = netVatLiability >= 0 ? 'var(--accent-rose)' : 'var(--accent-green)';
+
+          let revTableHtml = `
+            <tr><td>Friday Event</td><td style="text-align:right;">${formatGBP(friTicketRev)}</td><td style="text-align:right;">${formatGBP(friBar)}</td><td style="text-align:right; font-weight:bold;">${formatGBP(friTicketRev + friBar)}</td></tr>
+            <tr><td>Saturday Event</td><td style="text-align:right;">${formatGBP(satTicketRev)}</td><td style="text-align:right;">${formatGBP(satBar)}</td><td style="text-align:right; font-weight:bold;">${formatGBP(satTicketRev + satBar)}</td></tr>
+            <tr><td>Weekend Passes</td><td style="text-align:right;">${formatGBP(wkndTicketRev)}</td><td style="text-align:right;">${formatGBP(wkndBar)}</td><td style="text-align:right; font-weight:bold;">${formatGBP(wkndTicketRev + wkndBar)}</td></tr>
+            <tr><td>Sponsorship & Partners</td><td style="text-align:right;">-</td><td style="text-align:right;">-</td><td style="text-align:right; font-weight:bold;">${formatGBP(totalSponsorshipInc)}</td></tr>
+          `;
+          document.getElementById('dashRevenueBody').innerHTML = revTableHtml;
+        }
+
+        // Render Stage Filter & DJ Breakdown
+        const frontStageFilter = document.getElementById('frontStageFilter');
+        const currentFilterVal = frontStageFilter ? frontStageFilter.value : "ALL";
+        const officialStages = ["Lighthouse (Main Stage)", "Cactus (Live Stage)", "The Causeway (DnB stage)", "The Sand Bar (Disco stage)"];
+
+        if (frontStageFilter) {
+          let filterHtml = `<option value="ALL">All Stages (${djData.length} Acts)</option>`;
+          officialStages.forEach(st => {
+            filterHtml += `<option value="${st}" ${currentFilterVal === st ? 'selected' : ''}>${st}</option>`;
+          });
+          frontStageFilter.innerHTML = filterHtml;
+        }
+
+        const dashStageBody = document.getElementById('dashStageBody');
+        if (dashStageBody) {
+          const selectedStage = frontStageFilter ? frontStageFilter.value : "ALL";
+          const filteredDjs = djData.filter(row => {
+            const st = (row.stage || "Lighthouse (Main Stage)").trim();
+            return selectedStage === "ALL" || st === selectedStage;
+          });
+
+          if (filteredDjs.length === 0) {
+            dashStageBody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted); font-style:italic; padding: 14px;">No DJs or acts found.</td></tr>`;
+          } else {
+            let stageHtml = '';
+            filteredDjs.forEach(row => {
+              const baseCost = parseFloat(row.cost) || 0;
+              const totalIncCost = row.vat === 'YES' ? baseCost * 1.2 : baseCost;
+              stageHtml += `<tr>
+                <td style="font-weight:bold; color:var(--accent-blue);">${row.stage || 'Lighthouse'}</td>
+                <td style="font-weight:bold; color:var(--accent-rose);">${row.name}</td>
+                <td><span class="badge">${row.type}</span></td>
+                <td style="color:var(--text-muted);">${row.day || '-'}</td>
+                <td style="font-weight:600; color:var(--accent-purple);">${row.time || '-'}</td>
+                <td style="text-align:right; font-weight:bold; color:var(--accent-green);">${formatGBP(totalIncCost)}</td>
+              </tr>`;
+            });
+            dashStageBody.innerHTML = stageHtml;
+          }
         }
 
         let totalTasks = 0, completedTasks = 0, outstanding = 0;
@@ -1343,6 +1454,7 @@
           let bHtml = '';
           budgetData.forEach((row, idx) => {
             const vat = row.vat === 'YES' ? (row.net || 0) * 0.2 : 0;
+            const isDjRow = /DJ|Act fee/i.test(row.item);
             bHtml += `<tr>
               <td>${row.item}</td>
               <td>${row.cat}</td>
@@ -1350,7 +1462,7 @@
               <td style="text-align:center;">${row.vat}</td>
               <td style="text-align:right;">${formatGBP(vat)}</td>
               <td style="text-align:right;">${formatGBP((row.net || 0) + vat)}</td>
-              <td style="text-align:right;">${formatGBP(row.update)}</td>
+              <td style="text-align:right;">${isDjRow ? `<span style="color:var(--accent-green); font-weight:bold;">${formatGBP(row.update)} (Synced)</span>` : formatGBP(row.update)}</td>
               <td style="text-align:center;">${row.owner || '-'}</td>
               <td style="text-align:center;"><button class="edit-btn" onclick="deleteBudgetItem(${idx})">Del</button></td>
             </tr>`;
@@ -1372,7 +1484,10 @@
               <td style="text-align:right;">${formatGBP(row.price - (row.price / 1.2))}</td>
               <td style="text-align:right;">${formatGBP(row.price)}</td>
               <td style="text-align:right;">${formatGBP(tot)}</td>
-              <td style="text-align:center;"><button class="edit-btn" onclick="deleteTargetItem(${idx})">Del</button></td>
+              <td style="text-align:center;">
+                <button class="edit-btn" onclick="openTargetModal(${idx})">Edit</button>
+                <button class="edit-btn" onclick="deleteTargetItem(${idx})" style="background:rgba(225,29,72,0.2); color:var(--accent-rose); border-color:var(--border-color); margin-left:4px;">Del</button>
+              </td>
             </tr>`;
           });
           tBody.innerHTML = tHtml;
@@ -1424,7 +1539,10 @@
               <td>${row.time}</td>
               <td>${row.drinks || '-'}</td>
               <td>${row.food || '-'}</td>
-              <td style="text-align:center;"><button class="edit-btn" onclick="openDjModal(${idx})">Edit</button></td>
+              <td style="text-align:center;">
+                <button class="edit-btn" onclick="openDjModal(${idx})">Edit</button>
+                <button class="edit-btn" onclick="deleteDjItem(${idx})" style="background:rgba(225,29,72,0.2); color:var(--accent-rose); border-color:var(--border-color); margin-left:4px;">Del</button>
+              </td>
             </tr>`;
           });
           djBody.innerHTML = djHtml;
@@ -1488,6 +1606,20 @@
 
     function openTargetModal(idx) {
       document.getElementById('targetEditIndex').value = idx;
+      if (idx === -1) {
+        document.getElementById('targetModalTitle').innerText = "Add Ticket Target";
+        document.getElementById('tModalDay').value = "Friday 30th July";
+        document.getElementById('tModalType').value = "";
+        document.getElementById('tModalQty').value = "";
+        document.getElementById('tModalPrice').value = "";
+      } else {
+        document.getElementById('targetModalTitle').innerText = "Edit Ticket Target";
+        const item = targetData[idx];
+        document.getElementById('tModalDay').value = item.day;
+        document.getElementById('tModalType').value = item.type;
+        document.getElementById('tModalQty').value = item.qty;
+        document.getElementById('tModalPrice').value = item.price;
+      }
       document.getElementById('targetModal').classList.add('active');
     }
     function closeTargetModal() { document.getElementById('targetModal').classList.remove('active'); }
@@ -1515,12 +1647,38 @@
       buildTables();
     }
 
-    function openSponsorshipModal(idx) { document.getElementById('sponsorshipModal').classList.add('active'); }
+    function openSponsorshipModal(idx) {
+      document.getElementById('sponsorshipEditIndex').value = idx;
+      if (idx === -1) {
+        document.getElementById('sponsorshipModalTitle').innerText = "Add Sponsorship";
+        document.getElementById('sModalCompany').value = "";
+        document.getElementById('sModalArea').value = "";
+        document.getElementById('sModalAmount').value = "";
+      } else {
+        document.getElementById('sponsorshipModalTitle').innerText = "Edit Sponsorship";
+        const item = sponsorshipData[idx];
+        document.getElementById('sModalCompany').value = item.company;
+        document.getElementById('sModalArea').value = item.area;
+        document.getElementById('sModalAmount').value = item.amount;
+      }
+      document.getElementById('sponsorshipModal').classList.add('active');
+    }
     function closeSponsorshipModal() { document.getElementById('sponsorshipModal').classList.remove('active'); }
     function saveSponsorshipItem() {
-      sponsorshipData.push({ company: document.getElementById('sModalCompany').value, area: document.getElementById('sModalArea').value, amount: parseFloat(document.getElementById('sModalAmount').value) || 0 });
+      const idx = parseInt(document.getElementById('sponsorshipEditIndex').value);
+      const newItem = {
+        company: document.getElementById('sModalCompany').value.trim(),
+        area: document.getElementById('sModalArea').value.trim(),
+        amount: parseFloat(document.getElementById('sModalAmount').value) || 0
+      };
+      if (idx === -1) sponsorshipData.push(newItem); else sponsorshipData[idx] = newItem;
       saveAllToFirebase();
       closeSponsorshipModal();
+      buildTables();
+    }
+    function deleteSponsorshipItem(idx) {
+      sponsorshipData.splice(idx, 1);
+      saveAllToFirebase();
       buildTables();
     }
     function resetSponsorships() {
@@ -1547,8 +1705,31 @@
 
     function openDjModal(idx) {
       document.getElementById('djEditIndex').value = idx;
+      if (idx === -1) {
+        document.getElementById('djModalTitle').innerText = "Add New Act";
+        document.getElementById('djName').value = '';
+        document.getElementById('djType').value = 'DJ';
+        document.getElementById('djCost').value = '';
+        document.getElementById('djVat').value = 'YES';
+        document.getElementById('djStage').value = 'Lighthouse (Main Stage)';
+        document.getElementById('djDay').value = 'Friday 30th July';
+        updateTimeSlots();
+        document.getElementById('djDrinks').value = '';
+        document.getElementById('djFood').value = '';
+      } else {
+        document.getElementById('djModalTitle').innerText = "Edit Act";
+        const act = djData[idx];
+        document.getElementById('djName').value = act.name;
+        document.getElementById('djType').value = act.type;
+        document.getElementById('djCost').value = act.cost;
+        document.getElementById('djVat').value = act.vat;
+        document.getElementById('djStage').value = act.stage || 'Lighthouse (Main Stage)';
+        document.getElementById('djDay').value = act.day;
+        updateTimeSlots(act.time);
+        document.getElementById('djDrinks').value = act.drinks;
+        document.getElementById('djFood').value = act.food;
+      }
       document.getElementById('djModal').classList.add('active');
-      updateTimeSlots();
     }
     function closeDjModal() { document.getElementById('djModal').classList.remove('active'); }
     function saveDjItem() {
@@ -1569,18 +1750,30 @@
       closeDjModal();
       buildTables();
     }
+    function deleteDjItem(idx) {
+      djData.splice(idx, 1);
+      saveAllToFirebase();
+      buildTables();
+    }
     function resetDjs() {
       djData = [...defaultDjs];
       saveAllToFirebase();
       buildTables();
     }
 
-    function updateTimeSlots() {
+    function updateBarMultiplier(el, day) {
+      barMultipliers[day] = parseFloat(el.value) || 0;
+      saveAllToFirebase();
+      buildTables();
+    }
+
+    function updateTimeSlots(selectedTime) {
       const day = document.getElementById('djDay').value;
+      const select = document.getElementById('djTime');
       const slots = day.includes('Friday') ? ["16:00 - 17:30", "17:30 - 19:00", "19:00 - 20:30", "20:30 - 22:00", "22:00 - 23:00"] : ["13:00 - 15:00", "15:00 - 17:00", "17:00 - 19:00", "19:00 - 21:00", "21:00 - 23:00"];
       let html = '';
-      slots.forEach(s => html += `<option value="${s}">${s}</option>`);
-      document.getElementById('djTime').innerHTML = html;
+      slots.forEach(s => html += `<option value="${s}" ${selectedTime === s ? 'selected' : ''}>${s}</option>`);
+      select.innerHTML = html;
     }
 
     function switchCalDay(day) { currentCalDay = day; buildCalendarMatrix(); }
@@ -1593,7 +1786,7 @@
       slots.forEach(slot => {
         html += `<tr><td style="font-weight:bold; color:var(--text-muted);">${slot}</td>`;
         stages.forEach(st => {
-          const act = djData.find(a => a.day === currentCalDay && a.stage === st && (a.time || "").includes(slot.slice(0,5)));
+          const act = djData.find(a => (a.day || "").trim() === currentCalDay && (a.stage || "").trim() === st && (a.time || "").includes(slot.slice(0,5)));
           html += act ? `<td style="background:rgba(225,29,72,0.15);"><b style="color:var(--accent-rose);">${act.name}</b></td>` : `<td style="color:var(--text-muted);">Available</td>`;
         });
         html += `</tr>`;
