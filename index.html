@@ -100,22 +100,18 @@
     th { background: var(--input-bg); color: var(--text-muted); text-transform: uppercase; font-size: 10px; padding: 10px 12px; border-bottom: 1px solid var(--border-color); white-space: nowrap; font-weight: 700; }
     td { padding: 10px 12px; border-bottom: 1px solid var(--border-color); color: var(--text-main); }
     tr.section-row td { background: var(--table-stripe); font-weight: bold; color: var(--accent-blue); font-size: 12px; }
-    tr.total-row td { background: var(--input-bg) !important; font-weight: bold; color: var(--text-main); border-top: 2px solid var(--border-color); }
     
     .badge { padding: 3px 6px; border-radius: 4px; font-size: 10px; font-weight: 600; background: var(--input-bg); color: var(--text-main); display: inline-block; border: 1px solid var(--border-color); }
     
     .action-btn { background: var(--accent-blue); color: #0f172a; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 11px; }
     .edit-btn { background: var(--input-bg); color: var(--text-main); border: 1px solid var(--border-color); padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 600; }
 
-    /* Timeline Styles */
-    .timeline-container { padding: 16px; overflow-x: auto; }
-    .timeline-header-months { display: flex; border-bottom: 2px solid var(--border-color); padding-bottom: 6px; margin-bottom: 10px; font-weight: bold; font-size: 10px; color: var(--text-muted); text-transform: uppercase; min-width: 700px; }
-    .timeline-month-col { flex: 1; text-align: center; border-right: 1px dashed var(--border-color); padding: 0 4px; }
-    .timeline-task-row { display: flex; align-items: center; border-bottom: 1px solid var(--border-color); padding: 8px 0; font-size: 11px; min-width: 700px; }
-    .timeline-task-name { width: 220px; font-weight: 600; padding-right: 10px; flex-shrink: 0; }
-    .timeline-track { flex-grow: 1; background: var(--input-bg); border: 1px solid var(--border-color); height: 24px; border-radius: 4px; position: relative; display: flex; }
-    .timeline-grid-line { flex: 1; border-right: 1px dashed var(--border-color); height: 100%; }
-    .timeline-bar { height: 100%; border-radius: 3px; position: absolute; display: flex; align-items: center; padding: 0 6px; color: white; font-size: 9px; font-weight: bold; white-space: nowrap; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+    /* Timeline Accordion Styles */
+    .accordion-item { border-bottom: 1px solid var(--border-color); }
+    .accordion-header { background: var(--input-bg); padding: 12px 16px; font-weight: bold; font-size: 13px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+    .accordion-header:hover { background: var(--table-stripe); }
+    .accordion-body { padding: 14px; display: none; background: var(--card-bg); }
+    .accordion-body.active { display: block; }
 
     /* Ideas Board */
     .notes-board-grid { display: grid; grid-template-columns: 280px 1fr; gap: 16px; padding: 16px; }
@@ -440,13 +436,13 @@
 
     <!-- TAB 3: SALES TARGETS -->
     <div id="tab-target" class="tab-content">
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 20px;">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-bottom: 20px;">
         <div style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px;">
-          <p style="color: var(--accent-blue); font-size: 12px; font-weight: 800; margin-bottom: 10px; text-transform: uppercase;">🎫 Ticket Sales</p>
+          <p style="color: var(--accent-blue); font-size: 12px; font-weight: 800; margin-bottom: 10px; text-transform: uppercase;">🎫 Ticket Sales Breakdown</p>
           <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 10px; text-align: center; background: var(--input-bg); padding: 8px; border-radius: 6px;">
-            <div><span style="font-size: 9px; color: var(--text-muted); display: block;">FRI</span><span id="blockFriTicket" style="font-size: 12px; font-weight: bold;">£0</span></div>
-            <div><span style="font-size: 9px; color: var(--text-muted); display: block;">SAT</span><span id="blockSatTicket" style="font-size: 12px; font-weight: bold;">£0</span></div>
-            <div><span style="font-size: 9px; color: var(--text-muted); display: block;">WKND</span><span id="blockWkndTicket" style="font-size: 12px; font-weight: bold;">£0</span></div>
+            <div><span style="font-size: 9px; color: var(--text-muted); display: block;">FRI</span><span id="blockFriTicket" style="font-size: 11px; font-weight: bold;">£0</span></div>
+            <div><span style="font-size: 9px; color: var(--text-muted); display: block;">SAT</span><span id="blockSatTicket" style="font-size: 11px; font-weight: bold;">£0</span></div>
+            <div><span style="font-size: 9px; color: var(--text-muted); display: block;">WEEKEND</span><span id="blockWkndTicket" style="font-size: 11px; font-weight: bold; color: var(--accent-purple);">£0</span></div>
           </div>
           <div style="display: flex; justify-content: space-between; align-items: baseline; border-top: 1px solid var(--border-color); padding-top: 8px;">
             <h3 id="topConsolidatedTicketRev" style="color: var(--accent-green); font-size: 16px;">£0.00</h3>
@@ -457,9 +453,9 @@
         <div style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px;">
           <p style="color: var(--accent-amber); font-size: 12px; font-weight: 800; margin-bottom: 10px; text-transform: uppercase;">🍻 Bar & Grand Total</p>
           <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 10px; text-align: center; background: var(--input-bg); padding: 8px; border-radius: 6px;">
-            <div><span style="font-size: 9px; color: var(--text-muted); display: block;">FRI BAR</span><span id="blockFriBar" style="font-size: 12px; font-weight: bold;">£0</span></div>
-            <div><span style="font-size: 9px; color: var(--text-muted); display: block;">SAT BAR</span><span id="blockSatBar" style="font-size: 12px; font-weight: bold;">£0</span></div>
-            <div><span style="font-size: 9px; color: var(--text-muted); display: block;">WKND BAR</span><span id="blockWkndBar" style="font-size: 12px; font-weight: bold;">£0</span></div>
+            <div><span style="font-size: 9px; color: var(--text-muted); display: block;">FRI BAR</span><span id="blockFriBar" style="font-size: 11px; font-weight: bold;">£0</span></div>
+            <div><span style="font-size: 9px; color: var(--text-muted); display: block;">SAT BAR</span><span id="blockSatBar" style="font-size: 11px; font-weight: bold;">£0</span></div>
+            <div><span style="font-size: 9px; color: var(--text-muted); display: block;">WKND BAR</span><span id="blockWkndBar" style="font-size: 11px; font-weight: bold;">£0</span></div>
           </div>
           <div style="display: flex; justify-content: space-between; align-items: baseline; border-top: 1px solid var(--border-color); padding-top: 8px;">
             <span id="topConsolidatedBarRev" style="font-size: 13px; font-weight: bold; color: var(--accent-amber);">£0.00</span>
@@ -576,26 +572,13 @@
       </div>
     </div>
 
-    <!-- TAB 5: PROJECT TIMELINE -->
+    <!-- TAB 5: PROJECT TIMELINE (ACCORDION VIEW) -->
     <div id="tab-timeline" class="tab-content">
       <div class="table-card">
         <div class="table-header">
-          <span>📅 Project Timeline (Feb–Jul 2027)</span>
+          <span>📅 Project Timeline (Feb–Jul 2027) — Category Accordions</span>
         </div>
-        <div class="timeline-container">
-          <div class="timeline-header-months">
-            <div style="width: 220px; flex-shrink: 0;">Task / Department</div>
-            <div style="flex-grow: 1; display: flex;">
-              <div class="timeline-month-col">Feb</div>
-              <div class="timeline-month-col">Mar</div>
-              <div class="timeline-month-col">Apr</div>
-              <div class="timeline-month-col">May</div>
-              <div class="timeline-month-col">Jun</div>
-              <div class="timeline-month-col">Jul</div>
-            </div>
-          </div>
-          <div id="timelineBody"></div>
-        </div>
+        <div id="timelineAccordionContainer"></div>
       </div>
     </div>
 
@@ -774,9 +757,10 @@
         <select id="tModalDay">
           <option value="Friday 30th July">Friday 30th July</option>
           <option value="Saturday 31st July">Saturday 31st July</option>
+          <option value="Weekend Pass">Weekend Pass</option>
         </select>
       </div>
-      <div class="form-group"><label>Ticket Type</label><input type="text" id="tModalType" placeholder="e.g. VIP Adult" required></div>
+      <div class="form-group"><label>Ticket Type</label><input type="text" id="tModalType" placeholder="e.g. Weekend VIP Adult" required></div>
       <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
         <div><label>Quantity</label><input type="number" id="tModalQty" required></div>
         <div><label>Price Inc. VAT (£)</label><input type="number" step="0.01" id="tModalPrice" required></div>
@@ -1092,7 +1076,8 @@
       { day: "Friday 30th July", type: "Child 6-17", qty: 75, price: 5 },
       { day: "Saturday 31st July", type: "Pre Sale", qty: 75, price: 35 },
       { day: "Saturday 31st July", type: "SEB", qty: 125, price: 40 },
-      { day: "Saturday 31st July", type: "P1 PP", qty: 500, price: 50 }
+      { day: "Saturday 31st July", type: "P1 PP", qty: 500, price: 50 },
+      { day: "Weekend Pass", type: "Weekend Early Bird", qty: 250, price: 85 }
     ];
 
     const defaultSponsorships = [{ company: "Red Bull", area: "Main Stage", amount: 17500 }];
@@ -1221,7 +1206,7 @@
             const type = row.Type || row.Name || row.Category || "Ticket";
             const qty = parseInt(row.Qty || row.Quantity || 0) || 0;
             const rev = parseFloat(String(row.Revenue || row.Price || 0).replace(/[^0-9.-]+/g,"")) || 0;
-            uploadedTicketSalesRows.push({ type, day: "Saturday", qty, rev });
+            uploadedTicketSalesRows.push({ type, day: /weekend|wknd/i.test(type) ? "Weekend" : "Saturday", qty, rev });
           });
 
           saveAllToFirebase();
@@ -1235,7 +1220,7 @@
     function buildTables() {
       try {
         buildCalendarMatrix();
-        buildTimelineChart();
+        buildTimelineAccordion();
         buildNotesBoard();
 
         const role = getUserRole();
@@ -1275,15 +1260,17 @@
         targetData.forEach(row => {
           const itemTotal = (row.qty || 0) * (row.price || 0);
           totalSalesRevenue += itemTotal;
-          if (row.day.includes("Friday")) {
-            friQty += row.qty;
-            friTicketRev += itemTotal;
-          } else if (row.day.includes("Saturday")) {
-            satQty += row.qty;
-            satTicketRev += itemTotal;
-          } else {
+          const isWeekend = /weekend|wknd/i.test(row.day) || /weekend|wknd/i.test(row.type);
+
+          if (isWeekend) {
             wkndQty += row.qty;
             wkndTicketRev += itemTotal;
+          } else if (row.day.includes("Friday")) {
+            friQty += row.qty;
+            friTicketRev += itemTotal;
+          } else {
+            satQty += row.qty;
+            satTicketRev += itemTotal;
           }
         });
 
@@ -1794,19 +1781,38 @@
       body.innerHTML = html;
     }
 
-    function buildTimelineChart() {
-      const container = document.getElementById('timelineBody');
+    function toggleAccordion(id) {
+      const body = document.getElementById(id);
+      if (body) {
+        body.classList.toggle('active');
+      }
+    }
+
+    function buildTimelineAccordion() {
+      const container = document.getElementById('timelineAccordionContainer');
       if (!container) return;
-      const tasks = [
-        { name: "Fencing & Infrastructure", start: 0, dur: 3, color: "var(--accent-blue)" },
-        { name: "Licensing & SAG Approval", start: 1, dur: 2, color: "var(--accent-purple)" },
-        { name: "Marketing & Ticket Sales", start: 0, dur: 5, color: "var(--accent-green)" },
-        { name: "DJs & Acts Booking", start: 2, dur: 3, color: "var(--accent-rose)" }
+
+      const categories = [
+        { name: "Infrastructure & Site Setup", tasks: ["Fencing & Perimeter", "Generators & Power", "Marquees & Tents", "Toilets & Waste Management"] },
+        { name: "Production & Acts", tasks: ["Sound & Lighting Rigging", "DJs & Live Acts Contracting", "Stage Design & Decoration"] },
+        { name: "Marketing & Ticketing", tasks: ["Early Bird & General Tickets", "Social Media Campaigns", "Music & Entertainment Licenses"] },
+        { name: "Safety & Operations", tasks: ["Security & Staffing", "Traffic Management", "Fire Safety & First Aid"] }
       ];
+
       let html = '';
-      tasks.forEach(t => {
-        const left = (t.start / 6) * 100, width = (t.dur / 6) * 100;
-        html += `<div class="timeline-task-row"><div class="timeline-task-name">${t.name}</div><div class="timeline-track"><div class="timeline-grid-line"></div><div class="timeline-grid-line"></div><div class="timeline-grid-line"></div><div class="timeline-grid-line"></div><div class="timeline-grid-line"></div><div class="timeline-bar" style="left:${left}%; width:${width}%; background:${t.color};">${t.name}</div></div></div>`;
+      categories.forEach((cat, idx) => {
+        const accId = `acc_cat_${idx}`;
+        html += `<div class="accordion-item">
+          <div class="accordion-header" onclick="toggleAccordion('${accId}')">
+            <span>📁 ${cat.name} (${cat.tasks.length} Scheduled Milestones)</span>
+            <span style="font-size:11px; color:var(--accent-blue);">▼ Expand</span>
+          </div>
+          <div class="accordion-body" id="${accId}">
+            <ul style="list-style-type: disc; padding-left: 20px; font-size: 12px; line-height: 1.8;">`;
+        cat.tasks.forEach(t => {
+          html += `<li><b>${t}</b> — Scheduled between Feb & Jul 2027 (Active)</li>`;
+        });
+        html += `</ul></div></div>`;
       });
       container.innerHTML = html;
     }
