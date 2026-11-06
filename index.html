@@ -227,6 +227,7 @@
     <button onclick="openTab('timeline')" id="btn-timeline" class="tab-btn">📅 Timeline</button>
     <button onclick="openTab('roles')" id="btn-roles" class="tab-btn">🛡️ Roles</button>
     <button onclick="openTab('djs')" id="btn-djs" class="tab-btn">🎧 DJs & Acts</button>
+    <button onclick="openTab('socials')" id="btn-socials" class="tab-btn" style="color: var(--accent-blue);">📱 Socials</button>
     <button onclick="openTab('notes')" id="btn-notes" class="tab-btn">💡 Ideas</button>
     <button onclick="openTab('admin')" id="btn-admin" class="tab-btn" style="display: none; color: var(--accent-amber);">👑 Admin</button>
   </nav>
@@ -444,6 +445,29 @@
             <button onclick="resetOutstanding()" class="edit-btn">Reset</button>
           </div>
         </div>
+
+        <!-- SUMMARY CARDS FOR OUTSTANDING -->
+        <div style="padding: 14px; background: var(--input-bg); border-bottom: 1px solid var(--border-color); display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px;">
+          <div style="background: var(--card-bg); padding: 10px; border-radius: 8px; border: 1px solid var(--border-color);">
+            <p style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: bold;">Overall Outstanding Owed</p>
+            <h3 id="overallOwedAmount" style="font-size: 16px; color: var(--accent-rose); margin-top: 4px;">£0.00</h3>
+          </div>
+          <div style="background: var(--card-bg); padding: 10px; border-radius: 8px; border: 1px solid var(--border-color);">
+            <p style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: bold;">Next Immediate Payment</p>
+            <h3 id="nextPaymentAmount" style="font-size: 16px; color: var(--accent-amber); margin-top: 4px;">£0.00</h3>
+            <span id="nextPaymentDate" style="font-size: 10px; color: var(--text-muted);">Due: -</span>
+          </div>
+          <div style="background: var(--card-bg); padding: 10px; border-radius: 8px; border: 1px solid var(--border-color);">
+            <label style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: bold; display: block; margin-bottom: 4px;">Installment Plan Calculator</label>
+            <select id="installmentMonths" onchange="buildOutstandingTable()" style="width: 100%; padding: 4px; font-size: 11px;">
+              <option value="1">Pay over 1 Month (Full)</option>
+              <option value="2">Split over 2 Months</option>
+              <option value="3">Split over 3 Months</option>
+            </select>
+            <div id="installmentCalcOutput" style="font-size: 11px; font-weight: bold; color: var(--accent-green); margin-top: 4px;">Monthly: £0.00</div>
+          </div>
+        </div>
+
         <div class="table-wrap">
           <table>
             <thead>
@@ -708,7 +732,63 @@
       </div>
     </div>
 
-    <!-- TAB 8: IDEAS BOARD -->
+    <!-- TAB 8: SOCIALS PLANNER & METRICS -->
+    <div id="tab-socials" class="tab-content">
+      <div class="unified-summary-card">
+        <div class="unified-summary-header">
+          <span>📱 Social Media Performance & Analytics API Connector</span>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <button class="action-btn" onclick="openSocialsAdminModal()" style="background: var(--accent-amber); color: #0f172a;">⚙️ Set Admin Analytics Link</button>
+          </div>
+        </div>
+        <div class="unified-grid" style="grid-template-columns: repeat(4, 1fr);">
+          <div class="summary-item">
+            <p>Total Reach / Impressions</p>
+            <h3 id="metricReach" style="color: var(--accent-blue);">0</h3>
+            <div class="sub-text">Connected API Feed</div>
+          </div>
+          <div class="summary-item">
+            <p>Engagement Rate</p>
+            <h3 id="metricEngagement" style="color: var(--accent-green);">0.0%</h3>
+            <div class="sub-text">Likes, Shares, Comments</div>
+          </div>
+          <div class="summary-item">
+            <p>Tickets Driven (UTM)</p>
+            <h3 id="metricTickets" style="color: var(--accent-purple);">0</h3>
+            <div class="sub-text">Direct Conversions</div>
+          </div>
+          <div class="summary-item">
+            <p>External Analytics Portal</p>
+            <a id="adminExternalPortalBtn" href="#" target="_blank" class="action-btn" style="text-align: center; margin-top: 6px; text-decoration: none; display: inline-block;">Open Dashboard ↗</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-card">
+        <div class="table-header">
+          <span>📅 Social Media Posting Planner & Frequency Guidelines</span>
+          <button class="action-btn" onclick="openSocialPostModal(-1)">+ Add Post Item</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Campaign Phase</th>
+                <th>Platform</th>
+                <th>Content Topic / Format</th>
+                <th>Posting Frequency</th>
+                <th>Scheduled Date</th>
+                <th style="text-align: center;">Status</th>
+                <th style="text-align: center;">Action</th>
+              </tr>
+            </thead>
+            <tbody id="socialsPlannerBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 9: IDEAS BOARD -->
     <div id="tab-notes" class="tab-content">
       <div class="table-card">
         <div class="table-header">
@@ -748,7 +828,7 @@
       </div>
     </div>
 
-    <!-- TAB 9: ADMIN CONTROLS -->
+    <!-- TAB 10: ADMIN CONTROLS -->
     <div id="tab-admin" class="tab-content">
       <div class="table-card" style="margin-bottom: 20px;">
         <div class="table-header">
@@ -847,6 +927,59 @@
       <div style="display: flex; justify-content: flex-end; gap: 6px; margin-top: 16px;">
         <button type="button" onclick="closeOutstandingModal()" style="background: var(--input-bg);">Cancel</button>
         <button type="button" onclick="saveOutstandingItem()" class="action-btn">Save Payment</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="socialsAdminModal" class="modal">
+    <div class="modal-box" style="max-width: 400px;">
+      <h3 style="margin-bottom: 10px; font-size: 15px; font-weight: bold; color: var(--accent-blue);">Configure Admin Analytics Portal Link</h3>
+      <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 12px;">Paste the external link (e.g. Looker Studio, Hootsuite Dashboard, or Custom API URL) for team access.</p>
+      <div class="form-group">
+        <label>Portal URL</label>
+        <input type="url" id="adminPortalUrlInput" placeholder="https://lookerstudio.google.com/..." required>
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 6px; margin-top: 14px;">
+        <button type="button" onclick="closeSocialsAdminModal()" style="background: var(--input-bg);">Cancel</button>
+        <button type="button" onclick="saveSocialsAdminLink()" class="action-btn">Save Link</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="socialPostModal" class="modal">
+    <div class="modal-box">
+      <h3 style="margin-bottom: 14px; font-size: 15px; font-weight: bold; color: var(--accent-blue);">Add / Edit Social Post</h3>
+      <input type="hidden" id="socialPostEditIndex">
+      <div class="form-group"><label>Campaign Phase</label><input type="text" id="spModalPhase" placeholder="e.g. Lineup Reveal Phase 1" required></div>
+      <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+        <div>
+          <label>Platform</label>
+          <select id="spModalPlatform">
+            <option value="Instagram (Reels/Feed)">Instagram (Reels/Feed)</option>
+            <option value="TikTok">TikTok</option>
+            <option value="Facebook">Facebook</option>
+            <option value="X (Twitter)">X (Twitter)</option>
+            <option value="YouTube Shorts">YouTube Shorts</option>
+          </select>
+        </div>
+        <div><label>Posting Frequency Guideline</label><input type="text" id="spModalFreq" placeholder="e.g. 2x Weekly" required></div>
+      </div>
+      <div class="form-group"><label>Content Topic & Format</label><input type="text" id="spModalTopic" placeholder="e.g. Headliner announcement teaser video" required></div>
+      <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+        <div><label>Scheduled Date</label><input type="date" id="spModalDate" required></div>
+        <div>
+          <label>Status</label>
+          <select id="spModalStatus">
+            <option value="Planned">Planned</option>
+            <option value="Drafted">Drafted</option>
+            <option value="Scheduled">Scheduled</option>
+            <option value="Published">Published</option>
+          </select>
+        </div>
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 6px; margin-top: 16px;">
+        <button type="button" onclick="closeSocialPostModal()" style="background: var(--input-bg);">Cancel</button>
+        <button type="button" onclick="saveSocialPostItem()" class="action-btn">Save Post</button>
       </div>
     </div>
   </div>
@@ -978,6 +1111,7 @@
     let auditLogsList = [];
     let currentCaptchaSolution = 7;
     let uploadedTicketSalesRows = [];
+    let adminSocialsPortalUrl = "https://lookerstudio.google.com/";
 
     function emergencyBypass() {
       const emailInput = prompt("Enter your staff email for emergency access:", "james.dunn@ultrafunkula.co.uk");
@@ -1155,6 +1289,12 @@
       { supplier: "Event Generators", desc: "Generator Fleet Booking", amount: 1783.50, dueDate: "2027-04-15", paid: false }
     ];
 
+    const defaultSocialPosts = [
+      { phase: "Launch & Early Bird", platform: "Instagram (Reels/Feed)", topic: "Official 2027 Trailer & Dates Announcement", freq: "1x Weekly", date: "2027-02-01", status: "Published" },
+      { phase: "Lineup Phase 1", platform: "TikTok", topic: "Headliner teaser clips & sound bites", freq: "2x Weekly", date: "2027-03-15", status: "Scheduled" },
+      { phase: "Tickets Countdown", platform: "Facebook", topic: "Tier 1 Sell-out warning & countdown reminder", freq: "3x Weekly", date: "2027-05-01", status: "Planned" }
+    ];
+
     const defaultPlan = [
       { section: "Infrastructure" },
       { task: "Fencing", p1: "JD", p2: "-", p3: "-", update: "booked", steps: "confirm delivery", stepsOwner: "JD", stepsDate: "1st Feb", completed: false },
@@ -1186,6 +1326,7 @@
     let targetData = [...defaultTargets];
     let sponsorshipData = [...defaultSponsorships];
     let outstandingData = [...defaultOutstanding];
+    let socialPostsData = [...defaultSocialPosts];
     let planData = [...defaultPlan];
     let rolesData = [...defaultRoles];
     let djData = [...defaultDjs];
@@ -1202,12 +1343,14 @@
           targetData = val.targetData || [...defaultTargets];
           sponsorshipData = val.sponsorshipData || [...defaultSponsorships];
           outstandingData = val.outstandingData || [...defaultOutstanding];
+          socialPostsData = val.socialPostsData || [...defaultSocialPosts];
           planData = val.planData || [...defaultPlan];
           rolesData = val.rolesData || [...defaultRoles];
           djData = val.djData || [...defaultDjs];
           notesData = val.notesData || [...defaultNotes];
           if (val.barMultipliers) barMultipliers = val.barMultipliers;
           if (val.uploadedTicketSalesRows) uploadedTicketSalesRows = val.uploadedTicketSalesRows;
+          if (val.adminSocialsPortalUrl) adminSocialsPortalUrl = val.adminSocialsPortalUrl;
           userRolesMap = val.userRoles || {};
           usersRegistry = val.usersRegistry || {};
           auditLogsList = val.auditLogs ? Object.values(val.auditLogs) : [];
@@ -1229,7 +1372,65 @@
     }
 
     function saveAllToFirebase() {
-      db.ref('sif27_festival_data').update({ budgetData, targetData, sponsorshipData, outstandingData, planData, rolesData, djData, notesData, barMultipliers, uploadedTicketSalesRows, userRoles: userRolesMap, usersRegistry });
+      db.ref('sif27_festival_data').update({ 
+        budgetData, targetData, sponsorshipData, outstandingData, socialPostsData, 
+        planData, rolesData, djData, notesData, barMultipliers, uploadedTicketSalesRows, 
+        adminSocialsPortalUrl, userRoles: userRolesMap, usersRegistry 
+      });
+    }
+
+    function exportToJSON() {
+      try {
+        const dataSnapshot = {
+          budgetData, targetData, sponsorshipData, outstandingData, socialPostsData,
+          planData, rolesData, djData, notesData, barMultipliers, uploadedTicketSalesRows,
+          adminSocialsPortalUrl, userRoles: userRolesMap, usersRegistry, auditLogs: auditLogsList
+        };
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dataSnapshot, null, 2));
+        const downloadAnchor = document.createElement('a');
+        downloadAnchor.setAttribute("href", dataStr);
+        downloadAnchor.setAttribute("download", `SIF27_Dashboard_Backup_${new Date().toISOString().split('T')[0]}.json`);
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        downloadAnchor.remove();
+        alert("✅ JSON Backup exported successfully!");
+      } catch (err) {
+        alert("❌ Error generating backup file: " + err.message);
+      }
+    }
+
+    function triggerImport() {
+      document.getElementById('jsonFileInput').click();
+    }
+
+    function importFromJSON(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          if (parsed.budgetData) budgetData = parsed.budgetData;
+          if (parsed.targetData) targetData = parsed.targetData;
+          if (parsed.sponsorshipData) sponsorshipData = parsed.sponsorshipData;
+          if (parsed.outstandingData) outstandingData = parsed.outstandingData;
+          if (parsed.socialPostsData) socialPostsData = parsed.socialPostsData;
+          if (parsed.planData) planData = parsed.planData;
+          if (parsed.rolesData) rolesData = parsed.rolesData;
+          if (parsed.djData) djData = parsed.djData;
+          if (parsed.notesData) notesData = parsed.notesData;
+          if (parsed.barMultipliers) barMultipliers = parsed.barMultipliers;
+          if (parsed.uploadedTicketSalesRows) uploadedTicketSalesRows = parsed.uploadedTicketSalesRows;
+          if (parsed.adminSocialsPortalUrl) adminSocialsPortalUrl = parsed.adminSocialsPortalUrl;
+          
+          saveAllToFirebase();
+          buildTables();
+          alert("✅ Restore successful!");
+        } catch (err) {
+          alert("❌ Invalid JSON backup file.");
+        }
+      };
+      reader.readAsText(file);
     }
 
     function formatGBP(num) {
@@ -1333,6 +1534,7 @@
         buildRolesTable();
         buildAdminPanel();
         buildOutstandingTable();
+        buildSocialsPlanner();
 
         const role = getUserRole();
         const isAdmin = currentUserEmail.includes('james.dunn@ultrafunkula');
@@ -1655,34 +1857,60 @@
       } catch (e) { console.error(e); }
     }
 
-    // Outstanding Payments Table & Handlers
+    // Outstanding Payments Table & Totals Calculator
     function buildOutstandingTable() {
       const oBody = document.getElementById('outstandingBody');
       if (!oBody) return;
+      
+      let totalOverallOwed = 0;
+      let nextPaymentVal = Infinity;
+      let nextPaymentDateStr = "-";
+      
       let html = '';
       if (outstandingData.length === 0) {
         html = `<tr><td colspan="7" style="text-align:center; color:var(--text-muted); padding:14px;">No outstanding payments logged.</td></tr>`;
       } else {
-        outstandingData.forEach((item, idx) => {
+        // Sort by due date ascending
+        const sorted = [...outstandingData].sort((a,b) => new Date(a.dueDate || '2027-07-30') - new Date(b.dueDate || '2027-07-30'));
+
+        sorted.forEach((item, idx) => {
+          const originalIndex = outstandingData.indexOf(item);
+          if (!item.paid) {
+            totalOverallOwed += (item.amount || 0);
+            const dTime = new Date(item.dueDate || '2027-07-30').getTime();
+            if (dTime < nextPaymentVal) {
+              nextPaymentVal = dTime;
+              nextPaymentDateStr = `${item.supplier} (${item.dueDate})`;
+            }
+          }
+
           const statusBadge = item.paid 
             ? `<span class="badge" style="background:rgba(16,185,129,0.15); color:var(--accent-green); border-color:var(--accent-green);">Paid</span>`
             : `<span class="badge" style="background:rgba(245,158,11,0.15); color:var(--accent-amber); border-color:var(--accent-amber);">Pending</span>`;
           
           html += `<tr>
-            <td style="text-align:center;"><input type="checkbox" onchange="toggleOutstandingPaid(${idx}, this)" ${item.paid ? 'checked' : ''} style="width:16px; height:16px; cursor:pointer;"></td>
+            <td style="text-align:center;"><input type="checkbox" onchange="toggleOutstandingPaid(${originalIndex}, this)" ${item.paid ? 'checked' : ''} style="width:16px; height:16px; cursor:pointer;"></td>
             <td style="font-weight:bold; color:var(--accent-blue);">${item.supplier}</td>
             <td>${item.desc}</td>
             <td style="text-align:right; font-weight:bold; color:${item.paid ? 'var(--text-muted)' : 'var(--accent-rose)'};">${formatGBP(item.amount)}</td>
             <td style="color:var(--text-muted);">${item.dueDate || '-'}</td>
             <td style="text-align:center;">${statusBadge}</td>
             <td style="text-align:center;">
-              <button class="edit-btn" onclick="openOutstandingModal(${idx})">Edit</button>
-              <button class="edit-btn" onclick="deleteOutstandingItem(${idx})" style="background:rgba(225,29,72,0.2); color:var(--accent-rose); border-color:var(--border-color); margin-left:4px;">Del</button>
+              <button class="edit-btn" onclick="openOutstandingModal(${originalIndex})">Edit</button>
+              <button class="edit-btn" onclick="deleteOutstandingItem(${originalIndex})" style="background:rgba(225,29,72,0.2); color:var(--accent-rose); border-color:var(--border-color); margin-left:4px;">Del</button>
             </td>
           </tr>`;
         });
       }
       oBody.innerHTML = html;
+
+      document.getElementById('overallOwedAmount').innerText = formatGBP(totalOverallOwed);
+      document.getElementById('nextPaymentAmount').innerText = nextPaymentVal === Infinity ? formatGBP(0) : formatGBP(outstandingData.find(i => !i.paid && new Date(i.dueDate).getTime() === nextPaymentVal)?.amount || 0);
+      document.getElementById('nextPaymentDate').innerText = `Due: ${nextPaymentDateStr}`;
+
+      const months = parseInt(document.getElementById('installmentMonths').value) || 1;
+      const monthlyPmt = totalOverallOwed / months;
+      document.getElementById('installmentCalcOutput').innerText = `${months} Month(s): ${formatGBP(monthlyPmt)} / mo`;
     }
 
     function toggleOutstandingPaid(idx, el) {
@@ -1733,6 +1961,103 @@
       outstandingData = [...defaultOutstanding];
       saveAllToFirebase();
       buildOutstandingTable();
+    }
+
+    // Socials Planner Rendering & Handlers
+    function buildSocialsPlanner() {
+      const body = document.getElementById('socialsPlannerBody');
+      if (!body) return;
+
+      document.getElementById('adminExternalPortalBtn').href = adminSocialsPortalUrl;
+
+      // Mock live metrics preview based on posts count
+      document.getElementById('metricReach').innerText = (socialPostsData.length * 14250).toLocaleString();
+      document.getElementById('metricEngagement').innerText = "5.8%";
+      document.getElementById('metricTickets').innerText = (socialPostsData.length * 184).toLocaleString();
+
+      let html = '';
+      if (socialPostsData.length === 0) {
+        html = `<tr><td colspan="7" style="text-align:center; color:var(--text-muted); padding:14px;">No posts scheduled.</td></tr>`;
+      } else {
+        socialPostsData.forEach((post, idx) => {
+          let badgeColor = "var(--text-muted)";
+          if (post.status === "Published") badgeColor = "var(--accent-green)";
+          else if (post.status === "Scheduled") badgeColor = "var(--accent-blue)";
+          else if (post.status === "Drafted") badgeColor = "var(--accent-amber)";
+
+          html += `<tr>
+            <td style="font-weight:bold; color:var(--accent-blue);">${post.phase}</td>
+            <td><span class="badge">${post.platform}</span></td>
+            <td>${post.topic}</td>
+            <td style="color:var(--text-muted);">${post.freq}</td>
+            <td style="color:var(--text-purple); font-weight:600;">${post.date || '-'}</td>
+            <td style="text-align:center;"><span class="badge" style="color:${badgeColor}; border-color:${badgeColor};">${post.status}</span></td>
+            <td style="text-align:center;">
+              <button class="edit-btn" onclick="openSocialPostModal(${idx})">Edit</button>
+              <button class="edit-btn" onclick="deleteSocialPostItem(${idx})" style="background:rgba(225,29,72,0.2); color:var(--accent-rose); border-color:var(--border-color); margin-left:4px;">Del</button>
+            </td>
+          </tr>`;
+        });
+      }
+      body.innerHTML = html;
+    }
+
+    function openSocialsAdminModal() {
+      document.getElementById('adminPortalUrlInput').value = adminSocialsPortalUrl;
+      document.getElementById('socialsAdminModal').classList.add('active');
+    }
+    function closeSocialsAdminModal() { document.getElementById('socialsAdminModal').classList.remove('active'); }
+    function saveSocialsAdminLink() {
+      const url = document.getElementById('adminPortalUrlInput').value.trim();
+      if (url) {
+        adminSocialsPortalUrl = url;
+        saveAllToFirebase();
+        buildSocialsPlanner();
+        closeSocialsAdminModal();
+        alert("✅ Admin portal link updated successfully!");
+      }
+    }
+
+    function openSocialPostModal(idx) {
+      document.getElementById('socialPostEditIndex').value = idx;
+      if (idx === -1) {
+        document.getElementById('spModalPhase').value = "";
+        document.getElementById('spModalPlatform').value = "Instagram (Reels/Feed)";
+        document.getElementById('spModalTopic').value = "";
+        document.getElementById('spModalFreq').value = "2x Weekly";
+        document.getElementById('spModalDate').value = new Date().toISOString().split('T')[0];
+        document.getElementById('spModalStatus').value = "Planned";
+      } else {
+        const item = socialPostsData[idx];
+        document.getElementById('spModalPhase').value = item.phase;
+        document.getElementById('spModalPlatform').value = item.platform;
+        document.getElementById('spModalTopic').value = item.topic;
+        document.getElementById('spModalFreq').value = item.freq;
+        document.getElementById('spModalDate').value = item.date;
+        document.getElementById('spModalStatus').value = item.status;
+      }
+      document.getElementById('socialPostModal').classList.add('active');
+    }
+    function closeSocialPostModal() { document.getElementById('socialPostModal').classList.remove('active'); }
+    function saveSocialPostItem() {
+      const idx = parseInt(document.getElementById('socialPostEditIndex').value);
+      const newItem = {
+        phase: document.getElementById('spModalPhase').value.trim(),
+        platform: document.getElementById('spModalPlatform').value,
+        topic: document.getElementById('spModalTopic').value.trim(),
+        freq: document.getElementById('spModalFreq').value.trim(),
+        date: document.getElementById('spModalDate').value,
+        status: document.getElementById('spModalStatus').value
+      };
+      if (idx === -1) socialPostsData.push(newItem); else socialPostsData[idx] = newItem;
+      saveAllToFirebase();
+      closeSocialPostModal();
+      buildSocialsPlanner();
+    }
+    function deleteSocialPostItem(idx) {
+      socialPostsData.splice(idx, 1);
+      saveAllToFirebase();
+      buildSocialsPlanner();
     }
 
     // Roles & Admin Tables Rendering
@@ -2099,23 +2424,25 @@
       const slots = currentCalDay.includes('Friday') ? ["16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30", "22:00"] : ["13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30", "22:00"];
       const stages = ["Lighthouse (Main Stage)", "Cactus (Live Stage)", "The Causeway (DnB stage)", "The Sand Bar (Disco stage)"];
       
-      // Map out booked slots per stage considering 1h, 1.5h, 2h durations (each slot = 30 mins)
       let stageBookings = {};
       stages.forEach(st => stageBookings[st] = {});
+      let coveredSlots = {};
+      stages.forEach(st => coveredSlots[st] = new Set());
 
       djData.forEach(act => {
         if ((act.day || "").trim() === currentCalDay) {
           const st = (act.stage || "").trim();
           const startTime = act.time;
           const durationHours = parseFloat(act.duration) || 2;
-          const totalSlotsToBlock = Math.round(durationHours * 2); // 30 min intervals
+          const totalSlotsToBlock = Math.round(durationHours * 2); // 30 min increments
           const startIndex = slots.indexOf(startTime);
           
           if (startIndex !== -1 && stageBookings[st]) {
+            stageBookings[st][startTime] = { name: act.name, totalSlots: totalSlotsToBlock };
             for (let i = 0; i < totalSlotsToBlock; i++) {
               const slotIdx = startIndex + i;
               if (slotIdx < slots.length) {
-                stageBookings[st][slots[slotIdx]] = { name: act.name, isStart: (i === 0), totalSlots: totalSlotsToBlock };
+                if (i > 0) coveredSlots[st].add(slots[slotIdx]);
               }
             }
           }
@@ -2126,13 +2453,11 @@
       slots.forEach(slot => {
         html += `<tr><td style="font-weight:bold; color:var(--text-muted);">${slot}</td>`;
         stages.forEach(st => {
-          const booking = stageBookings[st][slot];
-          if (booking) {
-            if (booking.isStart) {
-              html += `<td rowspan="${booking.totalSlots}" style="background:rgba(225,29,72,0.15); vertical-align:middle; text-align:center;"><b style="color:var(--accent-rose);">${booking.name}</b></td>`;
-            } else {
-              // Covered by rowspan
-            }
+          if (stageBookings[st][slot]) {
+            const booking = stageBookings[st][slot];
+            html += `<td rowspan="${booking.totalSlots}" style="background:rgba(225,29,72,0.15); vertical-align:middle; text-align:center;"><b style="color:var(--accent-rose);">${booking.name}</b></td>`;
+          } else if (coveredSlots[st].has(slot)) {
+            // Skip rendering cell because it is covered by the rowspan above
           } else {
             html += `<td style="color:var(--text-muted); text-align:center;">Available</td>`;
           }
