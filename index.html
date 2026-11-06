@@ -405,7 +405,7 @@
         </div>
       </div>
 
-      <div class="table-card">
+      <div class="table-card" style="margin-bottom: 24px;">
         <div class="table-header">
           <span>Festival Budget Line Items</span>
           <div style="display: flex; gap: 6px;" id="budgetActionBtns">
@@ -432,17 +432,58 @@
           </table>
         </div>
       </div>
+
+      <!-- OUTSTANDING MONEY SECTION -->
+      <div class="table-card">
+        <div class="table-header">
+          <span>⏳ Owed Money Outstanding Section</span>
+          <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+            <button class="action-btn" onclick="openOutstandingModal(-1)">+ Add Outstanding Payment</button>
+            <button onclick="triggerOutstandingExcelUpload()" class="io-btn" style="padding: 5px 8px; font-size: 11px;">📤 Upload Excel</button>
+            <input type="file" id="outstandingExcelFileInput" accept=".xlsx, .xls, .csv" style="display:none;" onchange="handleOutstandingExcelUpload(event)">
+            <button onclick="resetOutstanding()" class="edit-btn">Reset</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th style="text-align: center; width: 50px;">Paid</th>
+                <th>Supplier / Payee</th>
+                <th>Description</th>
+                <th style="text-align: right;">Amount Due (£)</th>
+                <th>Due Date</th>
+                <th style="text-align: center;">Status</th>
+                <th style="text-align: center;">Action</th>
+              </tr>
+            </thead>
+            <tbody id="outstandingBody"></tbody>
+          </table>
+        </div>
+      </div>
     </div>
 
     <!-- TAB 3: SALES TARGETS -->
     <div id="tab-target" class="tab-content">
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-bottom: 20px;">
         <div style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px;">
-          <p style="color: var(--accent-blue); font-size: 12px; font-weight: 800; margin-bottom: 10px; text-transform: uppercase;">🎫 Ticket Sales Breakdown</p>
+          <p style="color: var(--accent-blue); font-size: 12px; font-weight: 800; margin-bottom: 10px; text-transform: uppercase;">🎫 Ticket Sales Breakdown & Quantities</p>
           <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 10px; text-align: center; background: var(--input-bg); padding: 8px; border-radius: 6px;">
-            <div><span style="font-size: 9px; color: var(--text-muted); display: block;">FRI</span><span id="blockFriTicket" style="font-size: 11px; font-weight: bold;">£0</span></div>
-            <div><span style="font-size: 9px; color: var(--text-muted); display: block;">SAT</span><span id="blockSatTicket" style="font-size: 11px; font-weight: bold;">£0</span></div>
-            <div><span style="font-size: 9px; color: var(--text-muted); display: block;">WEEKEND</span><span id="blockWkndTicket" style="font-size: 11px; font-weight: bold; color: var(--accent-purple);">£0</span></div>
+            <div>
+              <span style="font-size: 9px; color: var(--text-muted); display: block;">FRI (£ / Qty)</span>
+              <span id="blockFriTicket" style="font-size: 11px; font-weight: bold;">£0</span>
+              <span id="blockFriQty" style="font-size: 9px; color: var(--accent-blue); display: block;">0 qty</span>
+            </div>
+            <div>
+              <span style="font-size: 9px; color: var(--text-muted); display: block;">SAT (£ / Qty)</span>
+              <span id="blockSatTicket" style="font-size: 11px; font-weight: bold;">£0</span>
+              <span id="blockSatQty" style="font-size: 9px; color: var(--accent-blue); display: block;">0 qty</span>
+            </div>
+            <div>
+              <span style="font-size: 9px; color: var(--text-muted); display: block;">WKND (£ / Qty)</span>
+              <span id="blockWkndTicket" style="font-size: 11px; font-weight: bold; color: var(--accent-purple);">£0</span>
+              <span id="blockWkndQty" style="font-size: 9px; color: var(--accent-purple); display: block;">0 qty</span>
+            </div>
           </div>
           <div style="display: flex; justify-content: space-between; align-items: baseline; border-top: 1px solid var(--border-color); padding-top: 8px;">
             <h3 id="topConsolidatedTicketRev" style="color: var(--accent-green); font-size: 16px;">£0.00</h3>
@@ -655,7 +696,7 @@
                 <th style="text-align: right;">Total (£)</th>
                 <th>Stage</th>
                 <th>Day</th>
-                <th>Time</th>
+                <th>Time & Duration</th>
                 <th>Drinks</th>
                 <th>Food</th>
                 <th style="text-align: center;" class="admin-col-header">Action</th>
@@ -793,6 +834,23 @@
     </div>
   </div>
 
+  <div id="outstandingModal" class="modal">
+    <div class="modal-box">
+      <h3 id="outstandingModalTitle" style="margin-bottom: 14px; font-size: 15px; font-weight: bold; color: var(--accent-blue);">Add Outstanding Payment</h3>
+      <input type="hidden" id="outstandingEditIndex">
+      <div class="form-group"><label>Supplier / Payee</label><input type="text" id="oModalSupplier" placeholder="e.g. Fencing Co Ltd" required></div>
+      <div class="form-group"><label>Description</label><input type="text" id="oModalDesc" placeholder="e.g. 50% Deposit for Perimeter Fencing" required></div>
+      <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+        <div><label>Amount Due (£)</label><input type="number" step="0.01" id="oModalAmount" placeholder="1545.50" required></div>
+        <div><label>Due Date</label><input type="date" id="oModalDate" required></div>
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 6px; margin-top: 16px;">
+        <button type="button" onclick="closeOutstandingModal()" style="background: var(--input-bg);">Cancel</button>
+        <button type="button" onclick="saveOutstandingItem()" class="action-btn">Save Payment</button>
+      </div>
+    </div>
+  </div>
+
   <div id="planModal" class="modal">
     <div class="modal-box">
       <h3 style="margin-bottom: 14px; font-size: 15px; font-weight: bold; color: var(--accent-blue);">Edit Task Status</h3>
@@ -882,7 +940,10 @@
         <div><label>Stage</label><select id="djStage"><option value="Lighthouse (Main Stage)">Lighthouse (Main)</option><option value="Cactus (Live Stage)">Cactus (Live)</option><option value="The Causeway (DnB stage)">Causeway (DnB)</option><option value="The Sand Bar (Disco stage)">Sand Bar (Disco)</option></select></div>
         <div><label>Day</label><select id="djDay" onchange="updateTimeSlots()"><option value="Friday 30th July">Friday</option><option value="Saturday 31st July">Saturday</option></select></div>
       </div>
-      <div class="form-group"><label>Time Slot</label><select id="djTime"></select></div>
+      <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+        <div><label>Start Time Slot</label><select id="djTime"></select></div>
+        <div><label>Set Duration</label><select id="djDuration"><option value="1">1 Hour</option><option value="1.5">1 Hour 30 Mins</option><option value="2" selected>2 Hours</option></select></div>
+      </div>
       <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
         <div><label>Drinks Package</label><input type="text" id="djDrinks" placeholder="Rider"></div>
         <div><label>Food Package</label><input type="text" id="djFood" placeholder="Catering"></div>
@@ -1089,6 +1150,11 @@
 
     const defaultSponsorships = [{ company: "Red Bull", area: "Main Stage", amount: 17500 }];
 
+    const defaultOutstanding = [
+      { supplier: "Fencing Co Ltd", desc: "Perimeter Fencing 50% Deposit", amount: 1545.50, dueDate: "2027-03-01", paid: false },
+      { supplier: "Event Generators", desc: "Generator Fleet Booking", amount: 1783.50, dueDate: "2027-04-15", paid: false }
+    ];
+
     const defaultPlan = [
       { section: "Infrastructure" },
       { task: "Fencing", p1: "JD", p2: "-", p3: "-", update: "booked", steps: "confirm delivery", stepsOwner: "JD", stepsDate: "1st Feb", completed: false },
@@ -1109,7 +1175,7 @@
     ];
 
     const defaultDjs = [
-      { name: "Dan Shake", type: "DJ", cost: 3292, vat: "YES", stage: "Lighthouse (Main Stage)", day: "Saturday 31st July", time: "21:00 - 23:00 (2 Hours)", drinks: "Rider", food: "Catering" }
+      { name: "Dan Shake", type: "DJ", cost: 3292, vat: "YES", stage: "Lighthouse (Main Stage)", day: "Saturday 31st July", time: "21:00", duration: 2, drinks: "Rider", food: "Catering" }
     ];
 
     const defaultNotes = [
@@ -1119,6 +1185,7 @@
     let budgetData = [...defaultBudget];
     let targetData = [...defaultTargets];
     let sponsorshipData = [...defaultSponsorships];
+    let outstandingData = [...defaultOutstanding];
     let planData = [...defaultPlan];
     let rolesData = [...defaultRoles];
     let djData = [...defaultDjs];
@@ -1134,6 +1201,7 @@
           budgetData = val.budgetData || [...defaultBudget];
           targetData = val.targetData || [...defaultTargets];
           sponsorshipData = val.sponsorshipData || [...defaultSponsorships];
+          outstandingData = val.outstandingData || [...defaultOutstanding];
           planData = val.planData || [...defaultPlan];
           rolesData = val.rolesData || [...defaultRoles];
           djData = val.djData || [...defaultDjs];
@@ -1161,7 +1229,7 @@
     }
 
     function saveAllToFirebase() {
-      db.ref('sif27_festival_data').update({ budgetData, targetData, sponsorshipData, planData, rolesData, djData, notesData, barMultipliers, uploadedTicketSalesRows, userRoles: userRolesMap, usersRegistry });
+      db.ref('sif27_festival_data').update({ budgetData, targetData, sponsorshipData, outstandingData, planData, rolesData, djData, notesData, barMultipliers, uploadedTicketSalesRows, userRoles: userRolesMap, usersRegistry });
     }
 
     function formatGBP(num) {
@@ -1228,6 +1296,35 @@
       reader.readAsArrayBuffer(file);
     }
 
+    function triggerOutstandingExcelUpload() { document.getElementById('outstandingExcelFileInput').click(); }
+
+    function handleOutstandingExcelUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          const jsonRows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { defval: "" });
+          if (jsonRows.length === 0) return;
+
+          jsonRows.forEach(row => {
+            const supplier = row.Supplier || row.Payee || row.Name || "Supplier";
+            const desc = row.Description || row.Desc || "Invoice payment";
+            const amount = parseFloat(String(row.Amount || row.Due || 0).replace(/[^0-9.-]+/g,"")) || 0;
+            const dueDate = row.DueDate || row.Date || new Date().toISOString().split('T')[0];
+            outstandingData.push({ supplier, desc, amount, dueDate, paid: false });
+          });
+
+          saveAllToFirebase();
+          buildTables();
+          alert("✅ Outstanding payments imported successfully!");
+        } catch (err) { alert("❌ Error parsing file."); }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
     function buildTables() {
       try {
         buildCalendarMatrix();
@@ -1235,6 +1332,7 @@
         buildNotesBoard();
         buildRolesTable();
         buildAdminPanel();
+        buildOutstandingTable();
 
         const role = getUserRole();
         const isAdmin = currentUserEmail.includes('james.dunn@ultrafunkula');
@@ -1276,13 +1374,13 @@
           const isWeekend = /weekend|wknd/i.test(row.day) || /weekend|wknd/i.test(row.type);
 
           if (isWeekend) {
-            wkndQty += row.qty;
+            wkndQty += (row.qty || 0);
             wkndTicketRev += itemTotal;
           } else if (row.day.includes("Friday")) {
-            friQty += row.qty;
+            friQty += (row.qty || 0);
             friTicketRev += itemTotal;
           } else {
-            satQty += row.qty;
+            satQty += (row.qty || 0);
             satTicketRev += itemTotal;
           }
         });
@@ -1331,8 +1429,12 @@
         document.getElementById('wkndBarCalcOutput').innerText = `Total: ${formatGBP(wkndBar)}`;
 
         document.getElementById('blockFriTicket').innerText = formatGBP(friTicketRev);
+        document.getElementById('blockFriQty').innerText = `${friQty} tickets`;
         document.getElementById('blockSatTicket').innerText = formatGBP(satTicketRev);
+        document.getElementById('blockSatQty').innerText = `${satQty} tickets`;
         document.getElementById('blockWkndTicket').innerText = formatGBP(wkndTicketRev);
+        document.getElementById('blockWkndQty').innerText = `${wkndQty} tickets`;
+
         document.getElementById('topConsolidatedTicketRev').innerText = formatGBP(totalSalesRevenue);
         document.getElementById('topConsolidatedTicketQty').innerText = `${friQty + satQty + wkndQty} Tickets`;
 
@@ -1409,12 +1511,13 @@
             filteredDjs.forEach(row => {
               const baseCost = parseFloat(row.cost) || 0;
               const totalIncCost = row.vat === 'YES' ? baseCost * 1.2 : baseCost;
+              const durText = row.duration === 1 ? "1 Hour" : row.duration === 1.5 ? "1.5 Hours" : "2 Hours";
               stageHtml += `<tr>
                 <td style="font-weight:bold; color:var(--accent-blue);">${row.stage || 'Lighthouse'}</td>
                 <td style="font-weight:bold; color:var(--accent-rose);">${row.name}</td>
                 <td><span class="badge">${row.type}</span></td>
                 <td style="color:var(--text-muted);">${row.day || '-'}</td>
-                <td style="font-weight:600; color:var(--accent-purple);">${row.time || '-'}</td>
+                <td style="font-weight:600; color:var(--accent-purple);">${row.time || '-'} (${durText})</td>
                 <td style="text-align:right; font-weight:bold; color:var(--accent-green);">${formatGBP(totalIncCost)}</td>
               </tr>`;
             });
@@ -1527,6 +1630,7 @@
           djData.forEach((row, idx) => {
             const cost = parseFloat(row.cost) || 0;
             const vat = row.vat === 'YES' ? cost * 0.2 : 0;
+            const durText = row.duration === 1 ? "1 Hour" : row.duration === 1.5 ? "1.5 Hours" : "2 Hours";
             djHtml += `<tr>
               <td style="font-weight:bold; color:var(--accent-rose);">${row.name}</td>
               <td><span class="badge">${row.type}</span></td>
@@ -1536,7 +1640,7 @@
               <td style="text-align:right; font-weight:bold;">${formatGBP(cost + vat)}</td>
               <td>${row.stage}</td>
               <td>${row.day}</td>
-              <td>${row.time}</td>
+              <td>${row.time} (${durText})</td>
               <td>${row.drinks || '-'}</td>
               <td>${row.food || '-'}</td>
               <td style="text-align:center;">
@@ -1549,6 +1653,86 @@
         }
 
       } catch (e) { console.error(e); }
+    }
+
+    // Outstanding Payments Table & Handlers
+    function buildOutstandingTable() {
+      const oBody = document.getElementById('outstandingBody');
+      if (!oBody) return;
+      let html = '';
+      if (outstandingData.length === 0) {
+        html = `<tr><td colspan="7" style="text-align:center; color:var(--text-muted); padding:14px;">No outstanding payments logged.</td></tr>`;
+      } else {
+        outstandingData.forEach((item, idx) => {
+          const statusBadge = item.paid 
+            ? `<span class="badge" style="background:rgba(16,185,129,0.15); color:var(--accent-green); border-color:var(--accent-green);">Paid</span>`
+            : `<span class="badge" style="background:rgba(245,158,11,0.15); color:var(--accent-amber); border-color:var(--accent-amber);">Pending</span>`;
+          
+          html += `<tr>
+            <td style="text-align:center;"><input type="checkbox" onchange="toggleOutstandingPaid(${idx}, this)" ${item.paid ? 'checked' : ''} style="width:16px; height:16px; cursor:pointer;"></td>
+            <td style="font-weight:bold; color:var(--accent-blue);">${item.supplier}</td>
+            <td>${item.desc}</td>
+            <td style="text-align:right; font-weight:bold; color:${item.paid ? 'var(--text-muted)' : 'var(--accent-rose)'};">${formatGBP(item.amount)}</td>
+            <td style="color:var(--text-muted);">${item.dueDate || '-'}</td>
+            <td style="text-align:center;">${statusBadge}</td>
+            <td style="text-align:center;">
+              <button class="edit-btn" onclick="openOutstandingModal(${idx})">Edit</button>
+              <button class="edit-btn" onclick="deleteOutstandingItem(${idx})" style="background:rgba(225,29,72,0.2); color:var(--accent-rose); border-color:var(--border-color); margin-left:4px;">Del</button>
+            </td>
+          </tr>`;
+        });
+      }
+      oBody.innerHTML = html;
+    }
+
+    function toggleOutstandingPaid(idx, el) {
+      outstandingData[idx].paid = el.checked;
+      saveAllToFirebase();
+      buildOutstandingTable();
+    }
+
+    function openOutstandingModal(idx) {
+      document.getElementById('outstandingEditIndex').value = idx;
+      if (idx === -1) {
+        document.getElementById('outstandingModalTitle').innerText = "Add Outstanding Payment";
+        document.getElementById('oModalSupplier').value = "";
+        document.getElementById('oModalDesc').value = "";
+        document.getElementById('oModalAmount').value = "";
+        document.getElementById('oModalDate').value = new Date().toISOString().split('T')[0];
+      } else {
+        document.getElementById('outstandingModalTitle').innerText = "Edit Outstanding Payment";
+        const item = outstandingData[idx];
+        document.getElementById('oModalSupplier').value = item.supplier;
+        document.getElementById('oModalDesc').value = item.desc;
+        document.getElementById('oModalAmount').value = item.amount;
+        document.getElementById('oModalDate').value = item.dueDate || '';
+      }
+      document.getElementById('outstandingModal').classList.add('active');
+    }
+    function closeOutstandingModal() { document.getElementById('outstandingModal').classList.remove('active'); }
+    function saveOutstandingItem() {
+      const idx = parseInt(document.getElementById('outstandingEditIndex').value);
+      const newItem = {
+        supplier: document.getElementById('oModalSupplier').value.trim(),
+        desc: document.getElementById('oModalDesc').value.trim(),
+        amount: parseFloat(document.getElementById('oModalAmount').value) || 0,
+        dueDate: document.getElementById('oModalDate').value,
+        paid: idx !== -1 ? outstandingData[idx].paid : false
+      };
+      if (idx === -1) outstandingData.push(newItem); else outstandingData[idx] = newItem;
+      saveAllToFirebase();
+      closeOutstandingModal();
+      buildOutstandingTable();
+    }
+    function deleteOutstandingItem(idx) {
+      outstandingData.splice(idx, 1);
+      saveAllToFirebase();
+      buildOutstandingTable();
+    }
+    function resetOutstanding() {
+      outstandingData = [...defaultOutstanding];
+      saveAllToFirebase();
+      buildOutstandingTable();
     }
 
     // Roles & Admin Tables Rendering
@@ -1842,6 +2026,7 @@
         document.getElementById('djStage').value = 'Lighthouse (Main Stage)';
         document.getElementById('djDay').value = 'Friday 30th July';
         updateTimeSlots();
+        document.getElementById('djDuration').value = '2';
         document.getElementById('djDrinks').value = '';
         document.getElementById('djFood').value = '';
       } else {
@@ -1854,6 +2039,7 @@
         document.getElementById('djStage').value = act.stage || 'Lighthouse (Main Stage)';
         document.getElementById('djDay').value = act.day;
         updateTimeSlots(act.time);
+        document.getElementById('djDuration').value = act.duration || 2;
         document.getElementById('djDrinks').value = act.drinks;
         document.getElementById('djFood').value = act.food;
       }
@@ -1870,6 +2056,7 @@
         stage: document.getElementById('djStage').value,
         day: document.getElementById('djDay').value,
         time: document.getElementById('djTime').value,
+        duration: parseFloat(document.getElementById('djDuration').value) || 2,
         drinks: document.getElementById('djDrinks').value,
         food: document.getElementById('djFood').value
       };
@@ -1898,24 +2085,57 @@
     function updateTimeSlots(selectedTime) {
       const day = document.getElementById('djDay').value;
       const select = document.getElementById('djTime');
-      const slots = day.includes('Friday') ? ["16:00 - 17:30", "17:30 - 19:00", "19:00 - 20:30", "20:30 - 22:00", "22:00 - 23:00"] : ["13:00 - 15:00", "15:00 - 17:00", "17:00 - 19:00", "19:00 - 21:00", "21:00 - 23:00"];
+      const slots = day.includes('Friday') ? ["16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30", "22:00", "22:30"] : ["13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30", "22:00", "22:30"];
       let html = '';
       slots.forEach(s => html += `<option value="${s}" ${selectedTime === s ? 'selected' : ''}>${s}</option>`);
       select.innerHTML = html;
     }
 
     function switchCalDay(day) { currentCalDay = day; buildCalendarMatrix(); }
+    
     function buildCalendarMatrix() {
       const body = document.getElementById('calendarMatrixBody');
       if (!body) return;
-      const slots = ["13:00 - 15:00", "15:00 - 17:00", "17:00 - 19:00", "19:00 - 21:00", "21:00 - 23:00"];
+      const slots = currentCalDay.includes('Friday') ? ["16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30", "22:00"] : ["13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30", "22:00"];
       const stages = ["Lighthouse (Main Stage)", "Cactus (Live Stage)", "The Causeway (DnB stage)", "The Sand Bar (Disco stage)"];
+      
+      // Map out booked slots per stage considering 1h, 1.5h, 2h durations (each slot = 30 mins)
+      let stageBookings = {};
+      stages.forEach(st => stageBookings[st] = {});
+
+      djData.forEach(act => {
+        if ((act.day || "").trim() === currentCalDay) {
+          const st = (act.stage || "").trim();
+          const startTime = act.time;
+          const durationHours = parseFloat(act.duration) || 2;
+          const totalSlotsToBlock = Math.round(durationHours * 2); // 30 min intervals
+          const startIndex = slots.indexOf(startTime);
+          
+          if (startIndex !== -1 && stageBookings[st]) {
+            for (let i = 0; i < totalSlotsToBlock; i++) {
+              const slotIdx = startIndex + i;
+              if (slotIdx < slots.length) {
+                stageBookings[st][slots[slotIdx]] = { name: act.name, isStart: (i === 0), totalSlots: totalSlotsToBlock };
+              }
+            }
+          }
+        }
+      });
+
       let html = '';
       slots.forEach(slot => {
         html += `<tr><td style="font-weight:bold; color:var(--text-muted);">${slot}</td>`;
         stages.forEach(st => {
-          const act = djData.find(a => (a.day || "").trim() === currentCalDay && (a.stage || "").trim() === st && (a.time || "").includes(slot.slice(0,5)));
-          html += act ? `<td style="background:rgba(225,29,72,0.15);"><b style="color:var(--accent-rose);">${act.name}</b></td>` : `<td style="color:var(--text-muted);">Available</td>`;
+          const booking = stageBookings[st][slot];
+          if (booking) {
+            if (booking.isStart) {
+              html += `<td rowspan="${booking.totalSlots}" style="background:rgba(225,29,72,0.15); vertical-align:middle; text-align:center;"><b style="color:var(--accent-rose);">${booking.name}</b></td>`;
+            } else {
+              // Covered by rowspan
+            }
+          } else {
+            html += `<td style="color:var(--text-muted); text-align:center;">Available</td>`;
+          }
         });
         html += `</tr>`;
       });
