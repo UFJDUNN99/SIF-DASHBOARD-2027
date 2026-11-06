@@ -13,7 +13,7 @@
   <!-- SheetJS (XLSX) Library for Excel File Parsing -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   
-  <!-- EmailJS SDK for Admin Registration Notifications -->
+  <!-- EmailJS SDK for Admin Notifications -->
   <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/emailjs.min.js"></script>
 
   <style>
@@ -96,28 +96,14 @@
     .table-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
     .table-header { padding: 14px 16px; border-bottom: 1px solid var(--border-color); font-weight: bold; font-size: 14px; display: flex; justify-content: space-between; align-items: center; background: var(--header-bg); flex-wrap: wrap; gap: 10px; }
     .table-wrap { overflow-x: auto; width: 100%; -webkit-overflow-scrolling: touch; }
-    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; min-width: 600px; }
+    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; min-width: 650px; }
     th { background: var(--input-bg); color: var(--text-muted); text-transform: uppercase; font-size: 10px; padding: 10px 12px; border-bottom: 1px solid var(--border-color); white-space: nowrap; font-weight: 700; }
     td { padding: 10px 12px; border-bottom: 1px solid var(--border-color); color: var(--text-main); }
-    tr.section-row td { background: var(--table-stripe); font-weight: bold; color: var(--accent-blue); font-size: 12px; }
     
     .badge { padding: 3px 6px; border-radius: 4px; font-size: 10px; font-weight: 600; background: var(--input-bg); color: var(--text-main); display: inline-block; border: 1px solid var(--border-color); }
     
     .action-btn { background: var(--accent-blue); color: #0f172a; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 11px; }
     .edit-btn { background: var(--input-bg); color: var(--text-main); border: 1px solid var(--border-color); padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 600; }
-
-    /* Timeline Accordion Styles */
-    .accordion-item { border-bottom: 1px solid var(--border-color); }
-    .accordion-header { background: var(--input-bg); padding: 12px 16px; font-weight: bold; font-size: 13px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
-    .accordion-header:hover { background: var(--table-stripe); }
-    .accordion-body { padding: 14px; display: none; background: var(--card-bg); }
-    .accordion-body.active { display: block; }
-
-    /* Ideas Board */
-    .notes-board-grid { display: grid; grid-template-columns: 280px 1fr; gap: 16px; padding: 16px; }
-    @media(max-width: 800px) { .notes-board-grid { grid-template-columns: 1fr; } }
-    .note-form-card { background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 14px; height: fit-content; }
-    .note-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 14px; margin-bottom: 12px; display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
 
     /* Login Modal Overlay */
     #loginOverlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(4px); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 16px; }
@@ -149,39 +135,8 @@
       <button type="button" id="loginSubmitBtn">Log In to Dashboard</button>
       <div id="loginError"></div>
 
-      <div style="margin-top: 14px; text-align: center; border-top: 1px solid #334155; padding-top: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
-        <button type="button" id="openSignupBtn" style="background: none; border: none; color: #38bdf8; font-size: 11px; font-weight: bold; cursor: pointer; padding: 0;">Create Staff Account</button>
-        <button type="button" onclick="emergencyBypass()" style="background: none; border: none; color: #f59e0b; font-size: 11px; font-weight: bold; cursor: pointer; padding: 0;">⚠️ Emergency Bypass</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- SIGN-UP MODAL POPUP -->
-  <div id="signupModal" class="modal">
-    <div class="modal-box" style="max-width: 360px;">
-      <h3 style="margin-bottom: 10px; font-size: 15px; font-weight: bold; color: var(--accent-blue); text-align: center;">Register New Staff Account</h3>
-      <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 14px; text-align: center;">New accounts require admin approval & role assignment.</p>
-      
-      <div class="form-group">
-        <label>Email Address</label>
-        <input type="email" id="signupEmail" placeholder="staff@ultrafunkula.co.uk" required>
-      </div>
-      <div class="form-group">
-        <label>Password (Min 6 characters)</label>
-        <input type="password" id="signupPassword" placeholder="••••••••" required>
-      </div>
-      
-      <div class="form-group" style="background: var(--input-bg); padding: 10px; border-radius: 8px; border: 1px solid var(--border-color);">
-        <label style="color: var(--accent-amber); font-weight: bold; margin-bottom: 4px;">🛡️ Human Verification (Anti-Bot)</label>
-        <div id="captchaQuestion" style="font-size: 12px; font-weight: bold; margin-bottom: 4px;">What is 4 + 3?</div>
-        <input type="number" id="captchaAnswer" placeholder="Enter answer..." required>
-      </div>
-
-      <div id="signupError" style="color: var(--accent-rose); font-size: 11px; margin-bottom: 8px; display: none;"></div>
-
-      <div style="display: flex; gap: 8px; margin-top: 14px;">
-        <button type="button" id="closeSignupBtn" style="background: var(--input-bg); flex: 1; padding: 8px;">Cancel</button>
-        <button type="button" id="submitSignupBtn" class="action-btn" style="flex: 1; padding: 8px;">Register</button>
+      <div style="margin-top: 14px; text-align: center; border-top: 1px solid #334155; padding-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+        <button type="button" onclick="emergencyBypass()" style="background: none; border: none; color: #f59e0b; font-size: 11px; font-weight: bold; cursor: pointer;">⚠️ Emergency Bypass</button>
       </div>
     </div>
   </div>
@@ -197,204 +152,45 @@
     </div>
     
     <div class="header-controls">
-      <button onclick="toggleTheme()" class="io-btn" id="themeToggleBtn" title="Switch Light/Dark Theme">Theme</button>
-
-      <div id="syncStatus" style="font-size: 10px; font-weight: bold; color: var(--accent-amber); background: rgba(245, 158, 11, 0.15); padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border-color);">
-        Connecting...
-      </div>
-
-      <div class="countdown-box">
-        <span id="countdown">Calculating...</span>
-      </div>
-
+      <button onclick="toggleTheme()" class="io-btn" title="Switch Light/Dark Theme">Theme</button>
+      <div id="syncStatus" style="font-size: 10px; font-weight: bold; color: var(--accent-amber); background: rgba(245, 158, 11, 0.15); padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border-color);">Connecting...</div>
+      <div class="countdown-box"><span id="countdown">Calculating...</span></div>
       <button onclick="exportToJSON()" class="io-btn">📥 Backup</button>
       <button onclick="triggerImport()" class="io-btn">📤 Restore</button>
       <input type="file" id="jsonFileInput" accept=".json" style="display:none;" onchange="importFromJSON(event)">
-      
-      <div style="display: flex; align-items: center; gap: 6px; background: var(--input-bg); padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border-color);">
-        <span id="loggedInUserDisplay" style="font-size: 10px; font-weight: bold; color: var(--accent-blue); max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">User</span>
-        <button onclick="handleLogout()" style="background: rgba(225, 29, 72, 0.2); color: var(--accent-rose); border: 1px solid var(--border-color); padding: 3px 6px; border-radius: 4px; font-size: 10px; font-weight: bold;">Logout</button>
-      </div>
     </div>
   </header>
 
   <!-- NAVIGATION TABS -->
   <nav>
     <button onclick="openTab('dash')" id="btn-dash" class="tab-btn active">📊 Dashboard</button>
-    <button onclick="openTab('budget')" id="btn-budget" class="tab-btn">💰 Budget</button>
-    <button onclick="openTab('target')" id="btn-target" class="tab-btn">🎯 Sales</button>
+    <button onclick="openTab('budget')" id="btn-budget" class="tab-btn">💰 Budget & Owed</button>
+    <button onclick="openTab('target')" id="btn-target" class="tab-btn">🎯 Sales & Tickets</button>
     <button onclick="openTab('plan')" id="btn-plan" class="tab-btn">📋 Project Plan</button>
-    <button onclick="openTab('timeline')" id="btn-timeline" class="tab-btn">📅 Timeline</button>
-    <button onclick="openTab('roles')" id="btn-roles" class="tab-btn">🛡️ Roles</button>
     <button onclick="openTab('djs')" id="btn-djs" class="tab-btn">🎧 DJs & Acts</button>
     <button onclick="openTab('socials')" id="btn-socials" class="tab-btn" style="color: var(--accent-blue);">📱 Socials</button>
-    <button onclick="openTab('notes')" id="btn-notes" class="tab-btn">💡 Ideas</button>
-    <button onclick="openTab('admin')" id="btn-admin" class="tab-btn" style="display: none; color: var(--accent-amber);">👑 Admin</button>
   </nav>
 
   <main>
     <!-- TAB 1: EXECUTIVE DASHBOARD -->
     <div id="tab-dash" class="tab-content active">
-      
-      <div class="unified-summary-card" id="adminSummaryBlock">
-        <div class="unified-summary-header">
-          <span id="summaryCardTitle">📊 Executive Financial & VAT Summary</span>
-        </div>
-        
+      <div class="unified-summary-card">
+        <div class="unified-summary-header"><span>📊 Executive Financial Summary</span></div>
         <div class="unified-grid">
-          <div class="summary-item" id="sumBox1">
-            <p>1. Forecasted Income</p>
-            <h3 id="dashTotalIncome" style="color: var(--accent-blue);">£0.00</h3>
-            <div class="sub-text">Tickets + Bar + Sponsorship</div>
-          </div>
-          <div class="summary-item" id="sumBox2">
-            <p>2. Budget Allocation</p>
-            <h3 id="dashBudInc" style="color: var(--accent-purple);">£0.00</h3>
-            <div id="dashBudSpent" class="sub-text">Spent: £0.00 | Rem: £0.00</div>
-          </div>
-          <div class="summary-item" id="sumBox3">
-            <p>3. Profit Forecast</p>
-            <h3 id="dashVariance">£0.00</h3>
-            <div class="sub-text">Income - Budget - VAT</div>
-          </div>
-          <div class="summary-item">
-            <p>4. Actual Ticket Sales</p>
-            <h3 id="dashActualRevenue" style="color: var(--accent-green);">£0.00</h3>
-            <div id="dashTicketCounts" class="sub-text">Qty Sold: 0</div>
-          </div>
-        </div>
-
-        <div class="unified-grid-bottom" id="vatSummaryBottomRow">
-          <div class="summary-item">
-            <p>5. VAT Collected</p>
-            <h3 id="dashTotalVatCollected" style="color: var(--accent-amber);">£0.00</h3>
-            <div class="sub-text">Tickets, Bar, Sponsors</div>
-          </div>
-          <div class="summary-item">
-            <p>6. VAT Paid</p>
-            <h3 id="dashTotalVatPaid" style="color: var(--accent-amber);">£0.00</h3>
-            <div class="sub-text">Total VAT on Expenses</div>
-          </div>
-          <div class="summary-item">
-            <p>7. VAT due to HMRC</p>
-            <h3 id="dashNetVatLiability" style="color: var(--accent-rose);">£0.00</h3>
-            <div class="sub-text">Collected minus Paid</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="table-card" style="margin-bottom: 20px;">
-        <div class="table-header">
-          <span>📈 Actual Ticket Sales (Uploaded)</span>
-          <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-            <select id="ticketSortSelect" onchange="buildTables()" style="padding: 4px 6px; font-size: 11px;">
-              <option value="default">Default Sort</option>
-              <option value="qtyDesc">Qty (High-Low)</option>
-              <option value="revDesc">Revenue (£)</option>
-            </select>
-            <button onclick="triggerTicketExcelUpload()" class="action-btn" style="padding: 4px 8px; font-size: 11px;">📤 Upload Excel</button>
-            <input type="file" id="ticketExcelFileInput" accept=".xlsx, .xls, .csv" style="display:none;" onchange="handleTicketExcelUpload(event)">
-          </div>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Ticket Category / Type</th>
-                <th>Day / Session</th>
-                <th style="text-align: center;">Qty</th>
-                <th style="text-align: right;">Revenue (£)</th>
-              </tr>
-            </thead>
-            <tbody id="uploadedTicketSalesBody">
-              <tr><td colspan="4" style="text-align:center; color:var(--text-muted); font-style:italic; padding: 14px;">No file uploaded yet.</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <div class="dashboard-grid">
-        <div class="table-card" id="adminRevenueCard">
-          <div class="table-header">Forecasted Revenue Breakdown</div>
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Stream / Day</th>
-                  <th style="text-align: right;">Tickets (£)</th>
-                  <th style="text-align: right;">Bar (£)</th>
-                  <th style="text-align: right;">Total (£)</th>
-                </tr>
-              </thead>
-              <tbody id="dashRevenueBody"></tbody>
-            </table>
-          </div>
-        </div>
-
-        <div class="table-card">
-          <div class="table-header">📋 Project Plan Task & Lead Status</div>
-          <div style="padding: 14px;">
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
-              <div style="background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 10px;">
-                <p style="font-size: 10px; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">Outstanding</p>
-                <h3 id="projTotalTasks" style="font-size: 16px; font-weight: 800; color: var(--accent-rose); margin-top: 2px;">0 Tasks</h3>
-              </div>
-              <div style="background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 10px;">
-                <p style="font-size: 10px; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">Completion</p>
-                <h3 id="projProgressRate" style="font-size: 16px; font-weight: 800; color: var(--accent-green); margin-top: 2px;">0%</h3>
-              </div>
-            </div>
-            <div class="table-wrap" style="max-height: 180px; overflow-y: auto;">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Team Lead</th>
-                    <th style="text-align: center;">Outstanding</th>
-                    <th style="text-align: right;">Status</th>
-                  </tr>
-                </thead>
-                <tbody id="leadWorkloadBody"></tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="table-card" style="margin-top: 20px;">
-        <div class="table-header">
-          <span>🎧 Booked DJs & Acts by Stage</span>
-          <select id="frontStageFilter" onchange="buildTables()" style="padding: 4px 6px; font-size: 11px;">
-            <option value="ALL">All Stages</option>
-          </select>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Stage</th>
-                <th>Act Name</th>
-                <th>Type</th>
-                <th>Day</th>
-                <th>Time Slot</th>
-                <th style="text-align: right;">Cost (£)</th>
-              </tr>
-            </thead>
-            <tbody id="dashStageBody"></tbody>
-          </table>
+          <div class="summary-item"><p>Total Income</p><h3 id="dashTotalIncome" style="color: var(--accent-blue);">£0.00</h3></div>
+          <div class="summary-item"><p>Budget Allocation</p><h3 id="dashBudInc" style="color: var(--accent-purple);">£0.00</h3></div>
+          <div class="summary-item"><p>Profit Forecast</p><h3 id="dashVariance">£0.00</h3></div>
+          <div class="summary-item"><p>Actual Ticket Sales</p><h3 id="dashActualRevenue" style="color: var(--accent-green);">£0.00</h3></div>
         </div>
       </div>
     </div>
 
-    <!-- TAB 2: BUDGET TRACKER -->
+    <!-- TAB 2: BUDGET & MONEY OWED -->
     <div id="tab-budget" class="tab-content">
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-bottom: 16px;">
         <div class="summary-item" style="background:var(--card-bg); border:1px solid var(--border-color);">
           <p>Total Net Budget</p>
           <h3 id="topBudgetNet" style="color: var(--accent-blue); font-size: 16px;">£0.00</h3>
-        </div>
-        <div class="summary-item" style="background:var(--card-bg); border:1px solid var(--border-color);">
-          <p>Total VAT Amount</p>
-          <h3 id="topBudgetVat" style="color: var(--text-muted); font-size: 16px;">£0.00</h3>
         </div>
         <div class="summary-item" style="background:var(--card-bg); border:1px solid var(--border-color);">
           <p>Total Budget (Inc. VAT)</p>
@@ -406,13 +202,11 @@
         </div>
       </div>
 
+      <!-- BUDGET LINE ITEMS -->
       <div class="table-card" style="margin-bottom: 24px;">
         <div class="table-header">
           <span>Festival Budget Line Items</span>
-          <div style="display: flex; gap: 6px;" id="budgetActionBtns">
-            <button class="action-btn" onclick="openBudgetModal(-1)">+ Add Item</button>
-            <button onclick="resetBudget()" class="edit-btn">Reset</button>
-          </div>
+          <button class="action-btn" onclick="openBudgetModal(-1)">+ Add Item</button>
         </div>
         <div class="table-wrap">
           <table>
@@ -422,11 +216,9 @@
                 <th>Category</th>
                 <th style="text-align: right;">Net (£)</th>
                 <th style="text-align: center;">VAT</th>
-                <th style="text-align: right;">VAT (£)</th>
                 <th style="text-align: right;">Inc. VAT (£)</th>
                 <th style="text-align: right;">Spent (£)</th>
-                <th style="text-align: center;">Owner</th>
-                <th style="text-align: center;" class="admin-col-header">Action</th>
+                <th style="text-align: center;">Action</th>
               </tr>
             </thead>
             <tbody id="budgetBody"></tbody>
@@ -434,33 +226,25 @@
         </div>
       </div>
 
-      <!-- OUTSTANDING MONEY SECTION WITH PER-LINE PAYMENT PLANS -->
+      <!-- MONEY OWED & INSTALLMENTS SECTION -->
       <div class="table-card">
         <div class="table-header">
-          <span>⏳ Owed Money Outstanding Section</span>
-          <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
-            <button class="action-btn" onclick="openOutstandingModal(-1)">+ Add Outstanding Payment</button>
-            <button onclick="triggerOutstandingExcelUpload()" class="io-btn" style="padding: 5px 8px; font-size: 11px;">📤 Upload Excel</button>
-            <input type="file" id="outstandingExcelFileInput" accept=".xlsx, .xls, .csv" style="display:none;" onchange="handleOutstandingExcelUpload(event)">
-            <button onclick="resetOutstanding()" class="edit-btn">Reset</button>
-          </div>
+          <span>⏳ Money Owed & Flexible Installments Section</span>
+          <button class="action-btn" onclick="openOutstandingModal(-1)">+ Add Payment Line</button>
         </div>
 
-        <!-- SUMMARY CARDS FOR OUTSTANDING -->
-        <div style="padding: 14px; background: var(--input-bg); border-bottom: 1px solid var(--border-color); display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px;">
-          <div style="background: var(--card-bg); padding: 10px; border-radius: 8px; border: 1px solid var(--border-color);">
+        <div style="padding: 14px; background: var(--input-bg); border-bottom: 1px solid var(--border-color); display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px;">
+          <div style="background: var(--card-bg); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
             <p style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: bold;">Overall Outstanding Owed</p>
-            <h3 id="overallOwedAmount" style="font-size: 16px; color: var(--accent-rose); margin-top: 4px;">£0.00</h3>
+            <h3 id="overallOwedAmount" style="font-size: 18px; color: var(--accent-rose); margin-top: 4px;">£0.00</h3>
           </div>
-          <div style="background: var(--card-bg); padding: 10px; border-radius: 8px; border: 1px solid var(--border-color);">
+          <div style="background: var(--card-bg); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
             <p style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: bold;">Total Next Payment</p>
-            <h3 id="nextPaymentAmount" style="font-size: 16px; color: var(--accent-amber); margin-top: 4px;">£0.00</h3>
-            <span style="font-size: 9px; color: var(--text-muted);">Sum of immediate monthly installments</span>
+            <h3 id="nextPaymentAmount" style="font-size: 18px; color: var(--accent-amber); margin-top: 4px;">£0.00</h3>
           </div>
-          <div style="background: var(--card-bg); padding: 10px; border-radius: 8px; border: 1px solid var(--border-color);">
+          <div style="background: var(--card-bg); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
             <p style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: bold;">Total Outstanding After Next Payment</p>
-            <h3 id="remainingOwedAfterNext" style="font-size: 16px; color: var(--accent-green); margin-top: 4px;">£0.00</h3>
-            <span style="font-size: 9px; color: var(--text-muted);">Balance remaining after next run</span>
+            <h3 id="remainingOwedAfterNext" style="font-size: 18px; color: var(--accent-green); margin-top: 4px;">£0.00</h3>
           </div>
         </div>
 
@@ -468,7 +252,7 @@
           <table>
             <thead>
               <tr>
-                <th style="text-align: center; width: 50px;">Paid</th>
+                <th style="text-align: center; width: 45px;">Paid</th>
                 <th>Supplier / Payee</th>
                 <th>Description</th>
                 <th style="text-align: right;">Total Due (£)</th>
@@ -487,115 +271,15 @@
 
     <!-- TAB 3: SALES TARGETS -->
     <div id="tab-target" class="tab-content">
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-bottom: 20px;">
-        <div style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px;">
-          <p style="color: var(--accent-blue); font-size: 12px; font-weight: 800; margin-bottom: 10px; text-transform: uppercase;">🎫 Ticket Sales Breakdown & Quantities</p>
-          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 10px; text-align: center; background: var(--input-bg); padding: 8px; border-radius: 6px;">
-            <div>
-              <span style="font-size: 9px; color: var(--text-muted); display: block;">FRI (£ / Qty)</span>
-              <span id="blockFriTicket" style="font-size: 11px; font-weight: bold;">£0</span>
-              <span id="blockFriQty" style="font-size: 9px; color: var(--accent-blue); display: block;">0 qty</span>
-            </div>
-            <div>
-              <span style="font-size: 9px; color: var(--text-muted); display: block;">SAT (£ / Qty)</span>
-              <span id="blockSatTicket" style="font-size: 11px; font-weight: bold;">£0</span>
-              <span id="blockSatQty" style="font-size: 9px; color: var(--accent-blue); display: block;">0 qty</span>
-            </div>
-            <div>
-              <span style="font-size: 9px; color: var(--text-muted); display: block;">WKND (£ / Qty)</span>
-              <span id="blockWkndTicket" style="font-size: 11px; font-weight: bold; color: var(--accent-purple);">£0</span>
-              <span id="blockWkndQty" style="font-size: 9px; color: var(--accent-purple); display: block;">0 qty</span>
-            </div>
-          </div>
-          <div style="display: flex; justify-content: space-between; align-items: baseline; border-top: 1px solid var(--border-color); padding-top: 8px;">
-            <h3 id="topConsolidatedTicketRev" style="color: var(--accent-green); font-size: 16px;">£0.00</h3>
-            <span id="topConsolidatedTicketQty" style="font-size: 10px; color: var(--text-muted);">0 Tickets</span>
-          </div>
-        </div>
-
-        <div style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px;">
-          <p style="color: var(--accent-amber); font-size: 12px; font-weight: 800; margin-bottom: 10px; text-transform: uppercase;">🍻 Bar & Grand Total</p>
-          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 10px; text-align: center; background: var(--input-bg); padding: 8px; border-radius: 6px;">
-            <div><span style="font-size: 9px; color: var(--text-muted); display: block;">FRI BAR</span><span id="blockFriBar" style="font-size: 11px; font-weight: bold;">£0</span></div>
-            <div><span style="font-size: 9px; color: var(--text-muted); display: block;">SAT BAR</span><span id="blockSatBar" style="font-size: 11px; font-weight: bold;">£0</span></div>
-            <div><span style="font-size: 9px; color: var(--text-muted); display: block;">WKND BAR</span><span id="blockWkndBar" style="font-size: 11px; font-weight: bold;">£0</span></div>
-          </div>
-          <div style="display: flex; justify-content: space-between; align-items: baseline; border-top: 1px solid var(--border-color); padding-top: 8px;">
-            <span id="topConsolidatedBarRev" style="font-size: 13px; font-weight: bold; color: var(--accent-amber);">£0.00</span>
-            <span id="topConsolidatedGrandTotal" style="font-size: 16px; font-weight: 800; color: var(--accent-green);">£0.00</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="table-card" style="margin-bottom: 20px;">
-        <div class="table-header">
-          <span>🤝 Sponsorship & Partner Income</span>
-          <div style="display: flex; gap: 6px;" id="sponsorshipActionBtns">
-            <button class="action-btn" onclick="openSponsorshipModal(-1)">+ Add Sponsorship</button>
-            <button onclick="resetSponsorships()" class="edit-btn">Reset</button>
-          </div>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Company</th>
-                <th>Area</th>
-                <th style="text-align: right;">Excl. VAT (£)</th>
-                <th style="text-align: right;">VAT (£)</th>
-                <th style="text-align: right;">Inc. VAT (£)</th>
-                <th style="text-align: center;" class="admin-col-header">Action</th>
-              </tr>
-            </thead>
-            <tbody id="sponsorshipBody"></tbody>
-          </table>
-        </div>
-      </div>
-
-      <div class="table-card" style="margin-bottom: 20px;">
-        <div class="table-header">
-          <span>🍻 Bar Spend Multipliers</span>
-        </div>
-        <div style="padding: 14px; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px;">
-          <div style="background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 10px;">
-            <label style="font-size: 10px; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 4px;">Friday Spend / Ticket (£)</label>
-            <input type="number" step="0.50" id="friBarMultiplier" value="35.00" onchange="updateBarMultiplier(this, 'Friday')">
-            <div id="friBarCalcOutput" style="font-size: 10px; color: var(--accent-green); margin-top: 4px;">Total: £0</div>
-          </div>
-          <div style="background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 10px;">
-            <label style="font-size: 10px; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 4px;">Saturday Spend / Ticket (£)</label>
-            <input type="number" step="0.50" id="satBarMultiplier" value="65.00" onchange="updateBarMultiplier(this, 'Saturday')">
-            <div id="satBarCalcOutput" style="font-size: 10px; color: var(--accent-green); margin-top: 4px;">Total: £0</div>
-          </div>
-          <div style="background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 10px;">
-            <label style="font-size: 10px; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 4px;">Weekend Spend / Ticket (£)</label>
-            <input type="number" step="0.50" id="wkndBarMultiplier" value="100.00" onchange="updateBarMultiplier(this, 'Weekend')">
-            <div id="wkndBarCalcOutput" style="font-size: 10px; color: var(--accent-green); margin-top: 4px;">Total: £0</div>
-          </div>
-        </div>
-      </div>
-
       <div class="table-card">
         <div class="table-header">
           <span>Ticket Pricing Matrix</span>
-          <div style="display: flex; gap: 6px;" id="targetActionBtns">
-            <button class="action-btn" onclick="openTargetModal(-1)">+ Add Ticket</button>
-            <button onclick="resetTargets()" class="edit-btn">Reset</button>
-          </div>
+          <button class="action-btn" onclick="openTargetModal(-1)">+ Add Ticket</button>
         </div>
         <div class="table-wrap">
           <table>
             <thead>
-              <tr>
-                <th>Day</th>
-                <th>Type</th>
-                <th style="text-align: center;">Qty</th>
-                <th style="text-align: right;">Excl. (£)</th>
-                <th style="text-align: right;">VAT (£)</th>
-                <th style="text-align: right;">Inc. (£)</th>
-                <th style="text-align: right;">Total (£)</th>
-                <th style="text-align: center;" class="admin-col-header">Action</th>
-              </tr>
+              <tr><th>Day</th><th>Type</th><th style="text-align: center;">Qty</th><th style="text-align: right;">Price (£)</th><th style="text-align: center;">Action</th></tr>
             </thead>
             <tbody id="targetBody"></tbody>
           </table>
@@ -608,26 +292,12 @@
       <div class="table-card">
         <div class="table-header">
           <span>📋 Project Plan & Operational Tasks</span>
-          <div style="display: flex; gap: 6px;" id="planActionBtns">
-            <button class="action-btn" onclick="openPlanAddModal()">+ Add Task</button>
-            <button onclick="resetPlan()" class="edit-btn">Reset</button>
-          </div>
+          <button class="action-btn" onclick="openPlanAddModal()">+ Add Task</button>
         </div>
         <div class="table-wrap">
           <table>
             <thead>
-              <tr>
-                <th style="text-align: center; width: 40px;">Done</th>
-                <th>Task / Area</th>
-                <th style="text-align: center;">Lead 1</th>
-                <th style="text-align: center;">Lead 2</th>
-                <th style="text-align: center;">Lead 3</th>
-                <th>Update</th>
-                <th>Next Steps</th>
-                <th>Owner</th>
-                <th>Date</th>
-                <th style="text-align: center;">Action</th>
-              </tr>
+              <tr><th style="text-align: center; width: 40px;">Done</th><th>Task / Area</th><th>Lead</th><th>Update</th><th style="text-align: center;">Action</th></tr>
             </thead>
             <tbody id="planBody"></tbody>
           </table>
@@ -635,94 +305,17 @@
       </div>
     </div>
 
-    <!-- TAB 5: TIMELINE -->
-    <div id="tab-timeline" class="tab-content">
-      <div class="table-card">
-        <div class="table-header">
-          <span>📅 Project Timeline (Feb–Jul 2027) — Category Accordions</span>
-        </div>
-        <div id="timelineAccordionContainer"></div>
-      </div>
-    </div>
-
-    <!-- TAB 6: ROLES -->
-    <div id="tab-roles" class="tab-content">
-      <div class="table-card">
-        <div class="table-header">
-          <span>🛡️ Roles & Responsibilities Matrix</span>
-          <div style="display: flex; gap: 6px;">
-            <button class="action-btn" onclick="openRolesModal(-1)">+ Add Role</button>
-            <button onclick="resetRoles()" class="edit-btn">Reset</button>
-          </div>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Area / Task</th>
-                <th>Lead (1)</th>
-                <th>Secondary (2)</th>
-                <th>Support (3)</th>
-                <th style="text-align: center;">Action</th>
-              </tr>
-            </thead>
-            <tbody id="rolesBody"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- TAB 7: DJS & PRODUCTION -->
+    <!-- TAB 5: DJS & PRODUCTION -->
     <div id="tab-djs" class="tab-content">
-      <div class="table-card" style="margin-bottom: 20px;">
-        <div class="table-header">
-          <span>📅 Stage Availability Calendar</span>
-          <div style="display: flex; gap: 4px;">
-            <button onclick="switchCalDay('Friday 30th July')" id="calBtnFri" class="action-btn" style="padding: 3px 8px; font-size: 10px;">Friday</button>
-            <button onclick="switchCalDay('Saturday 31st July')" id="calBtnSat" class="action-btn" style="background: var(--input-bg); color: var(--text-main); border: 1px solid var(--border-color); padding: 3px 8px; font-size: 10px;">Saturday</button>
-          </div>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Time Slot</th>
-                <th>Lighthouse (Main)</th>
-                <th>Cactus (Live)</th>
-                <th>Causeway (DnB)</th>
-                <th>Sand Bar (Disco)</th>
-              </tr>
-            </thead>
-            <tbody id="calendarMatrixBody"></tbody>
-          </table>
-        </div>
-      </div>
-
       <div class="table-card">
         <div class="table-header">
           <span>🎧 DJs & Production Line-Up</span>
-          <div style="display: flex; gap: 6px;" id="djActionBtns">
-            <button class="action-btn" onclick="openDjModal(-1)">+ Add Act</button>
-            <button onclick="resetDjs()" class="edit-btn">Reset</button>
-          </div>
+          <button class="action-btn" onclick="openDjModal(-1)">+ Add Act</button>
         </div>
         <div class="table-wrap">
           <table>
             <thead>
-              <tr>
-                <th>Act Name</th>
-                <th>Type</th>
-                <th style="text-align: right;">Cost (£)</th>
-                <th style="text-align: center;">VAT</th>
-                <th style="text-align: right;">VAT (£)</th>
-                <th style="text-align: right;">Total (£)</th>
-                <th>Stage</th>
-                <th>Day</th>
-                <th>Time & Duration</th>
-                <th>Drinks</th>
-                <th>Food</th>
-                <th style="text-align: center;" class="admin-col-header">Action</th>
-              </tr>
+              <tr><th>Act Name</th><th>Type</th><th style="text-align: right;">Cost (£)</th><th>Stage</th><th>Day</th><th>Time</th><th style="text-align: center;">Action</th></tr>
             </thead>
             <tbody id="djBody"></tbody>
           </table>
@@ -730,70 +323,12 @@
       </div>
     </div>
 
-    <!-- TAB 8: SOCIALS -->
+    <!-- TAB 6: SOCIALS -->
     <div id="tab-socials" class="tab-content">
       <div class="unified-summary-card">
         <div class="unified-summary-header">
           <span>📱 Social Media Performance & Analytics API Connector</span>
           <button class="action-btn" onclick="openSocialsAdminModal()" style="background: var(--accent-amber); color: #0f172a;">⚙️ Set Admin Link</button>
-        </div>
-        <div class="unified-grid" style="grid-template-columns: repeat(4, 1fr);">
-          <div class="summary-item"><p>Total Reach</p><h3 id="metricReach" style="color: var(--accent-blue);">0</h3></div>
-          <div class="summary-item"><p>Engagement Rate</p><h3 id="metricEngagement" style="color: var(--accent-green);">0.0%</h3></div>
-          <div class="summary-item"><p>Tickets Driven</p><h3 id="metricTickets" style="color: var(--accent-purple);">0</h3></div>
-          <div class="summary-item"><p>Analytics Portal</p><a id="adminExternalPortalBtn" href="#" target="_blank" class="action-btn" style="text-align: center; margin-top: 6px; text-decoration: none; display: inline-block;">Open Portal ↗</a></div>
-        </div>
-      </div>
-
-      <div class="table-card">
-        <div class="table-header">
-          <span>📅 Social Media Posting Planner</span>
-          <button class="action-btn" onclick="openSocialPostModal(-1)">+ Add Post Item</button>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Campaign Phase</th>
-                <th>Platform</th>
-                <th>Content Topic</th>
-                <th>Posting Frequency</th>
-                <th>Scheduled Date</th>
-                <th style="text-align: center;">Status</th>
-                <th style="text-align: center;">Action</th>
-              </tr>
-            </thead>
-            <tbody id="socialsPlannerBody"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- TAB 9: IDEAS -->
-    <div id="tab-notes" class="tab-content">
-      <div class="table-card">
-        <div class="table-header"><span>💡 Department Ideas Board</span></div>
-        <div class="notes-board-grid">
-          <div class="note-form-card">
-            <h3 style="font-size: 13px; font-weight: bold; color: var(--accent-blue); margin-bottom: 8px;">+ Post Idea</h3>
-            <div class="form-group"><label>Department</label><select id="noteDept"><option value="Marketing">Marketing</option><option value="Production">Production</option></select></div>
-            <div class="form-group"><label>Content</label><textarea id="noteContent" rows="3" required></textarea></div>
-            <button onclick="submitNewNote()" class="action-btn" style="width: 100%;">Post</button>
-          </div>
-          <div><div id="notesFeedContainer"></div></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- TAB 10: ADMIN -->
-    <div id="tab-admin" class="tab-content">
-      <div class="table-card">
-        <div class="table-header"><span>👑 Staff Permission Management</span></div>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>Email</th><th>Role</th></tr></thead>
-            <tbody id="adminUsersBody"></tbody>
-          </table>
         </div>
       </div>
     </div>
@@ -802,7 +337,7 @@
   <!-- MODALS -->
   <div id="outstandingModal" class="modal">
     <div class="modal-box">
-      <h3 id="outstandingModalTitle" style="margin-bottom: 14px; font-size: 15px; font-weight: bold; color: var(--accent-blue);">Add Outstanding Payment</h3>
+      <h3 id="outstandingModalTitle" style="margin-bottom: 14px; font-size: 15px; font-weight: bold; color: var(--accent-blue);">Add Payment Line</h3>
       <input type="hidden" id="outstandingEditIndex">
       <div class="form-group"><label>Supplier / Payee</label><input type="text" id="oModalSupplier" required></div>
       <div class="form-group"><label>Description</label><input type="text" id="oModalDesc" required></div>
@@ -848,58 +383,70 @@
     };
 
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
     const db = firebase.database();
-    let currentUserEmail = "james.dunn@ultrafunkula.co.uk";
-    let userRolesMap = {};
-    let usersRegistry = {};
-    let auditLogsList = [];
 
     const defaultBudget = [
-      { item: "Alcohol", cat: "Bar & Beverage", net: 17500, vat: "YES", update: 22200, owner: "James Dunn" },
+      { item: "Alcohol", cat: "Bar", net: 17500, vat: "YES", update: 22200, owner: "James Dunn" },
       { item: "Fencing", cat: "Operations", net: 3091, vat: "YES", update: 0, owner: "Kevin Day" }
     ];
-    
     const defaultOutstanding = [
-      { supplier: "Fencing Co Ltd", desc: "Perimeter Fencing Deposit", amount: 1545.50, months: 1, dueDate: "2027-03-01", paid: false },
-      { supplier: "Event Generators", desc: "Generator Fleet Booking", amount: 1783.50, months: 2, dueDate: "2027-04-15", paid: false }
+      { supplier: "Fencing Co Ltd", desc: "Deposit", amount: 1500.00, months: 1, dueDate: "2027-03-01", paid: false },
+      { supplier: "Event Generators", desc: "Fleet", amount: 3000.00, months: 2, dueDate: "2027-04-15", paid: false }
     ];
-
     const defaultSocialPosts = [
-      { phase: "Launch & Early Bird", platform: "Instagram (Reels/Feed)", topic: "Official 2027 Trailer & Dates Announcement", freq: "1x Weekly", date: "2027-02-01", status: "Published" }
+      { phase: "Launch", platform: "Instagram", topic: "Trailer", freq: "1x Weekly", date: "2027-02-01", status: "Published" }
+    ];
+    const defaultDjs = [
+      { name: "Dan Shake", type: "DJ", cost: 3292, stage: "Lighthouse (Main Stage)", day: "Saturday 31st July", time: "21:00", duration: 2 }
+    ];
+    const defaultPlan = [
+      { task: "Site Layout Finalisation", lead: "James Dunn", update: "In Progress", done: false }
+    ];
+    const defaultTargets = [
+      { day: "Saturday", type: "Final Release", qty: 1500, price: 55.00 }
     ];
 
     let budgetData = [...defaultBudget];
     let outstandingData = [...defaultOutstanding];
     let socialPostsData = [...defaultSocialPosts];
-    let targetData = [];
-    let planData = [];
-    let rolesData = [];
-    let djData = [];
-    let notesData = [];
-    let currentCalDay = "Friday 30th July";
+    let djData = [...defaultDjs];
+    let planData = [...defaultPlan];
+    let targetData = [...defaultTargets];
     let adminSocialsPortalUrl = "https://lookerstudio.google.com/";
-    let barMultipliers = { Friday: 35.00, Saturday: 65.00, Weekend: 100.00 };
-    let uploadedTicketSalesRows = [];
 
     function initFirebaseSync() {
       db.ref('sif27_festival_data').on('value', (snapshot) => {
         const val = snapshot.val();
+        const statusEl = document.getElementById('syncStatus');
         if (val) {
           budgetData = val.budgetData || defaultBudget;
           outstandingData = val.outstandingData || defaultOutstanding;
           socialPostsData = val.socialPostsData || defaultSocialPosts;
+          djData = val.djData || defaultDjs;
+          planData = val.planData || defaultPlan;
+          targetData = val.targetData || defaultTargets;
           adminSocialsPortalUrl = val.adminSocialsPortalUrl || "https://lookerstudio.google.com/";
+          if (statusEl) {
+            statusEl.innerText = "Connected & Synced";
+            statusEl.style.color = "var(--accent-green)";
+            statusEl.style.background = "rgba(16, 185, 129, 0.15)";
+          }
         } else {
           saveAllToFirebase();
         }
         buildTables();
+      }, (error) => {
+        const statusEl = document.getElementById('syncStatus');
+        if (statusEl) {
+          statusEl.innerText = "Sync Offline (Local Mode)";
+          statusEl.style.color = "var(--accent-rose)";
+        }
       });
     }
 
     function saveAllToFirebase() {
       db.ref('sif27_festival_data').update({
-        budgetData, outstandingData, socialPostsData, adminSocialsPortalUrl
+        budgetData, outstandingData, socialPostsData, djData, planData, targetData, adminSocialsPortalUrl
       });
     }
 
@@ -918,24 +465,63 @@
 
     function buildTables() {
       buildOutstandingTable();
-      buildSocialsPlanner();
-      
-      let bNet = 0, bInc = 0, bSpent = 0, bVat = 0;
-      budgetData.forEach(row => {
-        const v = row.vat === 'YES' ? (row.net || 0) * 0.2 : 0;
-        bNet += (row.net || 0);
-        bVat += v;
-        bInc += ((row.net || 0) + v);
-        bSpent += (row.update || 0);
-      });
-      
-      if(document.getElementById('topBudgetNet')) document.getElementById('topBudgetNet').innerText = formatGBP(bNet);
-      if(document.getElementById('topBudgetVat')) document.getElementById('topBudgetVat').innerText = formatGBP(bVat);
-      if(document.getElementById('topBudgetInc')) document.getElementById('topBudgetInc').innerText = formatGBP(bInc);
-      if(document.getElementById('topBudgetSpent')) document.getElementById('topBudgetSpent').innerText = formatGBP(bSpent);
+      buildBudgetTable();
+      buildPlanTable();
+      buildTargetTable();
+      buildDjTable();
+      buildExecutiveSummary();
     }
 
-    // Money Owed Table with Per-Line Payment Plans & Summary Calculations
+    function buildExecutiveSummary() {
+      let totalIncome = 0;
+      let totalSpent = 0;
+      let totalBudInc = 0;
+      let actualTicketRev = 0;
+
+      targetData.forEach(t => {
+        totalIncome += (t.qty || 0) * (t.price || 0);
+      });
+
+      budgetData.forEach(b => {
+        const v = b.vat === 'YES' ? (b.net || 0) * 0.2 : 0;
+        totalBudInc += ((b.net || 0) + v);
+        totalSpent += (b.update || 0);
+      });
+
+      if(document.getElementById('dashTotalIncome')) document.getElementById('dashTotalIncome').innerText = formatGBP(totalIncome);
+      if(document.getElementById('dashBudInc')) document.getElementById('dashBudInc').innerText = formatGBP(totalBudInc);
+      if(document.getElementById('dashVariance')) document.getElementById('dashVariance').innerText = formatGBP(totalIncome - totalBudInc);
+      if(document.getElementById('dashActualRevenue')) document.getElementById('dashActualRevenue').innerText = formatGBP(actualTicketRev);
+    }
+
+    function buildBudgetTable() {
+      const tbody = document.getElementById('budgetBody');
+      if (!tbody) return;
+      let html = '';
+      let bNet = 0, bInc = 0, bSpent = 0;
+      budgetData.forEach((row, idx) => {
+        const v = row.vat === 'YES' ? (row.net || 0) * 0.2 : 0;
+        const inc = (row.net || 0) + v;
+        bNet += (row.net || 0);
+        bInc += inc;
+        bSpent += (row.update || 0);
+
+        html += `<tr>
+          <td style="font-weight:bold;">${row.item}</td>
+          <td><span class="badge">${row.cat}</span></td>
+          <td style="text-align:right;">${formatGBP(row.net)}</td>
+          <td style="text-align:center;">${row.vat}</td>
+          <td style="text-align:right; font-weight:bold;">${formatGBP(inc)}</td>
+          <td style="text-align:right; color:var(--accent-amber);">${formatGBP(row.update)}</td>
+          <td style="text-align:center;"><button class="edit-btn" onclick="deleteBudgetItem(${idx})" style="background:rgba(225,29,72,0.2); color:var(--accent-rose);">Del</button></td>
+        </tr>`;
+      });
+      tbody.innerHTML = html;
+      if (document.getElementById('topBudgetNet')) document.getElementById('topBudgetNet').innerText = formatGBP(bNet);
+      if (document.getElementById('topBudgetInc')) document.getElementById('topBudgetInc').innerText = formatGBP(bInc);
+      if (document.getElementById('topBudgetSpent')) document.getElementById('topBudgetSpent').innerText = formatGBP(bSpent);
+    }
+
     function buildOutstandingTable() {
       const oBody = document.getElementById('outstandingBody');
       if (!oBody) return;
@@ -944,54 +530,97 @@
       let totalNextPayment = 0;
       let html = '';
 
-      if (outstandingData.length === 0) {
-        html = `<tr><td colspan="9" style="text-align:center; color:var(--text-muted); padding:14px;">No outstanding payment lines found.</td></tr>`;
-      } else {
-        outstandingData.forEach((item, idx) => {
-          const totalDue = parseFloat(item.amount) || 0;
-          const planMonths = parseInt(item.months) || 1;
-          const monthlyPayment = totalDue / planMonths;
+      outstandingData.forEach((item, idx) => {
+        const totalDue = parseFloat(item.amount) || 0;
+        const planMonths = parseInt(item.months) || 1;
+        const monthlyPayment = totalDue / planMonths;
 
-          if (!item.paid) {
-            totalOverallOwed += totalDue;
-            totalNextPayment += monthlyPayment; // Sum of immediate next installment across all unpaid lines
-          }
+        if (!item.paid) {
+          totalOverallOwed += totalDue;
+          totalNextPayment += monthlyPayment;
+        }
 
-          const statusBadge = item.paid 
-            ? `<span class="badge" style="background:rgba(16,185,129,0.15); color:var(--accent-green); border-color:var(--accent-green);">Paid</span>`
-            : `<span class="badge" style="background:rgba(245,158,11,0.15); color:var(--accent-amber); border-color:var(--accent-amber);">Pending</span>`;
-          
-          html += `<tr>
-            <td style="text-align:center;"><input type="checkbox" onchange="toggleOutstandingPaid(${idx}, this)" ${item.paid ? 'checked' : ''} style="width:16px; height:16px; cursor:pointer;"></td>
-            <td style="font-weight:bold; color:var(--accent-blue);">${item.supplier}</td>
-            <td>${item.desc}</td>
-            <td style="text-align:right; font-weight:bold; color:${item.paid ? 'var(--text-muted)' : 'var(--accent-rose)'};">${formatGBP(totalDue)}</td>
-            <td style="text-align:center;">
-              <select onchange="updateLinePaymentPlan(${idx}, this.value)" style="padding: 3px 6px; font-size: 11px;">
-                <option value="1" ${planMonths === 1 ? 'selected' : ''}>1 Month</option>
-                <option value="2" ${planMonths === 2 ? 'selected' : ''}>2 Months</option>
-                <option value="3" ${planMonths === 3 ? 'selected' : ''}>3 Months</option>
-              </select>
-            </td>
-            <td style="text-align:right; font-weight:bold; color:var(--accent-green);">
-              ${formatGBP(monthlyPayment)} <span style="font-size:9px; color:var(--text-muted); display:block;">/ mo (${planMonths} ${planMonths === 1 ? 'mo' : 'mos'})</span>
-            </td>
-            <td style="color:var(--text-muted);">${item.dueDate || '-'}</td>
-            <td style="text-align:center;">${statusBadge}</td>
-            <td style="text-align:center;">
-              <button class="edit-btn" onclick="openOutstandingModal(${idx})">Edit</button>
-              <button class="edit-btn" onclick="deleteOutstandingItem(${idx})" style="background:rgba(225,29,72,0.2); color:var(--accent-rose); border-color:var(--border-color); margin-left:4px;">Del</button>
-            </td>
-          </tr>`;
-        });
-      }
+        const statusBadge = item.paid 
+          ? `<span class="badge" style="background:rgba(16,185,129,0.15); color:var(--accent-green);">Paid</span>`
+          : `<span class="badge" style="background:rgba(245,158,11,0.15); color:var(--accent-amber);">Pending</span>`;
+        
+        html += `<tr>
+          <td style="text-align:center;"><input type="checkbox" onchange="toggleOutstandingPaid(${idx}, this)" ${item.paid ? 'checked' : ''}></td>
+          <td style="font-weight:bold; color:var(--accent-blue);">${item.supplier}</td>
+          <td>${item.desc}</td>
+          <td style="text-align:right; font-weight:bold;">${formatGBP(totalDue)}</td>
+          <td style="text-align:center;">
+            <select onchange="updateLinePaymentPlan(${idx}, this.value)" style="padding: 3px 6px; font-size: 11px;">
+              <option value="1" ${planMonths === 1 ? 'selected' : ''}>1 Month</option>
+              <option value="2" ${planMonths === 2 ? 'selected' : ''}>2 Months</option>
+              <option value="3" ${planMonths === 3 ? 'selected' : ''}>3 Months</option>
+            </select>
+          </td>
+          <td style="text-align:right; font-weight:bold; color:var(--accent-green);">${formatGBP(monthlyPayment)} <span style="font-size:9px; color:var(--text-muted); display:block;">/ mo (${planMonths} mos)</span></td>
+          <td style="color:var(--text-muted);">${item.dueDate || '-'}</td>
+          <td style="text-align:center;">${statusBadge}</td>
+          <td style="text-align:center;">
+            <button class="edit-btn" onclick="openOutstandingModal(${idx})">Edit</button>
+            <button class="edit-btn" onclick="deleteOutstandingItem(${idx})" style="background:rgba(225,29,72,0.2); color:var(--accent-rose); margin-left:4px;">Del</button>
+          </td>
+        </tr>`;
+      });
       oBody.innerHTML = html;
 
       const remainingOwedAfterNext = totalOverallOwed - totalNextPayment;
+      if (document.getElementById('overallOwedAmount')) document.getElementById('overallOwedAmount').innerText = formatGBP(totalOverallOwed);
+      if (document.getElementById('nextPaymentAmount')) document.getElementById('nextPaymentAmount').innerText = formatGBP(totalNextPayment);
+      if (document.getElementById('remainingOwedAfterNext')) document.getElementById('remainingOwedAfterNext').innerText = formatGBP(Math.max(0, remainingOwedAfterNext));
+    }
 
-      if(document.getElementById('overallOwedAmount')) document.getElementById('overallOwedAmount').innerText = formatGBP(totalOverallOwed);
-      if(document.getElementById('nextPaymentAmount')) document.getElementById('nextPaymentAmount').innerText = formatGBP(totalNextPayment);
-      if(document.getElementById('remainingOwedAfterNext')) document.getElementById('remainingOwedAfterNext').innerText = formatGBP(Math.max(0, remainingOwedAfterNext));
+    function buildPlanTable() {
+      const tbody = document.getElementById('planBody');
+      if (!tbody) return;
+      let html = '';
+      planData.forEach((row, idx) => {
+        html += `<tr>
+          <td style="text-align:center;"><input type="checkbox" onchange="togglePlanDone(${idx}, this)" ${row.done ? 'checked' : ''}></td>
+          <td style="font-weight:bold;">${row.task}</td>
+          <td>${row.lead}</td>
+          <td>${row.update}</td>
+          <td style="text-align:center;"><button class="edit-btn" onclick="deletePlanItem(${idx})" style="background:rgba(225,29,72,0.2); color:var(--accent-rose);">Del</button></td>
+        </tr>`;
+      });
+      tbody.innerHTML = html;
+    }
+
+    function buildTargetTable() {
+      const tbody = document.getElementById('targetBody');
+      if (!tbody) return;
+      let html = '';
+      targetData.forEach((row, idx) => {
+        html += `<tr>
+          <td>${row.day}</td>
+          <td style="font-weight:bold;">${row.type}</td>
+          <td style="text-align:center;">${row.qty}</td>
+          <td style="text-align:right;">${formatGBP(row.price)}</td>
+          <td style="text-align:center;"><button class="edit-btn" onclick="deleteTargetItem(${idx})" style="background:rgba(225,29,72,0.2); color:var(--accent-rose);">Del</button></td>
+        </tr>`;
+      });
+      tbody.innerHTML = html;
+    }
+
+    function buildDjTable() {
+      const tbody = document.getElementById('djBody');
+      if (!tbody) return;
+      let html = '';
+      djData.forEach((row, idx) => {
+        html += `<tr>
+          <td style="font-weight:bold; color:var(--accent-blue);">${row.name}</td>
+          <td><span class="badge">${row.type}</span></td>
+          <td style="text-align:right;">${formatGBP(row.cost)}</td>
+          <td>${row.stage}</td>
+          <td>${row.day}</td>
+          <td>${row.time} (${row.duration}h)</td>
+          <td style="text-align:center;"><button class="edit-btn" onclick="deleteDjItem(${idx})" style="background:rgba(225,29,72,0.2); color:var(--accent-rose);">Del</button></td>
+        </tr>`;
+      });
+      tbody.innerHTML = html;
     }
 
     function updateLinePaymentPlan(idx, monthsVal) {
@@ -1006,17 +635,23 @@
       buildOutstandingTable();
     }
 
+    function togglePlanDone(idx, el) {
+      planData[idx].done = el.checked;
+      saveAllToFirebase();
+      buildPlanTable();
+    }
+
     function openOutstandingModal(idx) {
       document.getElementById('outstandingEditIndex').value = idx;
       if (idx === -1) {
-        document.getElementById('outstandingModalTitle').innerText = "Add Outstanding Payment";
+        document.getElementById('outstandingModalTitle').innerText = "Add Payment Line";
         document.getElementById('oModalSupplier').value = "";
         document.getElementById('oModalDesc').value = "";
         document.getElementById('oModalAmount').value = "";
         document.getElementById('oModalPlan').value = "1";
         document.getElementById('oModalDate').value = new Date().toISOString().split('T')[0];
       } else {
-        document.getElementById('outstandingModalTitle').innerText = "Edit Outstanding Payment";
+        document.getElementById('outstandingModalTitle').innerText = "Edit Payment Line";
         const item = outstandingData[idx];
         document.getElementById('oModalSupplier').value = item.supplier;
         document.getElementById('oModalDesc').value = item.desc;
@@ -1045,51 +680,29 @@
       buildOutstandingTable();
     }
 
-    function deleteOutstandingItem(idx) {
-      outstandingData.splice(idx, 1);
-      saveAllToFirebase();
-      buildOutstandingTable();
-    }
+    function deleteOutstandingItem(idx) { outstandingData.splice(idx, 1); saveAllToFirebase(); buildOutstandingTable(); }
+    function deleteBudgetItem(idx) { budgetData.splice(idx, 1); saveAllToFirebase(); buildBudgetTable(); }
+    function deletePlanItem(idx) { planData.splice(idx, 1); saveAllToFirebase(); buildPlanTable(); }
+    function deleteTargetItem(idx) { targetData.splice(idx, 1); saveAllToFirebase(); buildTargetTable(); }
+    function deleteDjItem(idx) { djData.splice(idx, 1); saveAllToFirebase(); buildDjTable(); }
 
-    function resetOutstanding() {
-      outstandingData = [...defaultOutstanding];
-      saveAllToFirebase();
-      buildOutstandingTable();
-    }
-
-    function buildSocialsPlanner() {
-      const body = document.getElementById('socialsPlannerBody');
-      if (!body) return;
-      if(document.getElementById('adminExternalPortalBtn')) document.getElementById('adminExternalPortalBtn').href = adminSocialsPortalUrl;
-      if(document.getElementById('metricReach')) document.getElementById('metricReach').innerText = (socialPostsData.length * 14250).toLocaleString();
-      if(document.getElementById('metricEngagement')) document.getElementById('metricEngagement').innerText = "5.8%";
-      if(document.getElementById('metricTickets')) document.getElementById('metricTickets').innerText = (socialPostsData.length * 184).toLocaleString();
-    }
-
-    function openSocialsAdminModal() {
-      if(document.getElementById('adminPortalUrlInput')) document.getElementById('adminPortalUrlInput').value = adminSocialsPortalUrl;
-      document.getElementById('socialsAdminModal').classList.add('active');
-    }
+    function openBudgetModal(idx) { alert("Budget Item Modal placeholder"); }
+    function openTargetModal(idx) { alert("Ticket Target Modal placeholder"); }
+    function openPlanAddModal() { alert("Project Plan Modal placeholder"); }
+    function openDjModal(idx) { alert("DJ Line-up Modal placeholder"); }
+    function openSocialsAdminModal() { document.getElementById('socialsAdminModal').classList.add('active'); }
     function closeSocialsAdminModal() { document.getElementById('socialsAdminModal').classList.remove('active'); }
     function saveSocialsAdminLink() {
       adminSocialsPortalUrl = document.getElementById('adminPortalUrlInput').value.trim();
       saveAllToFirebase();
-      buildSocialsPlanner();
       closeSocialsAdminModal();
     }
 
-    function openBudgetModal(idx) { alert("Budget item management modal"); }
-    function openTargetModal(idx) { alert("Ticket target management modal"); }
-    function openPlanAddModal() { alert("Project task modal"); }
-    function openDjModal(idx) { alert("DJ line-up modal"); }
-    function openRolesModal(idx) { alert("Roles modal"); }
-    function openSocialPostModal(idx) { alert("Social post modal"); }
-
     function exportToJSON() {
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ budgetData, outstandingData, socialPostsData }, null, 2));
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ budgetData, outstandingData, socialPostsData, djData, planData, targetData }, null, 2));
       const downloadAnchor = document.createElement('a');
       downloadAnchor.setAttribute("href", dataStr);
-      downloadAnchor.setAttribute("download", `SIF27_Dashboard_Backup_${new Date().toISOString().split('T')[0]}.json`);
+      downloadAnchor.setAttribute("download", `SIF27_Dashboard_Backup.json`);
       document.body.appendChild(downloadAnchor);
       downloadAnchor.click();
       downloadAnchor.remove();
@@ -1105,6 +718,10 @@
           const parsed = JSON.parse(e.target.result);
           if (parsed.budgetData) budgetData = parsed.budgetData;
           if (parsed.outstandingData) outstandingData = parsed.outstandingData;
+          if (parsed.socialPostsData) socialPostsData = parsed.socialPostsData;
+          if (parsed.djData) djData = parsed.djData;
+          if (parsed.planData) planData = parsed.planData;
+          if (parsed.targetData) targetData = parsed.targetData;
           saveAllToFirebase();
           buildTables();
           alert("✅ Restore successful!");
@@ -1114,7 +731,7 @@
     }
 
     function toggleTheme() { document.documentElement.classList.toggle('light-theme'); }
-    function emergencyBypass() { document.getElementById('loginOverlay').style.display = 'none'; initFirebaseSync(); }
+    function emergencyBypass() { document.getElementById('loginOverlay').style.display = 'none'; }
 
     function runTimer() {
       const target = new Date('July 30, 2027 12:00:00').getTime();
@@ -1128,10 +745,8 @@
 
     document.addEventListener('DOMContentLoaded', () => {
       setInterval(runTimer, 1000);
-      document.getElementById('loginSubmitBtn').onclick = (e) => {
-        e.preventDefault();
+      document.getElementById('loginSubmitBtn').onclick = () => {
         document.getElementById('loginOverlay').style.display = 'none';
-        initFirebaseSync();
       };
       initFirebaseSync();
     });
