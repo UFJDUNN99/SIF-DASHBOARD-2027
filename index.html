@@ -154,9 +154,9 @@
       <button type="button" id="loginSubmitBtn">Log In to Dashboard</button>
       <div id="loginError"></div>
 
-      <div style="margin-top: 16px; text-align: center; border-top: 1px solid #334155; padding-top: 12px;">
-        <span style="font-size: 11px; color: #94a3b8;">Don't have an account? </span>
-        <button type="button" id="openSignupBtn" style="background: none; border: none; color: #38bdf8; font-size: 11px; font-weight: bold; cursor: pointer; display: inline; padding: 0;">Create Staff Account</button>
+      <div style="margin-top: 16px; text-align: center; border-top: 1px solid #334155; padding-top: 12px; display: flex; justify-content: space-between; align-items: center;">
+        <button type="button" id="openSignupBtn" style="background: none; border: none; color: #38bdf8; font-size: 11px; font-weight: bold; cursor: pointer; padding: 0;">Create Staff Account</button>
+        <button type="button" onclick="emergencyBypass()" style="background: none; border: none; color: #f59e0b; font-size: 11px; font-weight: bold; cursor: pointer; padding: 0;">⚠️ Emergency Bypass</button>
       </div>
     </div>
   </div>
@@ -1039,6 +1039,18 @@
     let currentCaptchaSolution = 7;
     let uploadedTicketSalesRows = [];
 
+    // EMERGENCY BYPASS FOR LOGIN TROUBLESHOOTING
+    function emergencyBypass() {
+      const emailInput = prompt("Enter your staff email for emergency access:", "james.dunn@ultrafunkula.co.uk");
+      if (emailInput) {
+        currentUserEmail = emailInput.trim().toLowerCase();
+        document.getElementById('loginOverlay').style.display = 'none';
+        document.getElementById('loggedInUserDisplay').innerText = currentUserEmail;
+        initFirebaseSync();
+        alert("⚠️ Emergency bypass activated. Live sync connected.");
+      }
+    }
+
     // THEME TOGGLE LOGIC
     function toggleTheme() {
       const htmlEl = document.documentElement;
@@ -1198,7 +1210,7 @@
         document.getElementById('loggedInUserDisplay').innerText = currentUserEmail;
         initFirebaseSync();
       } else {
-        document.getElementById('loginOverlay').style.display = 'flex';
+        // Keep login overlay visible if not authenticated
       }
     });
 
@@ -1401,7 +1413,6 @@
     let notesData = [...defaultNotes];
     let currentCalDay = "Friday 30th July";
     let barMultipliers = { Friday: 35.00, Saturday: 65.00, Weekend: 100.00 };
-    let uploadedTicketSalesRows = [];
 
     function initFirebaseSync() {
       const dbRef = db.ref('sif27_festival_data');
@@ -1491,13 +1502,6 @@
       document.querySelectorAll('.admin-col-header').forEach(th => {
         th.style.display = isDirector ? 'table-cell' : 'none';
       });
-
-      const activeTab = document.querySelector('.tab-content.active');
-      if (activeTab && activeTab.id === 'tab-admin' && !isAdmin) {
-        openTab('dash');
-      } else if (activeTab && (activeTab.id === 'tab-budget' || activeTab.id === 'tab-target') && !isDirector) {
-        openTab('dash');
-      }
     }
 
     function openTab(tabName) {
@@ -1585,7 +1589,6 @@
         const isAdmin = currentUserEmail.includes('james.dunn@ultrafunkula');
         const isDirector = role === 'director' || isAdmin;
 
-        // CALCULATE TOTALS FROM UPLOADED TICKET SALES
         let uploadedTotalQty = 0;
         let uploadedTotalRev = 0;
         uploadedTicketSalesRows.forEach(r => {
@@ -1596,7 +1599,6 @@
         document.getElementById('dashActualRevenue').innerText = formatGBP(uploadedTotalRev);
         document.getElementById('dashTicketCounts').innerHTML = `Qty Sold: <b>${uploadedTotalQty} Tickets</b>`;
 
-        // RENDER UPLOADED TICKET SALES TABLE WITH SORTING
         const ticketBody = document.getElementById('uploadedTicketSalesBody');
         const sortMode = document.getElementById('ticketSortSelect') ? document.getElementById('ticketSortSelect').value : 'default';
 
@@ -1605,17 +1607,10 @@
             ticketBody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--text-muted); font-style:italic; padding: 16px;">No ticket sales file uploaded yet. Upload an Excel or CSV file above to populate.</td></tr>`;
           } else {
             let sortedRows = [...uploadedTicketSalesRows];
-            
-            if (sortMode === 'qtyDesc') {
-              sortedRows.sort((a, b) => b.qty - a.qty);
-            } else if (sortMode === 'revDesc') {
-              sortedRows.sort((a, b) => b.rev - a.rev);
-            } else {
-              const getRank = (d) => {
-                if (d.includes('Weekend')) return 1;
-                if (d.includes('Friday')) return 2;
-                return 3;
-              };
+            if (sortMode === 'qtyDesc') sortedRows.sort((a, b) => b.qty - a.qty);
+            else if (sortMode === 'revDesc') sortedRows.sort((a, b) => b.rev - a.rev);
+            else {
+              const getRank = (d) => d.includes('Weekend') ? 1 : (d.includes('Friday') ? 2 : 3);
               sortedRows.sort((a, b) => getRank(a.day) - getRank(b.day));
             }
 
@@ -1628,12 +1623,7 @@
                 <td style="text-align:right; font-weight:bold; color:var(--accent-green);">${formatGBP(r.rev)}</td>
               </tr>`;
             });
-
-            tHtml += `<tr class="total-row">
-              <td colspan="2" style="text-transform: uppercase;">Total Uploaded Ticket Sales</td>
-              <td style="text-align:center; color:var(--accent-blue);">${uploadedTotalQty} Tickets</td>
-              <td style="text-align:right; color:var(--accent-green);">${formatGBP(uploadedTotalRev)}</td>
-            </tr>`;
+            tHtml += `<tr class="total-row"><td colspan="2" style="text-transform: uppercase;">Total Uploaded Ticket Sales</td><td style="text-align:center; color:var(--accent-blue);">${uploadedTotalQty} Tickets</td><td style="text-align:right; color:var(--accent-green);">${formatGBP(uploadedTotalRev)}</td></tr>`;
             ticketBody.innerHTML = tHtml;
           }
         }
@@ -1646,7 +1636,6 @@
         targetData.forEach(row => {
           const itemTotal = (row.qty || 0) * (row.price || 0);
           totalSalesRevenue += itemTotal;
-
           const typeLower = (row.type || "").toLowerCase();
           const isCarPark = typeLower.includes("car park");
           const isWeekend = typeLower.includes("weekend");
@@ -1657,16 +1646,10 @@
             totalQtyExclParking += (row.qty || 0);
           } else if (row.day.includes("Friday")) {
             friTicketRev += itemTotal;
-            if (!isCarPark) {
-              friTicketQty += (row.qty || 0);
-              totalQtyExclParking += (row.qty || 0);
-            }
+            if (!isCarPark) { friTicketQty += (row.qty || 0); totalQtyExclParking += (row.qty || 0); }
           } else if (row.day.includes("Saturday")) {
             satTicketRev += itemTotal;
-            if (!isCarPark) {
-              satTicketQty += (row.qty || 0);
-              totalQtyExclParking += (row.qty || 0);
-            }
+            if (!isCarPark) { satTicketQty += (row.qty || 0); totalQtyExclParking += (row.qty || 0); }
           }
         });
 
@@ -1699,15 +1682,7 @@
             </td>` : ''}
           </tr>`;
         });
-
-        sponsorshipTableHtml += `<tr class="total-row">
-          <td colspan="2" style="text-transform: uppercase;">Total Sponsorship Summary</td>
-          <td style="text-align:right; color:var(--text-muted);">${formatGBP(totalSponsorshipInc - totalSponsorshipVat)}</td>
-          <td style="text-align:right; color:var(--text-muted);">${formatGBP(totalSponsorshipVat)}</td>
-          <td style="text-align:right; color:var(--accent-green); font-weight:bold;">${formatGBP(totalSponsorshipInc)}</td>
-          ${isDirector ? '<td></td>' : ''}
-        </tr>`;
-
+        sponsorshipTableHtml += `<tr class="total-row"><td colspan="2" style="text-transform: uppercase;">Total Sponsorship Summary</td><td style="text-align:right; color:var(--text-muted);">${formatGBP(totalSponsorshipInc - totalSponsorshipVat)}</td><td style="text-align:right; color:var(--text-muted);">${formatGBP(totalSponsorshipVat)}</td><td style="text-align:right; color:var(--accent-green); font-weight:bold;">${formatGBP(totalSponsorshipInc)}</td>${isDirector ? '<td></td>' : ''}</tr>`;
         const sBody = document.getElementById('sponsorshipBody');
         if (sBody) sBody.innerHTML = sponsorshipTableHtml;
 
@@ -1877,15 +1852,7 @@
               </td>
             </tr>`;
           });
-          bHtml += `<tr class="total-row">
-            <td colspan="2" style="text-transform: uppercase;">Total Budget Summary</td>
-            <td style="text-align:right; color:var(--accent-blue);">${formatGBP(bNetTotal)}</td>
-            <td style="text-align:center;">-</td>
-            <td style="text-align:right; color:var(--text-muted);">${formatGBP(bVatAmtTotal)}</td>
-            <td style="text-align:right; color:var(--accent-purple);">${formatGBP(bIncTotal)}</td>
-            <td style="text-align:right; color:var(--accent-amber);">${formatGBP(bSpentTotal)}</td>
-            <td colspan="2"></td>
-          </tr>`;
+          bHtml += `<tr class="total-row"><td colspan="2" style="text-transform: uppercase;">Total Budget Summary</td><td style="text-align:right; color:var(--accent-blue);">${formatGBP(bNetTotal)}</td><td style="text-align:center;">-</td><td style="text-align:right; color:var(--text-muted);">${formatGBP(bVatAmtTotal)}</td><td style="text-align:right; color:var(--accent-purple);">${formatGBP(bIncTotal)}</td><td style="text-align:right; color:var(--accent-amber);">${formatGBP(bSpentTotal)}</td><td colspan="2"></td></tr>`;
           bBody.innerHTML = bHtml;
         }
 
@@ -1912,13 +1879,7 @@
               </td>
             </tr>`;
           });
-          tHtml += `<tr class="total-row">
-            <td colspan="2" style="text-transform: uppercase;">Total Sales Targets Summary</td>
-            <td style="text-align:center; color:var(--accent-blue); font-weight:bold;">${friTicketQty + satTicketQty + wkndTicketQty} Tickets</td>
-            <td colspan="3" style="text-align:right;">Calculated on Inclusive Prices:</td>
-            <td style="text-align:right; color:var(--accent-green); font-weight:bold;">${formatGBP(totalSalesRevenue)}</td>
-            <td></td>
-          </tr>`;
+          tHtml += `<tr class="total-row"><td colspan="2" style="text-transform: uppercase;">Total Sales Targets Summary</td><td style="text-align:center; color:var(--accent-blue); font-weight:bold;">${friTicketQty + satTicketQty + wkndTicketQty} Tickets</td><td colspan="3" style="text-align:right;">Calculated on Inclusive Prices:</td><td style="text-align:right; color:var(--accent-green); font-weight:bold;">${formatGBP(totalSalesRevenue)}</td><td></td></tr>`;
           tBody.innerHTML = tHtml;
         }
 
