@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Secret Island Festival 2027 — Master Revenue & Operations Dashboard</title>
+  
+  <!-- Firebase App, Auth & Realtime Database CDN SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+  
+  <!-- SheetJS (XLSX) Library for Excel File Parsing -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <style>
+    :root {
+      --bg-color: #0f172a;
+      --card-bg: #1e293b;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --border-color: #334155;
+      --accent-rose: #e11d48;
+      --accent-purple: #8b5cf6;
+      --accent-amber: #f59e0b;
+      --accent-green: #10b981;
+      --accent-blue: #38bdf8;
+      --header-bg: #1e293b;
+      --input-bg: #0f172a;
+      --table-stripe: #334155;
+    }
+
+    html.light-theme {
+      --bg-color: #f1f5f9;
+      --card-bg: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border-color: #cbd5e1;
+      --accent-rose: #dc2626;
+      --accent-purple: #7c3aed;
+      --accent-amber: #d97706;
+      --accent-green: #059669;
+      --accent-blue: #0284c7;
+      --header-bg: #ffffff;
+      --input-bg: #f8fafc;
+      --table-stripe: #e2e8f0;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; transition: background-color 0.2s ease, color 0.2s ease; }
+    body { background-color: var(--bg-color); color: var(--text-main); min-height: 100vh; padding-bottom: 40px; overflow-x: hidden; }
+    
+    header { background: var(--header-bg); border-bottom: 1px solid var(--border-color); padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .header-branding { display: flex; align-items: center; gap: 10px; }
+    .header-logo { width: 38px; height: 38px; object-fit: cover; border-radius: 50%; border: 2px solid var(--border-color); }
+    .header-title h1 { font-size: 16px; font-weight: 800; color: var(--text-main); letter-spacing: 0.5px; }
+    .header-title p { font-size: 11px; color: var(--text-muted); }
+    .header-controls { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .countdown-box { background: var(--input-bg); border: 1px solid var(--border-color); padding: 4px 10px; font-family: monospace; font-size: 11px; border-radius: 6px; color: var(--text-main); }
+    .countdown-box span { color: var(--accent-amber); font-weight: bold; }
+    
+    select, button, input, textarea { background: var(--input-bg); color: var(--text-main); border: 1px solid var(--border-color); padding: 6px 10px; border-radius: 6px; font-size: 12px; max-width: 100%; }
+    button { cursor: pointer; }
+    button:hover { opacity: 0.9; }
+
+    .io-btn { background: var(--border-color); border: 1px solid var(--border-color); font-weight: 600; padding: 6px 10px; border-radius: 6px; font-size: 11px; display: flex; align-items: center; gap: 4px; color: var(--text-main); }
+    
+    nav { background: var(--header-bg); border-bottom: 1px solid var(--border-color); padding: 4px 12px; display: flex; gap: 4px; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; }
+    .tab-btn { background: none; border: none; color: var(--text-muted); padding: 10px 12px; font-size: 12px; font-weight: 600; cursor: pointer; border-bottom: 3px solid transparent; flex-shrink: 0; }
+    .tab-btn.active { color: var(--accent-blue); border-bottom-color: var(--accent-blue); background: var(--bg-color); }
+
+    main { max-width: 1450px; margin: 16px auto; padding: 0 12px; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .unified-summary-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; margin-bottom: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+    .unified-summary-header { font-size: 15px; font-weight: 800; color: var(--accent-blue); margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; }
+    .unified-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 12px; }
+    .unified-grid-bottom { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    @media(max-width: 1024px) {
+      .unified-grid { grid-template-columns: repeat(2, 1fr); }
+      .unified-grid-bottom { grid-template-columns: repeat(1, 1fr); }
+    }
+    .summary-item { background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px; display: flex; flex-direction: column; justify-content: space-between; }
+    .summary-item p { font-size: 10px; text-transform: uppercase; color: var(--text-muted); font-weight: 700; letter-spacing: 0.5px; margin-bottom: 4px; }
+    .summary-item h3 { font-size: 18px; font-weight: 800; color: var(--text-main); }
+    .summary-item .sub-text { font-size: 10px; color: var(--text-muted); margin-top: 4px; }
+
+    .table-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .table-header { padding: 14px 16px; border-bottom: 1px solid var(--border-color); font-weight: bold; font-size: 14px; display: flex; justify-content: space-between; align-items: center; background: var(--header-bg); flex-wrap: wrap; gap: 10px; }
+    .table-wrap { overflow-x: auto; width: 100%; -webkit-overflow-scrolling: touch; }
+    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; min-width: 650px; }
+    th { background: var(--input-bg); color: var(--text-muted); text-transform: uppercase; font-size: 10px; padding: 10px 12px; border-bottom: 1px solid var(--border-color); white-space: nowrap; font-weight: 700; }
+    td { padding: 10px 12px; border-bottom: 1px solid var(--border-color); color: var(--text-main); }
+    
+    .badge { padding: 3px 6px; border-radius: 4px; font-size: 10px; font-weight: 600; background: var(--input-bg); color: var(--text-main); display: inline-block; border: 1px solid var(--border-color); }
+    .action-btn { background: var(--accent-blue); color: #0f172a; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 11px; }
+    .edit-btn { background: var(--input-bg); color: var(--text-main); border: 1px solid var(--border-color); padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 600; }
+
+    /* Login Gate Overlay */
+    #loginOverlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(4px); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 16px; }
+    .login-card { background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 24px; width: 100%; max-width: 380px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4); color: #f8fafc; }
+    .login-card h2 { font-size: 16px; font-weight: 800; color: #38bdf8; margin-bottom: 4px; text-align: center; }
+    .login-card p { font-size: 11px; color: #94a3b8; margin-bottom: 16px; text-align: center; }
+    .login-card input { width: 100%; padding: 10px 12px; font-size: 13px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: #f8fafc; }
+    .login-card button { width: 100%; padding: 10px; font-weight: bold; background: #38bdf8; color: #0f172a; border: none; border-radius: 8px; font-size: 13px; cursor: pointer; }
+
+    .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 10000; align-items: center; justify-content: center; padding: 16px; }
+    .modal.active { display: flex !important; }
+    .modal-box { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; width: 100%; max-width: 540px; padding: 20px; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.3); color: var(--text-main); }
+    .form-group { margin-bottom: 10px; }
+    .form-group label { display: block; font-size: 11px; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 8px 10px; background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-main); font-size: 12px; }
+  </style>
+</head>
+<body>
+
+  <!-- LOGIN GATE OVERLAY -->
+  <div id="loginOverlay">
+    <div class="login-card">
+      <h2>🔒 Secret Island Festival</h2>
+      <p>Log in with your staff email and password</p>
+      <input type="email" id="loginEmail" placeholder="Email address..." required>
+      <input type="password" id="loginPassword" placeholder="Password..." required>
+      <button type="button" id="loginSubmitBtn">Log In to Dashboard</button>
+      <div style="margin-top: 14px; text-align: center; border-top: 1px solid #334155; padding-top: 10px;">
+        <button type="button" onclick="emergencyBypass()" style="background: none; border: none; color: #f59e0b; font-size: 11px; font-weight: bold; cursor: pointer;">⚠️ Emergency Bypass</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- HEADER -->
+  <header>
+    <div class="header-branding">
+      <img src="https://secretislandfestival.co.uk/wp-content/uploads/2026/06/SIF-logo.png-1.webp" alt="Secret Island Festival Logo" class="header-logo">
+      <div class="header-title">
+        <h1>SECRET ISLAND FESTIVAL 2027</h1>
+        <p>Master Revenue & Operations Dashboard</p>
+      </div>
+    </div>
+    
+    <div class="header-controls">
+      <button onclick="toggleTheme()" class="io-btn">Theme</button>
+      <div id="syncStatus" style="font-size: 10px; font-weight: bold; color: var(--accent-amber); background: rgba(245, 158, 11, 0.15); padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border-color);">Connecting...</div>
+      <div class="countdown-box"><span id="countdown">Calculating...</span></div>
+      <button onclick="exportToJSON()" class="io-btn">📥 Backup</button>
+      <button onclick="triggerImport()" class="io-btn">📤 Restore</button>
+      <input type="file" id="jsonFileInput" accept=".json" style="display:none;" onchange="importFromJSON(event)">
+      
+      <div style="display: flex; align-items: center; gap: 6px; background: var(--input-bg); padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border-color);">
+        <span id="loggedInUserDisplay" style="font-size: 10px; font-weight: bold; color: var(--accent-blue);">James Dunn</span>
+        <button onclick="handleLogout()" style="background: rgba(225, 29, 72, 0.2); color: var(--accent-rose); border: 1px solid var(--border-color); padding: 3px 6px; border-radius: 4px; font-size: 10px; font-weight: bold;">Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- NAVIGATION TABS -->
+  <nav>
+    <button onclick="openTab('dash')" id="btn-dash" class="tab-btn active">📊 Dashboard</button>
+    <button onclick="openTab('budget')" id="btn-budget" class="tab-btn">💰 Budget & VAT</button>
+    <button onclick="openTab('target')" id="btn-target" class="tab-btn">🎯 Sales & Tickets</button>
+    <button onclick="openTab('plan')" id="btn-plan" class="tab-btn">📋 Project Plan</button>
+    <button onclick="openTab('roles')" id="btn-roles" class="tab-btn">🛡️ Roles</button>
+    <button onclick="openTab('djs')" id="btn-djs" class="tab-btn">🎧 DJs & Acts</button>
+    <button onclick="openTab('socials')" id="btn-socials" class="tab-btn" style="color: var(--accent-blue);">📱 Socials</button>
+    <button onclick="openTab('admin')" id="btn-admin" class="tab-btn" style="color: var(--accent-amber);">👑 Admin</button>
+  </nav>
+
+  <main>
+    <!-- TAB 1: EXECUTIVE DASHBOARD -->
+    <div id="tab-dash" class="tab-content active">
+      <div class="unified-summary-card">
+        <div class="unified-summary-header"><span>📊 Executive Financial & VAT Summary</span></div>
+        <div class="unified-grid">
+          <div class="summary-item"><p>Total Income (Inc. VAT)</p><h3 id="dashTotalIncome" style="color: var(--accent-blue);">£0.00</h3></div>
+          <div class="summary-item"><p>Budget Outgoings (Inc. VAT)</p><h3 id="dashBudInc" style="color: var(--accent-purple);">£0.00</h3></div>
+          <div class="summary-item"><p>Net Profit Forecast</p><h3 id="dashVariance">£0.00</h3></div>
+          <div class="summary-item"><p>Actual Ticket Sales</p><h3 id="dashActualRevenue" style="color: var(--accent-green);">£0.00</h3></div>
+        </div>
+        <div class="unified-grid-bottom" style="margin-top: 12px;">
+          <div class="summary-item"><p>VAT Collected (Outputs)</p><h3 id="dashVatColl" style="color: var(--accent-amber);">£0.00</h3></div>
+          <div class="summary-item"><p>VAT Paid (Inputs)</p><h3 id="dashVatPaid" style="color: var(--accent-amber);">£0.00</h3></div>
+          <div class="summary-item"><p>Net VAT Liability to HMRC</p><h3 id="dashNetVat" style="color: var(--accent-rose);">£0.00</h3></div>
+        </div>
+      </div>
+
+      <!-- UPLOADED TICKET SALES TABLE -->
+      <div class="table-card" style="margin-bottom: 20px;">
+        <div class="table-header">
+          <span>📈 Actual Ticket Sales (Uploaded Excel/CSV)</span>
+          <div style="display: flex; gap: 8px;">
+            <button onclick="triggerTicketExcelUpload()" class="action-btn" style="padding: 4px 8px; font-size: 11px;">📤 Upload Excel</button>
+            <input type="file" id="ticketExcelFileInput" accept=".xlsx, .xls, .csv" style="display:none;" onchange="handleTicketExcelUpload(event)">
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Ticket Category / Type</th><th>Day / Session</th><th style="text-align: center;">Qty</th><th style="text-align: right;">Revenue (£)</th></tr>
+            </thead>
+            <tbody id="uploadedTicketSalesBody">
+              <tr><td colspan="4" style="text-align:center; color:var(--text-muted); padding: 14px;">No file uploaded yet.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: BUDGET & MONEY OWED -->
+    <div id="tab-budget" class="tab-content">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-bottom: 16px;">
+        <div class="summary-item" style="background:var(--card-bg); border:1px solid var(--border-color);">
+          <p>Total Net Budget</p>
+          <h3 id="topBudgetNet" style="color: var(--accent-blue); font-size: 16px;">£0.00</h3>
+        </div>
+        <div class="summary-item" style="background:var(--card-bg); border:1px solid var(--border-color);">
+          <p>Total Budget VAT</p>
+          <h3 id="topBudgetVat" style="color: var(--text-muted); font-size: 16px;">£0.00</h3>
+        </div>
+        <div class="summary-item" style="background:var(--card-bg); border:1px solid var(--border-color);">
+          <p>Total Budget (Inc. VAT)</p>
+          <h3 id="topBudgetInc" style="color: var(--accent-purple); font-size: 16px;">£0.00</h3>
+        </div>
+        <div class="summary-item" style="background:var(--card-bg); border:1px solid var(--border-color);">
+          <p>Total Actual Spent</p>
+          <h3 id="topBudgetSpent" style="color: var(--accent-amber); font-size: 16px;">£0.00</h3>
+        </div>
+      </div>
+
+      <!-- BUDGET LINE ITEMS -->
+      <div class="table-card" style="margin-bottom: 24px;">
+        <div class="table-header">
+          <span>Festival Budget Line Items (Automatic 20% VAT Engine)</span>
+          <button class="action-btn" onclick="openBudgetModal(-1)">+ Add Item</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Line Item</th>
+                <th>Category</th>
+                <th style="text-align: right;">Net (£)</th>
+                <th style="text-align: center;">VAT (20%)</th>
+                <th style="text-align: right;">VAT (£)</th>
+                <th style="text-align: right;">Inc. VAT (£)</th>
+                <th style="text-align: right;">Spent (£)</th>
+                <th style="text-align: center;">Action</th>
+              </tr>
+            </thead>
+            <tbody id="budgetBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- MONEY OWED & INSTALLMENTS SECTION -->
+      <div class="table-card">
+        <div class="table-header">
+          <span>⏳ Money Owed & Flexible Installments Section</span>
+          <button class="action-btn" onclick="openOutstandingModal(-1)">+ Add Payment Line</button>
+        </div>
+
+        <div style="padding: 14px; background: var(--input-bg); border-bottom: 1px solid var(--border-color); display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px;">
+          <div style="background: var(--card-bg); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
+            <p style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: bold;">Overall Outstanding Owed</p>
+            <h3 id="overallOwedAmount" style="font-size: 18px; color: var(--accent-rose); margin-top: 4px;">£0.00</h3>
+          </div>
+          <div style="background: var(--card-bg); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
+            <p style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: bold;">Total Next Payment</p>
+            <h3 id="nextPaymentAmount" style="font-size: 18px; color: var(--accent-amber); margin-top: 4px;">£0.00</h3>
+          </div>
+          <div style="background: var(--card-bg); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
+            <p style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: bold;">Outstanding After Next Payment</p>
+            <h3 id="remainingOwedAfterNext" style="font-size: 18px; color: var(--accent-green); margin-top: 4px;">£0.00</h3>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th style="text-align: center; width: 45px;">Paid</th>
+                <th>Supplier / Payee</th>
+                <th>Description</th>
+                <th style="text-align: right;">Total Due (£)</th>
+                <th style="text-align: center; width: 130px;">Payment Plan</th>
+                <th style="text-align: right;">Monthly Payment</th>
+                <th>Due Date</th>
+                <th style="text-align: center;">Status</th>
+                <th style="text-align: center;">Action</th>
+              </tr>
+            </thead>
+            <tbody id="outstandingBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: SALES & TICKETS -->
+    <div id="tab-target" class="tab-content">
+      <div class="table-card" style="margin-bottom: 20px;">
+        <div class="table-header">
+          <span>🤝 Sponsorship & Partner Income</span>
+          <button class="action-btn" onclick="openSponsorshipModal(-1)">+ Add Sponsorship</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Company</th><th>Area</th><th style="text-align: right;">Excl. VAT (£)</th><th style="text-align: right;">VAT (£)</th><th style="text-align: right;">Inc. VAT (£)</th><th style="text-align: center;">Action</th></tr>
+            </thead>
+            <tbody id="sponsorshipBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="table-card">
+        <div class="table-header">
+          <span>Ticket Pricing Matrix (Separated by Day, Weekend, and Types)</span>
+          <button class="action-btn" onclick="openTargetModal(-1)">+ Add Ticket</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Day</th><th>Type</th><th style="text-align: center;">Qty</th><th style="text-align: right;">Price (£)</th><th style="text-align: right;">Total (£)</th><th style="text-align: center;">Action</th></tr>
+            </thead>
+            <tbody id="targetBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: PROJECT PLAN -->
+    <div id="tab-plan" class="tab-content">
+      <div class="table-card">
+        <div class="table-header">
+          <span>📋 Project Plan & Operational Tasks</span>
+          <button class="action-btn" onclick="openPlanAddModal()">+ Add Task</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th style="text-align: center; width: 40px;">Done</th><th>Task / Area</th><th>Lead</th><th>Update</th><th style="text-align: center;">Action</th></tr>
+            </thead>
+            <tbody id="planBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 5: ROLES -->
+    <div id="tab-roles" class="tab-content">
+      <div class="table-card">
+        <div class="table-header">
+          <span>🛡️ Roles & Responsibilities Matrix</span>
+          <button class="action-btn" onclick="openRolesModal(-1)">+ Add Role</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Operational Area</th><th>Primary Lead</th><th>Secondary Support</th><th style="text-align: center;">Action</th></tr>
+            </thead>
+            <tbody id="rolesBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 6: DJS & PRODUCTION -->
+    <div id="tab-djs" class="tab-content">
+      <div class="table-card" style="margin-bottom: 20px;">
+        <div class="table-header">
+          <span>📅 Stage Availability Calendar</span>
+          <div style="display: flex; gap: 4px;">
+            <button onclick="switchCalDay('Friday 30th July')" id="calBtnFri" class="action-btn" style="padding: 3px 8px; font-size: 10px;">Friday</button>
+            <button onclick="switchCalDay('Saturday 31st July')" id="calBtnSat" class="action-btn" style="background: var(--input-bg); color: var(--text-main); border: 1px solid var(--border-color); padding: 3px 8px; font-size: 10px;">Saturday</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Time Slot</th>
+                <th>Lighthouse (Main)</th>
+                <th>Cactus (Live)</th>
+                <th>Causeway (DnB)</th>
+                <th>Sand Bar (Disco)</th>
+              </tr>
+            </thead>
+            <tbody id="calendarMatrixBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="table-card">
+        <div class="table-header">
+          <span>🎧 DJs & Production Line-Up</span>
+          <button class="action-btn" onclick="openDjModal(-1)">+ Add Act</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Act Name</th><th>Type</th><th style="text-align: right;">Cost (£)</th><th>Stage</th><th>Day</th><th>Time</th><th style="text-align: center;">Action</th></tr>
+            </thead>
+            <tbody id="djBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 7: SOCIALS -->
+    <div id="tab-socials" class="tab-content">
+      <div class="unified-summary-card">
+        <div class="unified-summary-header"><span>📱 Social Media Performance & Analytics API Connector</span></div>
+      </div>
+    </div>
+
+    <!-- TAB 8: ADMIN -->
+    <div id="tab-admin" class="tab-content">
+      <div class="table-card">
+        <div class="table-header"><span>👑 Staff Permission & Access Management</span></div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Staff Email</th><th>Assigned Access Tier</th><th style="text-align: center;">Action</th></tr>
+            </thead>
+            <tbody id="adminUsersBody">
+              <tr><td>james.dunn@ultrafunkula.co.uk</td><td><span class="badge" style="color:var(--accent-amber);">Super Admin</span></td><td style="text-align:center;">-</td></tr>
+              <tr><td>kevin.day@ultrafunkula.co.uk</td><td><span class="badge" style="color:var(--accent-blue);">Operations Lead</span></td><td style="text-align:center;">-</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- MODALS -->
+  <div id="outstandingModal" class="modal">
+    <div class="modal-box">
+      <h3 id="outstandingModalTitle" style="margin-bottom: 14px; font-size: 15px; font-weight: bold; color: var(--accent-blue);">Add Payment Line</h3>
+      <input type="hidden" id="outstandingEditIndex">
+      <div class="form-group"><label>Supplier / Payee</label><input type="text" id="oModalSupplier" required></div>
+      <div class="form-group"><label>Description</label><input type="text" id="oModalDesc" required></div>
+      <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+        <div><label>Amount Due (£)</label><input type="number" step="0.01" id="oModalAmount" required></div>
+        <div><label>Due Date</label><input type="date" id="oModalDate" required></div>
+      </div>
+      <div class="form-group">
+        <label>Payment Plan</label>
+        <select id="oModalPlan">
+          <option value="1">1 Month (Full)</option>
+          <option value="2">2 Months</option>
+          <option value="3">3 Months</option>
+        </select>
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 6px; margin-top: 16px;">
+        <button type="button" onclick="closeOutstandingModal()" style="background: var(--input-bg);">Cancel</button>
+        <button type="button" onclick="saveOutstandingItem()" class="action-btn">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCRIPT ENGINE -->
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCETSeAhkKL4dnBiD3TeDgk_q-LqxluX8k",
+      authDomain: "secret-island-festival-2-bd7f0.firebaseapp.com",
+      databaseURL: "https://secret-island-festival-2-bd7f0-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "secret-island-festival-2-bd7f0",
+      storageBucket: "secret-island-festival-2-bd7f0.firebasestorage.app",
+      messagingSenderId: "634080744129",
+      appId: "1:634080744129:web:70ea3b11e294bf733bfa40"
+    };
+
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const defaultBudget = [
+      { item: "Alcohol", cat: "Bar", net: 17500, vat: "YES", spent: 22200 },
+      { item: "Fencing", cat: "Operations", net: 3091, vat: "YES", spent: 0 },
+      { item: "Main Stage Audio Fleet", cat: "Production", net: 8500, vat: "YES", spent: 9200 },
+      { item: "DJs & Acts", cat: "Production", net: 0, vat: "NO", spent: 0 }
+    ];
+    const defaultOutstanding = [
+      { supplier: "Fencing Co Ltd", desc: "Deposit", amount: 1500.00, months: 1, dueDate: "2027-03-01", paid: false },
+      { supplier: "Event Generators", desc: "Fleet", amount: 3000.00, months: 2, dueDate: "2027-04-15", paid: false }
+    ];
+    const defaultDjs = [
+      { name: "Dan Shake", type: "DJ", cost: 3292, stage: "Lighthouse (Main Stage)", day: "Saturday 31st July", time: "21:00", duration: 2 },
+      { name: "Shy FX", type: "DJ", cost: 4500, stage: "Causeway (DnB Stage)", day: "Friday 30th July", time: "22:00", duration: 2 }
+    ];
+    const defaultPlan = [
+      { task: "Site Layout Finalisation", lead: "James Dunn", update: "In Progress", done: false }
+    ];
+    const defaultRoles = [
+      { area: "Site Infrastructure & Power", lead: "Kevin Day", sec: "James Dunn" },
+      { area: "Artist Liaison & Production", lead: "Matt Prevett", sec: "Ben Wass" }
+    ];
+    const defaultTargets = [
+      { day: "Friday", type: "Early Bird", qty: 500, price: 35.00 },
+      { day: "Saturday", type: "Final Release", qty: 1500, price: 55.00 },
+      { day: "Weekend", type: "Full Pass", qty: 1200, price: 95.00 }
+    ];
+    const defaultSponsorships = [
+      { company: "Red Bull UK", area: "VIP Stage Branding", net: 5000, vat: "YES" }
+    ];
+
+    let budgetData = [...defaultBudget];
+    let outstandingData = [...defaultOutstanding];
+    let djData = [...defaultDjs];
+    let planData = [...defaultPlan];
+    let rolesData = [...defaultRoles];
+    let targetData = [...defaultTargets];
+    let sponsorshipData = [...defaultSponsorships];
+    let uploadedTicketSalesRows = [];
+    let currentCalDay = "Friday 30th July";
+
+    function initFirebaseSync() {
+      db.ref('sif27_festival_data').on('value', (snapshot) => {
+        const val = snapshot.val();
+        const statusEl = document.getElementById('syncStatus');
+        if (val) {
+          budgetData = val.budgetData || defaultBudget;
+          outstandingData = val.outstandingData || defaultOutstanding;
+          djData = val.djData || defaultDjs;
+          planData = val.planData || defaultPlan;
+          rolesData = val.rolesData || defaultRoles;
+          targetData = val.targetData || defaultTargets;
+          sponsorshipData = val.sponsorshipData || defaultSponsorships;
+          uploadedTicketSalesRows = val.uploadedTicketSalesRows || [];
+          if (statusEl) {
+            statusEl.innerText = "Connected & Synced";
+            statusEl.style.color = "var(--accent-green)";
+            statusEl.style.background = "rgba(16, 185, 129, 0.15)";
+          }
+        } else {
+          saveAllToFirebase();
+        }
+        buildTables();
+      }, (error) => {
+        const statusEl = document.getElementById('syncStatus');
+        if (statusEl) {
+          statusEl.innerText = "Sync Offline (Local)";
+          statusEl.style.color = "var(--accent-rose)";
+        }
+      });
+    }
+
+    function saveAllToFirebase() {
+      db.ref('sif27_festival_data').update({
+        budgetData, outstandingData, djData, planData, rolesData, targetData, sponsorshipData, uploadedTicketSalesRows
+      });
+    }
+
+    function formatGBP(num) {
+      return '£' + (num || 0).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function openTab(tabName) {
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      const targetTab = document.getElementById('tab-' + tabName);
+      const targetBtn = document.getElementById('btn-' + tabName);
+      if (targetTab) targetTab.classList.add('active');
+      if (targetBtn) targetBtn.classList.add('active');
+    }
+
+    function buildTables() {
+      updateDjBudgetRow();
+      buildExecutiveSummary();
+      buildBudgetTable();
+      buildOutstandingTable();
+      buildTargetTable();
+      buildSponsorshipTable();
+      buildPlanTable();
+      buildRolesTable();
+      buildDjTable();
+      buildCalendarMatrix();
+      buildUploadedTicketTable();
+    }
+
+    function updateDjBudgetRow() {
+      let totalDjCost = 0;
+      djData.forEach(d => { totalDjCost += (parseFloat(d.cost) || 0); });
+
+      let djRow = budgetData.find(b => b.item.toLowerCase().includes('dj') || b.item.toLowerCase().includes('act'));
+      if (djRow) {
+        djRow.net = totalDjCost;
+        djRow.spent = totalDjCost;
+      } else {
+        budgetData.push({ item: "DJs & Acts", cat: "Production", net: totalDjCost, vat: "NO", spent: totalDjCost });
+      }
+    }
+
+    function buildExecutiveSummary() {
+      let totalTicketForecast = 0;
+      let totalSponsorshipForecast = 0;
+      let totalVatColl = 0;
+      let totalVatPaid = 0;
+      let totalBudInc = 0;
+      let actualTicketRev = 0;
+
+      targetData.forEach(t => {
+        const rev = (t.qty || 0) * (t.price || 0);
+        totalTicketForecast += rev;
+        totalVatColl += rev * 0.16667;
+      });
+
+      sponsorshipData.forEach(s => {
+        const v = s.vat === 'YES' ? (s.net || 0) * 0.2 : 0;
+        totalSponsorshipForecast += ((s.net || 0) + v);
+        totalVatColl += v;
+      });
+
+      uploadedTicketSalesRows.forEach(row => {
+        const rev = parseFloat(row.revenue) || 0;
+        actualTicketRev += rev;
+        totalVatColl += rev * 0.16667;
+      });
+
+      budgetData.forEach(b => {
+        const v = b.vat === 'YES' ? (b.net || 0) * 0.2 : 0;
+        totalBudInc += ((b.net || 0) + v);
+        totalVatPaid += v;
+      });
+
+      const totalIncome = totalTicketForecast + totalSponsorshipForecast;
+      const netVatLiability = totalVatColl - totalVatPaid;
+      const profitForecast = totalIncome - totalBudInc - netVatLiability;
+
+      if(document.getElementById('dashTotalIncome')) document.getElementById('dashTotalIncome').innerText = formatGBP(totalIncome);
+      if(document.getElementById('dashBudInc')) document.getElementById('dashBudInc').innerText = formatGBP(totalBudInc);
+      if(document.getElementById('dashVariance')) document.getElementById('dashVariance').innerText = formatGBP(profitForecast);
+      if(document.getElementById('dashActualRevenue')) document.getElementById('dashActualRevenue').innerText = formatGBP(actualTicketRev);
+      if(document.getElementById('dashVatColl')) document.getElementById('dashVatColl').innerText = formatGBP(totalVatColl);
+      if(document.getElementById('dashVatPaid')) document.getElementById('dashVatPaid').innerText = formatGBP(totalVatPaid);
+      if(document.getElementById('dashNetVat')) document.getElementById('dashNetVat').innerText = formatGBP(netVatLiability);
+    }
+
+    function buildBudgetTable() {
+      const tbody = document.getElementById('budgetBody');
+      if (!tbody) return;
+      let html = '';
+      let bNet = 0, bVat = 0, bInc = 0, bSpent = 0;
+
+      budgetData.forEach((row, idx) => {
+        const v = row.vat === 'YES' ? (row.net || 0) * 0.2 : 0;
+        const inc = (row.net || 0) + v;
+        bNet += (row.net || 0);
+        bVat += v;
+        bInc += inc;
+        bSpent += (row.spent || 0);
+
+        const isDjRow = row.item.toLowerCase().includes('dj') || row.item.toLowerCase().includes('act');
+
+        html += `<tr>
+          <td style="font-weight:bold;">${row.item}</td>
+          <td><span class="badge">${row.cat}</span></td>
+          <td style="text-align:right;">${formatGBP(row.net)}</td>
+          <td style="text-align:center;">${row.vat}</td>
+          <td style="text-align:right;">${formatGBP(v)}</td>
+          <td style="text-align:right; font-weight:bold;">${formatGBP(inc)}</td>
+          <td style="text-align:right;">
+            ${isDjRow 
+              ? `<span style="color:var(--accent-amber); font-weight:bold;">${formatGBP(row.spent)} <sup style="font-size:8px; color:var(--text-muted);">(Auto-DJ)</sup></span>`
+              : `<input type="number" step="0.01" value="${row.spent || 0}" onchange="updateBudgetSpent(${idx}, this.value)" style="width: 90px; text-align: right; padding: 3px 6px; font-weight: bold; color: var(--accent-amber);">`
+            }
+          </td>
+          <td style="text-align:center;"><button class="edit-btn" onclick="deleteBudgetItem(${idx})" style="background:rgba(225,29,72,0.2); color:var(--accent-rose);">Del</button></td>
+        </tr>`;
+      });
+      tbody.innerHTML = html;
+
+      if (document.getElementById('topBudgetNet')) document.getElementById('topBudgetNet').innerText = formatGBP(bNet);
+      if (document.getElementById('topBudgetVat')) document.getElementById('topBudgetVat').innerText = formatGBP(bVat);
+      if (document.getElementById('topBudgetInc')) document.getElementById('topBudgetInc').innerText = formatGBP(bInc);
+      if (document.getElementById('topBudgetSpent')) document.getElementById('topBudgetSpent').innerText = formatGBP(bSpent);
+    }
+
+    function updateBudgetSpent(idx, val) {
+      budgetData[idx].spent = parseFloat(val) || 0;
+      saveAllToFirebase();
+      buildExecutiveSummary();
+      buildBudgetTable();
+    }
+
+    function buildOutstandingTable() {
+      const oBody = document.getElementById('outstandingBody');
+      if (!oBody) return;
+      
+      let totalOverallOwed = 0;
+      let totalNextPayment = 0;
+      let html = '';
+
+      outstandingData.forEach((item, idx) => {
+        const totalDue = parseFloat(item.amount) || 0;
+        const planMonths = parseInt(item.months) || 1;
+        const monthlyPayment = totalDue / planMonths;
+
+        if (!item.paid) {
+          totalOverallOwed += totalDue;
+          totalNextPayment += monthlyPayment;
+        }
+
+        const statusBadge = item.paid 
+          ? `<span class="badge" style="background:rgba(16,185,129,0.15); color:var(--accent-green);">Paid</span>`
+          : `<span class="badge" style="background:rgba(245,158,11,0.15); color:var(--accent-amber);">Pending</span>`;
+        
+        html += `<tr>
+          <td style="text-align:center;"><input type="checkbox" onchange="toggleOutstandingPaid(${idx}, this)" ${item.paid ? 'checked' : ''}></td>
+          <td style="font-weight:bold; color:var(--accent-blue);">${item.supplier}</td>
+          <td>${item.desc}</td>
+          <td style="text-align:right; font-weight:bold;">${formatGBP(totalDue)}</td>
+          <td style="text-align:center;">
+            <select onchange="updateLinePaymentPlan(${idx}, this.value)" style="padding: 3px 6px; font-size: 11px;">
+              <option value="1" ${planMonths === 1 ? 'selected' : ''}>1 Month</option>
+              <option value="2" ${planMonths === 2 ? 'selected' : ''}>2 Months</option>
+              <option value="3" ${planMonths === 3 ? 'selected' : ''}>3 Months</option>
+            </select>
+          </td>
+          <td style="text-align:right; font-weight:bold; color:var(--accent-green);">${formatGBP(monthlyPayment)} <span style="font-size:9px; color:var(--text-muted); display:block;">/ mo (${planMonths} mos)</span></td>
+          <td style="color:var(--text-muted);">${item.dueDate || '-'}</td>
+          <td style="text-align:center;">${statusBadge}</td>
+          <td style="text-align:center;">
+            <button class="edit-btn" onclick="openOutstandingModal(${idx})">Edit</button>
+            <button class="edit-btn" onclick="deleteOutstandingItem(${idx})" style="background:rgba(225,29,72,0.2); color:var(--accent-rose); margin-left:4px;">Del</button>
+          </td>
+        </tr>`;
+      });
+      oBody.innerHTML = html;
+
+      const remainingOwedAfterNext = totalOverallOwed - totalNextPayment;
+      if (document.getElementById('overallOwedAmount')) document.getElementById('overallOwedAmount').innerText = formatGBP(totalOverallOwed);
+      if (document.getElementById('nextPaymentAmount')) document.getElementById('nextPaymentAmount').innerText = formatGBP(totalNextPayment);
+      if (document.getElementById('remainingOwedAfterNext')) document.getElementById('remainingOwedAfterNext').innerText = formatGBP(Math.max(0, remainingOwedAfterNext));
+    }
+
+    function buildTargetTable() {
+      const tbody = document.getElementById('targetBody');
+      if (!tbody) return;
+      let html = '';
+      targetData.forEach((row, idx) => {
+        const total = (row.qty || 0) * (row.price || 0);
+        html += `<tr>
+          <td><span class="badge" style="${row.day === 'Weekend' ? 'color:var(--accent-purple); border-color:var(--accent-purple);' : ''}">${row.day}</span></td>
+          <td style="font-weight:bold;">${row.type}</td>
+          <td style="text-align:center;">${row.qty}</td>
+          <td style="text-align:right;">${formatGBP(row.price)}</td>
+          <td style="text-align:right; font-weight:bold; color:var(--accent-green);">${formatGBP(total)}</td>
+          <td style="text-align:center;"><button class="edit-btn" onclick="deleteTargetItem(${idx})" style="background:rgba(225,29,72,0.2); color:var(--accent-rose);">Del</button></td>
+        </tr>`;
+      });
+      tbody.innerHTML = html;
+    }
+
+    function buildSponsorshipTable() {
+      const tbody = document.getElementById('sponsorshipBody');
+      if (!tbody) return;
+      let html = '';
+      sponsorshipData.forEach((s, idx) => {
+        const v = s.vat === 'YES' ? (s.net || 0) * 0.2 : 0;
+        const inc = (s.net || 0) + v;
+        html += `<tr>
+          <td style="font-weight:bold; color:var(--accent-blue);">${s.company}</td>
+          <td>${s.area}</td>
+          <td style="text-align:right;">${formatGBP(s.net)}</td>
+          <td style="text-align:right;">${formatGBP(v)}</td>
+          <td style="text-align:right; font-weight:bold; color:var(--accent-green);">${formatGBP(inc)}</td>
+          <td style="text-align:center;"><button class="edit-btn" onclick="deleteSponsorshipItem(${idx})" style="background:rgba(225,29,72,0.2); color:var(--accent-rose);">Del</button></td>
+        </tr>`;
+      });
+      tbody.innerHTML = html;
+    }
+
+    function buildPlanTable() {
+      const tbody = document.getElementById('planBody');
+      if (!tbody) return;
+      let html = '';
+      planData.forEach((row, idx) => {
+        html += `<tr>
+          <td style="text-align:center;"><input type="checkbox" onchange="togglePlanDone(${idx}, this)" ${row.done ? 'checked' : ''}></td>
+          <td style="font-weight:bold;">${row.task}</td>
+          <td>${row.lead}</td>
+          <td>${row.update}</td>
+          <td style="text-align:center;"><button class="edit-btn" onclick="deletePlanItem(${idx})" style="background:rgba(225,29,72,0.2); color:var(--accent-rose);">Del</button></td>
+        </tr>`;
+      });
+      tbody.innerHTML = html;
+    }
+
+    function buildRolesTable() {
+      const tbody = document.getElementById('rolesBody');
+      if (!tbody) return;
+      let html = '';
+      rolesData.forEach((row, idx) => {
+        html += `<tr>
+          <td style="font-weight:bold; color:var(--accent-blue);">${row.area}</td>
+          <td>${row.lead}</td>
+          <td>${row.sec || '-'}</td>
+          <td style="text-align:center;"><button class="edit-btn" onclick="deleteRoleItem(${idx})" style="background:rgba(225,29,72,0.2); color:var(--accent-rose);">Del</button></td>
+        </tr>`;
+      });
+      tbody.innerHTML = html;
+    }
+
+    function buildDjTable() {
+      const tbody = document.getElementById('djBody');
+      if (!tbody) return;
+      let html = '';
+      djData.forEach((row, idx) => {
+        html += `<tr>
+          <td style="font-weight:bold; color:var(--accent-blue);">${row.name}</td>
+          <td><span class="badge">${row.type}</span></td>
+          <td style="text-align:right;">${formatGBP(row.cost)}</td>
+          <td>${row.stage}</td>
+          <td>${row.day}</td>
+          <td>${row.time}</td>
+          <td style="text-align:center;"><button class="edit-btn" onclick="deleteDjItem(${idx})" style="background:rgba(225,29,72,0.2); color:var(--accent-rose);">Del</button></td>
+        </tr>`;
+      });
+      tbody.innerHTML = html;
+    }
+
+    function buildCalendarMatrix() {
+      const tbody = document.getElementById('calendarMatrixBody');
+      if (!tbody) return;
+      const slots = ["14:00 - 16:00", "16:00 - 18:00", "18:00 - 20:00", "20:00 - 22:00", "22:00 - 00:00"];
+      let html = '';
+      slots.forEach(slot => {
+        html += `<tr>
+          <td style="font-weight:bold; font-family:monospace;">${slot}</td>`;
+        ["Lighthouse (Main)", "Cactus (Live)", "Causeway (DnB)", "Sand Bar (Disco)"].forEach(stageName => {
+          const matchingAct = djData.find(d => {
+            const matchesDay = d.day === currentCalDay;
+            const matchesStage = d.stage && d.stage.toLowerCase().includes(stageName.split(' ')[0].toLowerCase());
+            return matchesDay && matchesStage;
+          });
+          html += `<td>${matchingAct ? `<span class="badge" style="background:rgba(56,189,248,0.15); color:var(--accent-blue); border-color:var(--accent-blue);">${matchingAct.name}</span>` : '<span style="color:var(--text-muted);">-</span>'}</td>`;
+        });
+        html += `</tr>`;
+      });
+      tbody.innerHTML = html;
+    }
+
+    function buildUploadedTicketTable() {
+      const tbody = document.getElementById('uploadedTicketSalesBody');
+      if (!tbody) return;
+      if (uploadedTicketSalesRows.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--text-muted); padding: 14px;">No file uploaded yet.</td></tr>`;
+        return;
+      }
+      let html = '';
+      uploadedTicketSalesRows.forEach(r => {
+        html += `<tr>
+          <td>${r.category || '-'}</td>
+          <td>${r.day || '-'}</td>
+          <td style="text-align:center;">${r.qty || 0}</td>
+          <td style="text-align:right; font-weight:bold; color:var(--accent-green);">${formatGBP(r.revenue || 0)}</td>
+        </tr>`;
+      });
+      tbody.innerHTML = html;
+    }
+
+    function triggerTicketExcelUpload() { document.getElementById('ticketExcelFileInput').click(); }
+    function handleTicketExcelUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+          const json = XLSX.utils.sheet_to_json(worksheet);
+          uploadedTicketSalesRows = json.map(row => ({
+            category: row['Category'] || row['Ticket Type'] || row['Item'] || 'General',
+            day: row['Day'] || row['Session'] || 'Saturday',
+            qty: parseInt(row['Qty'] || row['Quantity'] || row['Sold'] || 0),
+            revenue: parseFloat(row['Revenue'] || row['Total'] || row['Price'] || 0)
+          }));
+          saveAllToFirebase();
+          buildTables();
+          alert("✅ Ticket sales Excel file successfully parsed!");
+        } catch (err) { alert("❌ Error parsing Excel file."); }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    function switchCalDay(day) {
+      currentCalDay = day;
+      if(document.getElementById('calBtnFri')) document.getElementById('calBtnFri').style.background = day.includes('Friday') ? 'var(--accent-blue)' : 'var(--input-bg)';
+      if(document.getElementById('calBtnSat')) document.getElementById('calBtnSat').style.background = day.includes('Saturday') ? 'var(--accent-blue)' : 'var(--input-bg)';
+      buildCalendarMatrix();
+    }
+
+    function updateLinePaymentPlan(idx, monthsVal) {
+      outstandingData[idx].months = parseInt(monthsVal) || 1;
+      saveAllToFirebase();
+      buildOutstandingTable();
+    }
+
+    function toggleOutstandingPaid(idx, el) {
+      outstandingData[idx].paid = el.checked;
+      saveAllToFirebase();
+      buildOutstandingTable();
+    }
+
+    function togglePlanDone(idx, el) {
+      planData[idx].done = el.checked;
+      saveAllToFirebase();
+      buildPlanTable();
+    }
+
+    function openOutstandingModal(idx) {
+      document.getElementById('outstandingEditIndex').value = idx;
+      if (idx === -1) {
+        document.getElementById('outstandingModalTitle').innerText = "Add Payment Line";
+        document.getElementById('oModalSupplier').value = "";
+        document.getElementById('oModalDesc').value = "";
+        document.getElementById('oModalAmount').value = "";
+        document.getElementById('oModalPlan').value = "1";
+        document.getElementById('oModalDate').value = new Date().toISOString().split('T')[0];
+      } else {
+        document.getElementById('outstandingModalTitle').innerText = "Edit Payment Line";
+        const item = outstandingData[idx];
+        document.getElementById('oModalSupplier').value = item.supplier;
+        document.getElementById('oModalDesc').value = item.desc;
+        document.getElementById('oModalAmount').value = item.amount;
+        document.getElementById('oModalPlan').value = item.months || 1;
+        document.getElementById('oModalDate').value = item.dueDate || '';
+      }
+      document.getElementById('outstandingModal').classList.add('active');
+    }
+
+    function closeOutstandingModal() { document.getElementById('outstandingModal').classList.remove('active'); }
+
+    function saveOutstandingItem() {
+      const idx = parseInt(document.getElementById('outstandingEditIndex').value);
+      const newItem = {
+        supplier: document.getElementById('oModalSupplier').value.trim(),
+        desc: document.getElementById('oModalDesc').value.trim(),
+        amount: parseFloat(document.getElementById('oModalAmount').value) || 0,
+        months: parseInt(document.getElementById('oModalPlan').value) || 1,
+        dueDate: document.getElementById('oModalDate').value,
+        paid: idx !== -1 ? outstandingData[idx].paid : false
+      };
+      if (idx === -1) outstandingData.push(newItem); else outstandingData[idx] = newItem;
+      saveAllToFirebase();
+      closeOutstandingModal();
+      buildOutstandingTable();
+    }
+
+    function deleteOutstandingItem(idx) { outstandingData.splice(idx, 1); saveAllToFirebase(); buildOutstandingTable(); }
+    function deleteBudgetItem(idx) { budgetData.splice(idx, 1); saveAllToFirebase(); buildTables(); }
+    function deletePlanItem(idx) { planData.splice(idx, 1); saveAllToFirebase(); buildTables(); }
+    function deleteRoleItem(idx) { rolesData.splice(idx, 1); saveAllToFirebase(); buildRolesTable(); }
+    function deleteTargetItem(idx) { targetData.splice(idx, 1); saveAllToFirebase(); buildTables(); }
+    function deleteSponsorshipItem(idx) { sponsorshipData.splice(idx, 1); saveAllToFirebase(); buildTables(); }
+    function deleteDjItem(idx) { djData.splice(idx, 1); saveAllToFirebase(); buildTables(); }
+
+    function openBudgetModal(idx) { alert("Budget Item Modal placeholder"); }
+    function openTargetModal(idx) { alert("Ticket Target Modal placeholder"); }
+    function openSponsorshipModal(idx) { alert("Sponsorship Modal placeholder"); }
+    function openPlanAddModal() { alert("Project Plan Modal placeholder"); }
+    function openRolesModal(idx) { alert("Roles Modal placeholder"); }
+    function openDjModal(idx) { alert("DJ Line-up Modal placeholder"); }
+
+    function exportToJSON() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ budgetData, outstandingData, djData, planData, rolesData, targetData, sponsorshipData, uploadedTicketSalesRows }, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `SIF27_Dashboard_Backup.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+    }
+
+    function triggerImport() { document.getElementById('jsonFileInput').click(); }
+    function importFromJSON(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          if (parsed.budgetData) budgetData = parsed.budgetData;
+          if (parsed.outstandingData) outstandingData = parsed.outstandingData;
+          if (parsed.djData) djData = parsed.djData;
+          if (parsed.planData) planData = parsed.planData;
+          if (parsed.rolesData) rolesData = parsed.rolesData;
+          if (parsed.targetData) targetData = parsed.targetData;
+          if (parsed.sponsorshipData) sponsorshipData = parsed.sponsorshipData;
+          if (parsed.uploadedTicketSalesRows) uploadedTicketSalesRows = parsed.uploadedTicketSalesRows;
+          saveAllToFirebase();
+          buildTables();
+          alert("✅ Restore successful!");
+        } catch (err) { alert("❌ Invalid JSON file."); }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    function toggleTheme() { document.documentElement.classList.toggle('light-theme'); }
+    function emergencyBypass() { document.getElementById('loginOverlay').style.display = 'none'; }
+    function handleLogout() { document.getElementById('loginOverlay').style.display = 'flex'; }
+
+    function runTimer() {
+      const target = new Date('July 30, 2027 12:00:00').getTime();
+      const diff = target - new Date().getTime();
+      const el = document.getElementById('countdown');
+      if (!el || diff <= 0) return;
+      const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      el.innerText = `${d}d ${h}h`;
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      setInterval(runTimer, 1000);
+      document.getElementById('loginSubmitBtn').onclick = () => {
+        document.getElementById('loginOverlay').style.display = 'none';
+      };
+      initFirebaseSync();
+    });
+  </script>
+</body>
+</html>
