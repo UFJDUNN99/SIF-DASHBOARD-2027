@@ -13,7 +13,7 @@
   <!-- SheetJS (XLSX) Library for Excel File Parsing -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   
-  <!-- EmailJS SDK for Admin Notifications -->
+  <!-- EmailJS SDK for Admin Registration Notifications -->
   <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/emailjs.min.js"></script>
 
   <style>
@@ -135,7 +135,8 @@
       <button type="button" id="loginSubmitBtn">Log In to Dashboard</button>
       <div id="loginError"></div>
 
-      <div style="margin-top: 14px; text-align: center; border-top: 1px solid #334155; padding-top: 10px;">
+      <div style="margin-top: 14px; text-align: center; border-top: 1px solid #334155; padding-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+        <button type="button" id="openSignupBtn" style="background: none; border: none; color: #38bdf8; font-size: 11px; font-weight: bold; cursor: pointer;">Create Staff Account</button>
         <button type="button" onclick="emergencyBypass()" style="background: none; border: none; color: #f59e0b; font-size: 11px; font-weight: bold; cursor: pointer;">⚠️ Emergency Bypass</button>
       </div>
     </div>
@@ -158,6 +159,11 @@
       <button onclick="exportToJSON()" class="io-btn">📥 Backup</button>
       <button onclick="triggerImport()" class="io-btn">📤 Restore</button>
       <input type="file" id="jsonFileInput" accept=".json" style="display:none;" onchange="importFromJSON(event)">
+      
+      <div style="display: flex; align-items: center; gap: 6px; background: var(--input-bg); padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border-color);">
+        <span id="loggedInUserDisplay" style="font-size: 10px; font-weight: bold; color: var(--accent-blue);">James Dunn</span>
+        <button onclick="handleLogout()" style="background: rgba(225, 29, 72, 0.2); color: var(--accent-rose); border: 1px solid var(--border-color); padding: 3px 6px; border-radius: 4px; font-size: 10px; font-weight: bold;">Logout</button>
+      </div>
     </div>
   </header>
 
@@ -169,11 +175,11 @@
     <button onclick="openTab('plan')" id="btn-plan" class="tab-btn">📋 Project Plan</button>
     <button onclick="openTab('djs')" id="btn-djs" class="tab-btn">🎧 DJs & Acts</button>
     <button onclick="openTab('socials')" id="btn-socials" class="tab-btn" style="color: var(--accent-blue);">📱 Socials</button>
+    <button onclick="openTab('notes')" id="btn-notes" class="tab-btn">💡 Ideas</button>
+    <button onclick="openTab('admin')" id="btn-admin" class="tab-btn" style="display: none; color: var(--accent-amber);">👑 Admin</button>
   </nav>
 
   <main>
-    <!-- TAB 1: EXECUTIVE DASHBOARD -->
-    <main>
     <!-- TAB 1: EXECUTIVE DASHBOARD -->
     <div id="tab-dash" class="tab-content active">
       <div class="unified-summary-card">
@@ -188,6 +194,27 @@
           <div class="summary-item"><p>VAT Collected</p><h3 id="dashVatColl" style="color: var(--accent-amber);">£0.00</h3></div>
           <div class="summary-item"><p>VAT Paid</p><h3 id="dashVatPaid" style="color: var(--accent-amber);">£0.00</h3></div>
           <div class="summary-item"><p>Net VAT Liability</p><h3 id="dashNetVat" style="color: var(--accent-rose);">£0.00</h3></div>
+        </div>
+      </div>
+
+      <!-- UPLOADED TICKET SALES TABLE -->
+      <div class="table-card" style="margin-bottom: 20px;">
+        <div class="table-header">
+          <span>📈 Actual Ticket Sales (Uploaded Excel/CSV)</span>
+          <div style="display: flex; gap: 8px;">
+            <button onclick="triggerTicketExcelUpload()" class="action-btn" style="padding: 4px 8px; font-size: 11px;">📤 Upload Excel</button>
+            <input type="file" id="ticketExcelFileInput" accept=".xlsx, .xls, .csv" style="display:none;" onchange="handleTicketExcelUpload(event)">
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Ticket Category / Type</th><th>Day / Session</th><th style="text-align: center;">Qty</th><th style="text-align: right;">Revenue (£)</th></tr>
+            </thead>
+            <tbody id="uploadedTicketSalesBody">
+              <tr><td colspan="4" style="text-align:center; color:var(--text-muted); padding: 14px;">No file uploaded yet.</td></tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
@@ -363,6 +390,20 @@
         </div>
       </div>
     </div>
+
+    <!-- TAB 7: IDEAS -->
+    <div id="tab-notes" class="tab-content">
+      <div class="table-card">
+        <div class="table-header"><span>💡 Department Ideas Board</span></div>
+      </div>
+    </div>
+
+    <!-- TAB 8: ADMIN -->
+    <div id="tab-admin" class="tab-content">
+      <div class="table-card">
+        <div class="table-header"><span>👑 Staff Permission Management</span></div>
+      </div>
+    </div>
   </main>
 
   <!-- MODALS -->
@@ -443,6 +484,7 @@
     let djData = [...defaultDjs];
     let planData = [...defaultPlan];
     let targetData = [...defaultTargets];
+    let uploadedTicketSalesRows = [];
     let currentCalDay = "Friday 30th July";
     let adminSocialsPortalUrl = "https://lookerstudio.google.com/";
 
@@ -457,6 +499,7 @@
           djData = val.djData || defaultDjs;
           planData = val.planData || defaultPlan;
           targetData = val.targetData || defaultTargets;
+          uploadedTicketSalesRows = val.uploadedTicketSalesRows || [];
           adminSocialsPortalUrl = val.adminSocialsPortalUrl || "https://lookerstudio.google.com/";
           if (statusEl) {
             statusEl.innerText = "Connected & Synced";
@@ -478,7 +521,7 @@
 
     function saveAllToFirebase() {
       db.ref('sif27_festival_data').update({
-        budgetData, outstandingData, socialPostsData, djData, planData, targetData, adminSocialsPortalUrl
+        budgetData, outstandingData, socialPostsData, djData, planData, targetData, uploadedTicketSalesRows, adminSocialsPortalUrl
       });
     }
 
@@ -503,6 +546,7 @@
       buildDjTable();
       buildExecutiveSummary();
       buildCalendarMatrix();
+      buildUploadedTicketTable();
     }
 
     function buildExecutiveSummary() {
@@ -510,11 +554,16 @@
       let totalBudInc = 0;
       let totalVatColl = 0;
       let totalVatPaid = 0;
+      let actualTicketRev = 0;
 
       targetData.forEach(t => {
         const rev = (t.qty || 0) * (t.price || 0);
         totalIncome += rev;
         totalVatColl += rev * 0.16667;
+      });
+
+      uploadedTicketSalesRows.forEach(row => {
+        actualTicketRev += parseFloat(row.revenue) || 0;
       });
 
       budgetData.forEach(b => {
@@ -526,6 +575,7 @@
       if(document.getElementById('dashTotalIncome')) document.getElementById('dashTotalIncome').innerText = formatGBP(totalIncome);
       if(document.getElementById('dashBudInc')) document.getElementById('dashBudInc').innerText = formatGBP(totalBudInc);
       if(document.getElementById('dashVariance')) document.getElementById('dashVariance').innerText = formatGBP(totalIncome - totalBudInc);
+      if(document.getElementById('dashActualRevenue')) document.getElementById('dashActualRevenue').innerText = formatGBP(actualTicketRev);
       if(document.getElementById('dashVatColl')) document.getElementById('dashVatColl').innerText = formatGBP(totalVatColl);
       if(document.getElementById('dashVatPaid')) document.getElementById('dashVatPaid').innerText = formatGBP(totalVatPaid);
       if(document.getElementById('dashNetVat')) document.getElementById('dashNetVat').innerText = formatGBP(totalVatColl - totalVatPaid);
@@ -677,6 +727,51 @@
       tbody.innerHTML = html;
     }
 
+    function buildUploadedTicketTable() {
+      const tbody = document.getElementById('uploadedTicketSalesBody');
+      if (!tbody) return;
+      if (uploadedTicketSalesRows.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--text-muted); padding: 14px;">No file uploaded yet.</td></tr>`;
+        return;
+      }
+      let html = '';
+      uploadedTicketSalesRows.forEach(r => {
+        html += `<tr>
+          <td>${r.category || '-'}</td>
+          <td>${r.day || '-'}</td>
+          <td style="text-align:center;">${r.qty || 0}</td>
+          <td style="text-align:right; font-weight:bold; color:var(--accent-green);">${formatGBP(r.revenue || 0)}</td>
+        </tr>`;
+      });
+      tbody.innerHTML = html;
+    }
+
+    function triggerTicketExcelUpload() { document.getElementById('ticketExcelFileInput').click(); }
+    function handleTicketExcelUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          const firstSheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[firstSheetName];
+          const json = XLSX.utils.sheet_to_json(worksheet);
+          uploadedTicketSalesRows = json.map(row => ({
+            category: row['Category'] || row['Ticket Type'] || row['Item'] || 'General',
+            day: row['Day'] || row['Session'] || 'Saturday',
+            qty: parseInt(row['Qty'] || row['Quantity'] || row['Sold'] || 0),
+            revenue: parseFloat(row['Revenue'] || row['Total'] || row['Price'] || 0)
+          }));
+          saveAllToFirebase();
+          buildTables();
+          alert("✅ Ticket sales Excel file successfully parsed!");
+        } catch (err) { alert("❌ Error parsing Excel file."); }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
     function switchCalDay(day) {
       currentCalDay = day;
       if(document.getElementById('calBtnFri')) document.getElementById('calBtnFri').style.background = day.includes('Friday') ? 'var(--accent-blue)' : 'var(--input-bg)';
@@ -760,7 +855,7 @@
     }
 
     function exportToJSON() {
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ budgetData, outstandingData, socialPostsData, djData, planData, targetData }, null, 2));
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ budgetData, outstandingData, socialPostsData, djData, planData, targetData, uploadedTicketSalesRows }, null, 2));
       const downloadAnchor = document.createElement('a');
       downloadAnchor.setAttribute("href", dataStr);
       downloadAnchor.setAttribute("download", `SIF27_Dashboard_Backup.json`);
@@ -783,12 +878,13 @@
           if (parsed.djData) djData = parsed.djData;
           if (parsed.planData) planData = parsed.planData;
           if (parsed.targetData) targetData = parsed.targetData;
+          if (parsed.uploadedTicketSalesRows) uploadedTicketSalesRows = parsed.uploadedTicketSalesRows;
           saveAllToFirebase();
           buildTables();
           alert("✅ Restore successful!");
         } catch (err) { alert("❌ Invalid JSON file."); }
       };
-      reader.readAsText(file);
+      reader.readAsArrayBuffer(file);
     }
 
     function toggleTheme() { document.documentElement.classList.toggle('light-theme'); }
